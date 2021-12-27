@@ -1,19 +1,19 @@
-{-# Language MonoLocalBinds, TemplateHaskell, LambdaCase #-}
+{-# Language ViewPatterns, ImportQualifiedPost, MonoLocalBinds, TemplateHaskell, LambdaCase #-}
 module Main where
 
-import           AsmProg
-import           Common
-import           Control.Lens
-import           Data.List
-import           Data.Map (Map)
-import qualified Data.Map as Map
-import           Data.Set (Set)
-import qualified Data.Set as Set
-import           Data.Vector (Vector)
-import qualified Data.Vector as Vector
-import           Text.Megaparsec
-import           Text.Megaparsec.Char
-import           Control.Monad.Trans.State
+import Advent
+import AsmProg
+import Control.Applicative
+import Control.Lens
+import Control.Monad.Trans.State
+import Data.List
+import Data.Map (Map)
+import Data.Map qualified as Map
+import Data.Set (Set)
+import Data.Set qualified as Set
+import Data.Vector (Vector)
+import Data.Vector qualified as Vector
+import Text.ParserCombinators.ReadP
 
 data Progress = NeedOne | NeedZero
 
@@ -31,24 +31,27 @@ instance HasRegisters Machine where
 
 main :: IO ()
 main =
-  do program <- Vector.fromList . parseLines parseFile <$> readInputFile 25
-     print $ find (execute program) [1..]
+ do program <- Vector.fromList . map parseLine <$> getInputLines 25
+    print $ find (execute program) [1..]
 
 data Inst
-  = Copy Value !Register
-  | Inc !Register
-  | Dec !Register
+  = Copy Value Register
+  | Inc Register
+  | Dec Register
   | Jnz Value Value
   | Out Value
  deriving Show
 
-parseFile :: Parser Inst
-parseFile =
-  Copy <$ wholestring "cpy " <*> pValue <* char ' ' <*> pReg <|>
-  Jnz  <$ wholestring "jnz " <*> pValue <* char ' ' <*> pValue <|>
-  Inc  <$ wholestring "inc " <*> pReg <|>
-  Dec  <$ wholestring "dec " <*> pReg <|>
-  Out  <$ wholestring "out " <*> pValue
+parseLine :: String -> Inst
+parseLine (readP_to_S pInst -> [(x,_)]) = x
+
+pInst :: ReadP Inst
+pInst =
+  Copy <$ string "cpy " <*> pValue <* char ' ' <*> pReg <|>
+  Jnz  <$ string "jnz " <*> pValue <* char ' ' <*> pValue <|>
+  Inc  <$ string "inc " <*> pReg <|>
+  Dec  <$ string "dec " <*> pReg <|>
+  Out  <$ string "out " <*> pValue
 
 execute :: Vector Inst -> Int -> Bool
 execute program a =
@@ -93,7 +96,7 @@ execute program a =
                      let pcOff = if v == 0 then 1 else o'
                      goto (pc+pcOff)
 
-    goto pc = strictState $
-      case (program Vector.!? pc) of
+    goto pc =
+      case program Vector.!? pc of
         Nothing -> return False
         Just o  -> step pc o

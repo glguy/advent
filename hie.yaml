@@ -2,6 +2,8 @@ cradle:
   cabal:
     - path: "./common/src"
       component: "advent:lib:advent"
+    - path: "./solutions/asmprog-lib/AsmProg.hs"
+      component: "asmprog"
 
     - path: "./solutions/src/2015/01.hs"
       component: "sln_2015_01"

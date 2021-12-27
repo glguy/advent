@@ -143,11 +143,10 @@ executable sln_2015_22
   main-is:             2015/22.hs
   build-depends:       containers
 
---executable sln_2015_23
---  import:              day
---  hs-source-dirs:      src/2015
---  main-is:             2015/23.hs
---  build-depends:       template-haskell, array
+executable sln_2015_23
+  import:              day
+  main-is:             2015/23.hs
+  build-depends:       array
 
 executable sln_2015_24
   import:              day
@@ -214,7 +213,7 @@ executable sln_2016_11
 executable sln_2016_12
   import:              day
   main-is:             2016/12.hs
-  build-depends:       containers, vector, lens
+  build-depends:       asmprog, containers, vector, lens
 
 executable sln_2016_13
   import:              day
@@ -264,8 +263,7 @@ executable sln_2016_22
 executable sln_2016_23
   import:              day
   main-is:             2016/23.hs
-  build-depends:       containers, vector, lens, transformers
-  buildable: False
+  build-depends:       asmprog, containers, vector, lens, transformers
 
 executable sln_2016_24
   import:              day
@@ -275,8 +273,7 @@ executable sln_2016_24
 executable sln_2016_25
   import:              day
   main-is:             2016/25.hs
-  build-depends:       containers, vector, lens, transformers
-  buildable: False
+  build-depends:       asmprog, containers, vector, lens, transformers
 
 -- 2017 ---------------------------------------------------------------
 

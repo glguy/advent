@@ -1,17 +1,17 @@
-{-# Language TemplateHaskell, LambdaCase #-}
+{-# Language ImportQualifiedPost, ViewPatterns, TemplateHaskell, LambdaCase #-}
 module Main where
 
-import           AsmProg
-import           Common
-import           Control.Lens
-import           Control.Monad.Trans.State.Strict
-import           Data.Foldable
-import           Data.Map (Map)
-import qualified Data.Map as Map
-import           Data.Vector (Vector)
-import qualified Data.Vector as Vector
-import           Text.Megaparsec hiding (State)
-import           Text.Megaparsec.Char
+import Advent
+import AsmProg
+import Control.Lens
+import Control.Applicative ( Alternative((<|>)) )
+import Control.Monad.Trans.State.Strict
+import Data.Foldable
+import Data.Map (Map)
+import Data.Map qualified as Map
+import Data.Vector (Vector)
+import Data.Vector qualified as Vector
+import Text.ParserCombinators.ReadP
 
 data Inst
   = Copy Value !Register
@@ -34,17 +34,20 @@ instance HasRegisters Machine where
 
 main :: IO ()
 main =
-  do program <- Vector.fromList . parseLines parseFile <$> readInputFile 23
+  do program <- Vector.fromList . map parseLine <$> getInputLines 23
      print (execute program 7)
      print (execute program 12)
 
-parseFile :: Parser Inst
-parseFile =
-  Copy <$ wholestring "cpy " <*> pValue <* char ' ' <*> pReg <|>
-  Jnz  <$ wholestring "jnz " <*> pValue <* char ' ' <*> pValue <|>
-  Tgl  <$ wholestring "tgl " <*> pValue <|>
-  Inc  <$ wholestring "inc " <*> pReg <|>
-  Dec  <$ wholestring "dec " <*> pReg
+parseLine :: String -> Inst
+parseLine (readP_to_S pInst -> [(x,_)]) = x
+
+pInst :: ReadP Inst
+pInst =
+  Copy <$ string "cpy " <*> pValue <* char ' ' <*> pReg <|>
+  Jnz  <$ string "jnz " <*> pValue <* char ' ' <*> pValue <|>
+  Tgl  <$ string "tgl " <*> pValue <|>
+  Inc  <$ string "inc " <*> pReg <|>
+  Dec  <$ string "dec " <*> pReg
 
 execute :: Vector Inst -> Int -> Int
 execute program0 a =
@@ -77,9 +80,8 @@ execute program0 a =
           Copy x y      -> Jnz x (Reg y)
           _ -> error ("Nonsense toggle: " ++ show pc ++ " " ++ show oper)
 
-    goto pc = strictState $
-      do program <- use machProgram
-         case program Vector.!? pc of
-           Just o -> step pc o
-           Nothing -> use (reg A)
-
+    goto pc =
+     do program <- use machProgram
+        case program Vector.!? pc of
+          Just o -> step pc o
+          Nothing -> use (reg A)

@@ -1,16 +1,14 @@
 {-# Language RankNTypes, ImportQualifiedPost, LambdaCase, ViewPatterns #-}
 module Main where
 
-import Advent
-import Control.Lens
-import Control.Applicative
-import Data.Foldable
-import Data.Map.Strict qualified as Map
-import Data.Map (Map)
+import Advent ( getInputLines )
+import AsmProg
+import Control.Applicative (Alternative((<|>)))
+import Control.Lens ((^.), (&~), (+=), (-=), (.=), (<~))
+import Data.Foldable (for_)
+import Data.Vector (Vector)
 import Data.Vector qualified as Vector
-import Data.Vector ( Vector )
-import Text.ParserCombinators.ReadP
-import Data.Char
+import Text.ParserCombinators.ReadP (ReadP, char, readP_to_S, string)
 
 main :: IO ()
 main =
@@ -18,13 +16,11 @@ main =
      print (execute program 0)
      print (execute program 1)
 
-data Value = Int !Int | Reg Char deriving (Show)
-
 data Inst
-  = Copy Value !Char
-  | Inc !Char
-  | Dec !Char
-  | Jnz Value !Int
+  = Copy !Value !Register
+  | Inc !Register
+  | Dec !Register
+  | Jnz !Value !Int
  deriving Show
 
 parseInstruction :: String -> Inst
@@ -38,31 +34,19 @@ pInst =
   Inc  <$ string "inc " <*> pReg <|>
   Dec  <$ string "dec " <*> pReg
 
-pInt :: ReadP Int
-pInt = read <$> ((++) <$> option "" (string "-") <*> munch1 isDigit)
-
-pValue :: ReadP Value
-pValue = Reg <$> pReg <|> Int <$> pInt
-
-pReg :: ReadP Char
-pReg = satisfy isAlpha
-
-reg :: Char -> Lens' (Map Char Int) Int
-reg x = at x . non 0
-
 execute :: Vector Inst -> Int -> Int
-execute program c = (Map.singleton 'c' c &~ goto 0) ^. reg 'a'
+execute program c = (zeroRegisters &~ entry) ^. reg A
   where
+    entry =
+     do reg C .= c
+        goto 0
+
     step = \case
       Copy i o -> 1 <$ (reg o <~ rval i)
       Inc r    -> 1 <$ (reg r += 1)
       Dec r    -> 1 <$ (reg r -= 1)
       Jnz i o  -> do v <- rval i
                      return $! if v == 0 then 1 else o
-
-    rval = \case
-      Int i -> pure i
-      Reg r -> use (reg r)
 
     goto pc =
       for_ (program Vector.!? pc) $ \o ->
