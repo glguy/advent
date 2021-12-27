@@ -94,7 +94,6 @@ executable sln_2015_11
 executable sln_2015_12
   import:              day
   main-is:             2015/12.hs
-  build-depends:       bytestring, scientific, aeson
 
 executable sln_2015_13
   import:              day
@@ -319,7 +318,7 @@ executable sln_2017_09
 executable sln_2017_10
   import:              day
   main-is:             2017/10.hs
-  build-depends:       vector, split
+  build-depends:       vector, split, knothash
 
 executable sln_2017_11
   import:              day
@@ -337,7 +336,7 @@ executable sln_2017_13
 executable sln_2017_14
   import:              day
   main-is:             2017/14.hs
-  build-depends:       vector, fgl, containers, split
+  build-depends:       vector, fgl, containers, knothash
 
 executable sln_2017_15
   import:              day

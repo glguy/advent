@@ -2,9 +2,12 @@
 module Main where
 
 import Advent (chunks, format, counts)
-import Advent.Coord (above, below, left, origin, right, Coord)
+import Advent.Coord (Coord, origin, north, east, south, west)
 import Data.List (transpose, scanl')
 
+-- | >>> :main
+-- 2572
+-- 2631
 main :: IO ()
 main =
  do input <- [format|3 (^|v|<|>)*!|]
@@ -12,15 +15,15 @@ main =
     print (countHouses 1 directions)
     print (countHouses 2 directions)
 
-countHouses :: Int {- ^ workers -} -> [Coord -> Coord] -> Int
+countHouses :: Int {- ^ workers -} -> [Coord] -> Int
 countHouses n =
-  length . counts . concatMap (scanl' (\x f -> f x) origin) . transpose . chunks n
+  length . counts . concatMap (scanl' (+) origin) . transpose . chunks n
 
-parseChar :: Char -> Coord -> Coord
+parseChar :: Char -> Coord
 parseChar c =
   case c of
-    '^' -> above
-    'v' -> below
-    '<' -> left
-    '>' -> right
+    '^' -> north
+    'v' -> south
+    '<' -> west
+    '>' -> east
     _   -> error ("Bad input character: " ++ [c])

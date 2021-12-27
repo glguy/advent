@@ -3,3 +3,4 @@ packages:
   solutions/solutions.cabal
   intcode/intcode.cabal
   asmprog/asmprog.cabal
+  knothash/knothash.cabal

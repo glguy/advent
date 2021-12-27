@@ -1,61 +1,60 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns, GeneralizedNewtypeDeriving, OverloadedStrings, LambdaCase #-}
 module Main where
 
-import Data.Aeson
-import Data.Foldable
-import Data.Monoid
-import Data.Scientific
-import qualified Data.ByteString as B
+import Advent (getInputLines)
+import Text.ParserCombinators.ReadP (option, string, char, ReadP, sepBy, munch1, between, readP_to_S )
+import Control.Applicative
+import Data.Char (isDigit)
 
 main :: IO ()
 main =
-  do input <- loadInput "input12.txt"
-     print (sumOfNumbers       input)
-     print (sumOfNonredNumbers input)
+ do [input] <- getInputLines 12
+    let value = parseValue input 
+    print (numbers       value)
+    print (nonredNumbers value)
 
--- | Sum of all numbers in a JSON value.
-sumOfNumbers :: Value -> Scientific
-sumOfNumbers = sum . getList . numbers
+parseValue :: String -> Value
+parseValue (readP_to_S pValue -> [(x,_)]) = x
+parseValue x = error ("bad input: " ++ x)
 
--- | Sum of all numbers in a JSON value after
--- pruning out portions that fail the 'noRed' test.
-sumOfNonredNumbers :: Value -> Scientific
-sumOfNonredNumbers = sum . getList . nonredNumbers
+pValue :: ReadP Value
+pValue =
+  Object <$> between (char '{') (char '}') (pEntry `sepBy` char ',') <|>
+  Array  <$> between (char '[') (char ']') (pValue `sepBy` char ',') <|>
+  String <$> pString <|>
+  Number <$> pNumber
 
--- | Load the input file as a JSON value.
-loadInput :: FilePath -> IO Value
-loadInput filename =
-  do contents <- B.readFile filename
-     case decodeStrict' contents of
-       Just v  -> return v
-       Nothing -> fail "Bad JSON document"
+pNumber :: ReadP Int
+pNumber = read <$> ((++) <$> option "" (string "-") <*> munch1 isDigit)
 
--- | List of all the number values in in JSON value.
-numbers :: Value -> DList Scientific
+pString :: ReadP String
+pString = between (char '"') (char '"') (munch1 ('"'/=))
+
+pEntry :: ReadP Value
+pEntry = pString *> char ':' *> pValue
+
+-- | Sum of all the number values in in JSON value.
+numbers :: Value -> Int
 numbers v =
   case v of
-    Number n -> singleton n
-    Object o -> foldMap numbers o
-    Array  a -> foldMap numbers a
-    _        -> mempty
+    Number n -> n
+    Object o -> sum (map numbers o)
+    Array  a -> sum (map numbers a)
+    String _ -> 0
 
--- | List of all the number values in in JSON value
+-- | Sum of all the number values in in JSON value
 -- excluding objects containing the value @"red"@.
-nonredNumbers :: Value -> DList Scientific
+nonredNumbers :: Value -> Int
 nonredNumbers v =
   case v of
-    Number n                     -> singleton n
-    Object o | "red" `notElem` o -> foldMap nonredNumbers o
-    Array  a                     -> foldMap nonredNumbers a
-    _                            -> mempty
+    Number n -> n
+    Object o | String "red" `notElem` o -> sum (map nonredNumbers o)
+    Array  a -> sum (map nonredNumbers a)
+    _        -> 0
 
-------------------------------------------------------------------------
-
--- | A list type that doesn't penalize left-nested appends.
-newtype DList a = DList (Endo [a]) deriving (Semigroup, Monoid)
-
-singleton :: a -> DList a
-singleton = DList . Endo . (:)
-
-getList :: DList a -> [a]
-getList (DList f) = appEndo f []
+data Value
+  = Number !Int
+  | Array [Value]
+  | Object [Value]
+  | String String
+  deriving (Eq, Ord, Show)
