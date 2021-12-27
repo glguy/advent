@@ -49,7 +49,6 @@ executable sln_2015_01
 executable sln_2015_02
   import:              day
   main-is:             2015/02.hs
-  build-depends:       split
 
 executable sln_2015_03
   import:              day

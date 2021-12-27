@@ -1,46 +1,26 @@
-{-# Language ImportQualifiedPost #-}
+{-# Language ImportQualifiedPost, QuasiQuotes #-}
 module Main where
 
-import Advent (chunks)
+import Advent (chunks, format, counts)
+import Advent.Coord (above, below, left, origin, right, Coord)
 import Data.List (transpose, scanl')
-import Data.Set qualified as Set
-
-data Dir = U | D | L | R   deriving (Read,Show,Ord,Eq)
-
-data Loc = Loc !Int !Int   deriving (Read,Show,Ord,Eq)
-
-origin :: Loc
-origin = Loc 0 0
 
 main :: IO ()
 main =
-  do directions <- loadInput
-     print (countHouses 1 directions)
-     print (countHouses 2 directions)
+ do input <- [format|3 (^|v|<|>)*!|]
+    let directions = map parseChar input
+    print (countHouses 1 directions)
+    print (countHouses 2 directions)
 
-countHouses :: Int {- ^ workers -} -> [Dir] -> Int
-countHouses n
-  = cardinality . concatMap (scanl' step origin) . transpose . chunks n
+countHouses :: Int {- ^ workers -} -> [Coord -> Coord] -> Int
+countHouses n =
+  length . counts . concatMap (scanl' (\x f -> f x) origin) . transpose . chunks n
 
-cardinality :: Ord a => [a] -> Int
-cardinality = Set.size . Set.fromList
-
-step :: Loc -> Dir -> Loc
-step (Loc x y) dir =
-  case dir of
-    U -> Loc x (y+1)
-    D -> Loc x (y-1)
-    L -> Loc (x-1) y
-    R -> Loc (x+1) y
-
-loadInput :: IO [Dir]
-loadInput = map parseChar <$> readFile "input3.txt"
-
-parseChar :: Char -> Dir
+parseChar :: Char -> Coord -> Coord
 parseChar c =
   case c of
-    '^' -> U
-    'v' -> D
-    '<' -> L
-    '>' -> R
+    '^' -> above
+    'v' -> below
+    '<' -> left
+    '>' -> right
     _   -> error ("Bad input character: " ++ [c])

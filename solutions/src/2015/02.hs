@@ -1,26 +1,18 @@
+{-# Language QuasiQuotes #-}
 module Main where
 
-import Data.List
-import Data.List.Split
-import Text.Read
+import Advent (format)
+import Data.List (sort)
 
 data Package = Package Int Int Int
 data Face = Face Int Int
 
 main :: IO ()
 main =
-  do packages <- loadInput
-     print (sum (part1 <$> packages))
-     print (sum (part2 <$> packages))
-
-loadInput :: IO [Package]
-loadInput = map parseLine . lines <$> readFile "input2.txt"
-
-parseLine :: String -> Package
-parseLine str =
-  case traverse readMaybe (splitOn "x" str) of
-    Just [x,y,z] -> Package x y z
-    _            -> error ("bad line: " ++ str)
+ do input <- [format|2 (%ux%ux%u%n)*|]
+    let packages = [Package x y z | (x,y,z) <- input]   
+    print (sum (part1 <$> packages))
+    print (sum (part2 <$> packages))
 
 part1 :: Package -> Int
 part1 p = surfaceArea p + area (smallestFace p)
