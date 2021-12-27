@@ -1,11 +1,12 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE ImportQualifiedPost, DeriveFunctor #-}
 module Main where
 
-import Data.Bits
+import Advent (getInputLines)
+import Data.Bits (Bits(shiftL, complement, (.&.), (.|.), shiftR))
 import Data.Map (Map)
-import Data.Word
+import Data.Map qualified as Map
+import Data.Word (Word16)
 import Text.Read (readMaybe)
-import qualified Data.Map as Map
 
 data Gate a = Gate1 Op1 a | Gate2 Op2 a a deriving Functor
 data Op1 = Not | Id
@@ -13,15 +14,12 @@ data Op2 = And | Or | LShift | RShift
 
 main :: IO ()
 main =
-  do circuit1 <- loadInput
-     let answer1 = findAnswer circuit1
-     print answer1
+ do circuit1 <- parseLines <$> getInputLines 7
+    let answer1 = findAnswer circuit1
+    print answer1
 
-     let circuit2 = Map.insert "b" (Gate1 Id (show answer1)) circuit1
-     print (findAnswer circuit2)
-
-loadInput :: IO (Map String (Gate String))
-loadInput = parseLines <$> readFile "input7.txt"
+    let circuit2 = Map.insert "b" (Gate1 Id (show answer1)) circuit1
+    print (findAnswer circuit2)
 
 -- | Build a circuit and compute output 'a'
 findAnswer :: Map String (Gate String) -> Word16
@@ -44,8 +42,8 @@ evalGate (Gate2 Or     x y) = x .|. y
 evalGate (Gate2 RShift x y) = x `shiftR` fromIntegral y
 evalGate (Gate2 LShift x y) = x `shiftL` fromIntegral y
 
-parseLines :: String -> Map String (Gate String)
-parseLines = Map.fromList . map parseLine . lines
+parseLines :: [String] -> Map String (Gate String)
+parseLines = Map.fromList . map parseLine
 
 -- | Parse a line describing a gate in the circuit.
 parseLine :: String -> (String, Gate String)

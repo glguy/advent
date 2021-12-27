@@ -1,13 +1,12 @@
 module Main where
 
+import Advent.Input (getInputLines)
+
 main :: IO ()
 main =
-  do ws <- loadInput
+  do ws <- getInputLines 8
      print (sum (part1 <$> ws))
      print (sum (part2 <$> ws))
-
-loadInput :: IO [String]
-loadInput = lines <$> readFile "input8.txt"
 
 part1 :: String -> Int
 part1 str = 2 + sum (aux (init (tail str)))
