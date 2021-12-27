@@ -1,5 +1,6 @@
 module Main where
 
+import Advent ( getInputLines )
 import Control.Monad                 (replicateM)
 import Data.Binary.Get               (runGet, getWord32le)
 import Data.Bits                     ((.|.), (.&.), complement, rotateL, xor)
@@ -16,7 +17,7 @@ import qualified Data.Vector as Vector
 
 main :: IO ()
 main =
-  do [key] <- words <$> readFile "input4.txt"
+  do [key] <- getInputLines 4
      print (solve key 5)
      print (solve key 6)
 
