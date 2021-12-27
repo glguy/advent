@@ -1,0 +1,879 @@
+cabal-version:       3.6
+name:                solutions
+version:             0.1.0.0
+category:            None
+synopsis:            Advent of Code Solutions
+description:         These are my cleaned-up solutions to the Advent of Code
+                     programming game. <https://adventofcode.com>
+license:             ISC
+license-file:        LICENSE
+author:              Eric Mertens
+maintainer:          emertens@gmail.com
+copyright:           2021 Eric Mertens
+homepage:            https://github.com/glguy/advent2021
+bug-reports:         https://github.com/glguy/advent2021/issues
+build-type:          Simple
+data-files:          inputs/*.txt
+
+source-repository head
+  type: git
+  location: https://github.com/glguy/advent
+
+test-suite doctests
+  type:          exitcode-stdio-1.0
+  ghc-options:   -threaded
+  main-is:       doctests.hs
+
+  build-depends:
+    base,
+    doctest   ^>= 0.20,
+    directory ^>= 1.3,
+    filepath  ^>= 1.4,
+
+common day
+  hs-source-dirs:      src
+  build-depends:       advent, base
+  other-modules:       Dummy
+  default-language:    Haskell2010
+
+common intcode
+  import:              day
+  build-depends:       intcode ^>= 0.4,  
+
+-- 2015 ---------------------------------------------------------------
+
+executable sln_2015_01
+  import:              day
+  main-is:             2015/01.hs
+
+executable sln_2015_02
+  import:              day
+  main-is:             2015/02.hs
+  build-depends:       split
+
+executable sln_2015_03
+  import:              day
+  main-is:             2015/03.hs
+  build-depends:       containers
+
+executable sln_2015_04
+  import:              day
+  main-is:             2015/04.hs
+  build-depends:       vector, bytestring, binary
+
+executable sln_2015_05
+  import:              day
+  main-is:             2015/05.hs
+
+executable sln_2015_06
+  import:              day
+  main-is:             2015/06.hs
+  build-depends:       array
+
+executable sln_2015_07
+  import:              day
+  main-is:             2015/07.hs
+  build-depends:       containers, monad-loops
+
+executable sln_2015_08
+  import:              day
+  main-is:             2015/08.hs
+
+executable sln_2015_09
+  import:              day
+  main-is:             2015/09.hs
+  build-depends:       containers
+
+executable sln_2015_10
+  import:              day
+  main-is:             2015/10.hs
+
+executable sln_2015_11
+  import:              day
+  main-is:             2015/11.hs
+
+executable sln_2015_12
+  import:              day
+  main-is:             2015/12.hs
+  build-depends:       bytestring, scientific, aeson
+
+executable sln_2015_13
+  import:              day
+  main-is:             2015/13.hs
+  build-depends:       containers
+
+executable sln_2015_14
+  import:              day
+  main-is:             2015/14.hs
+
+executable sln_2015_15
+  import:              day
+  main-is:             2015/15.hs
+
+executable sln_2015_16
+  import:              day
+  main-is:             2015/16.hs
+
+executable sln_2015_17
+  import:              day
+  main-is:             2015/17.hs
+  build-depends:       array
+
+executable sln_2015_18
+  import:              day
+  main-is:             2015/18.hs
+  build-depends:       array
+
+executable sln_2015_19
+  import:              day
+  main-is:             2015/19.hs
+  build-depends:       containers, array
+
+executable sln_2015_20
+  import:              day
+  main-is:             2015/20.hs
+  build-depends:       array, transformers, loops
+
+executable sln_2015_21
+  import:              day
+  main-is:             2015/21.hs
+
+executable sln_2015_22
+  import:              day
+  main-is:             2015/22.hs
+  build-depends:       containers
+
+--executable sln_2015_23
+--  import:              day
+--  hs-source-dirs:      src/2015
+--  main-is:             2015/23.hs
+--  build-depends:       template-haskell, array
+
+executable sln_2015_24
+  import:              day
+  main-is:             2015/24.hs
+
+executable sln_2015_25
+  import:              day
+  main-is:             2015/25.hs
+
+-- 2016 ---------------------------------------------------------------
+
+executable sln_2016_01
+  import:              day
+  main-is:             2016/01.hs
+  build-depends:       containers
+
+executable sln_2016_02
+  import:              day
+  main-is:             2016/02.hs
+  build-depends:       array
+
+executable sln_2016_03
+  import:              day
+  main-is:             2016/03.hs
+
+executable sln_2016_04
+  import:              day
+  main-is:             2016/04.hs
+  build-depends:       containers
+
+executable sln_2016_05
+  import:              day
+  main-is:             2016/05.hs
+  build-depends:       containers, cryptohash-md5, bytestring
+
+executable sln_2016_06
+  import:              day
+  main-is:             2016/06.hs
+  build-depends:       containers
+
+executable sln_2016_07
+  import:              day
+  main-is:             2016/07.hs
+
+executable sln_2016_08
+  import:              day
+  main-is:             2016/08.hs
+  build-depends:       array
+
+executable sln_2016_09
+  import:              day
+  main-is:             2016/09.hs
+
+executable sln_2016_10
+  import:              day
+  main-is:             2016/10.hs
+  build-depends:       containers
+
+executable sln_2016_11
+  import:              day
+  main-is:             2016/11.hs
+  build-depends:       lens
+
+executable sln_2016_12
+  import:              day
+  main-is:             2016/12.hs
+  build-depends:       containers, vector, lens
+
+executable sln_2016_13
+  import:              day
+  main-is:             2016/13.hs
+
+executable sln_2016_14
+  import:              day
+  main-is:             2016/14.hs
+  build-depends:       bytestring, cryptohash-md5
+
+executable sln_2016_15
+  import:              day
+  main-is:             2016/15.hs
+
+executable sln_2016_16
+  import:              day
+  main-is:             2016/16.hs
+  build-depends:       vector
+
+executable sln_2016_17
+  import:              day
+  main-is:             2016/17.hs
+  build-depends:       bytestring, cryptohash-md5
+
+executable sln_2016_18
+  import:              day
+  main-is:             2016/18.hs
+
+executable sln_2016_19
+  import:              day
+  main-is:             2016/19.hs
+  build-depends:       containers
+
+executable sln_2016_20
+  import:              day
+  main-is:             2016/20.hs
+
+executable sln_2016_21
+  import:              day
+  main-is:             2016/21.hs
+
+executable sln_2016_22
+  import:              day
+  main-is:             2016/22.hs
+  build-depends:       array
+
+executable sln_2016_23
+  import:              day
+  main-is:             2016/23.hs
+  build-depends:       containers, vector, lens, transformers
+  buildable: False
+
+executable sln_2016_24
+  import:              day
+  main-is:             2016/24.hs
+  build-depends:       array, containers
+
+executable sln_2016_25
+  import:              day
+  main-is:             2016/25.hs
+  build-depends:       containers, vector, lens, transformers
+  buildable: False
+
+-- 2017 ---------------------------------------------------------------
+
+executable sln_2017_01
+  import:              day
+  main-is:             2017/01.hs
+
+executable sln_2017_02
+  import:              day
+  main-is:             2017/02.hs
+
+executable sln_2017_03
+  import:              day
+  main-is:             2017/03.hs
+  build-depends:       containers
+
+executable sln_2017_04
+  import:              day
+  main-is:             2017/04.hs
+
+executable sln_2017_05
+  import:              day
+  main-is:             2017/05.hs
+  build-depends:       vector
+
+executable sln_2017_06
+  import:              day
+  main-is:             2017/06.hs
+  build-depends:       vector, lens, containers
+
+executable sln_2017_07
+  import:              day
+  main-is:             2017/07.hs
+  build-depends:       containers
+
+executable sln_2017_08
+  import:              day
+  main-is:             2017/08.hs
+  build-depends:       containers, lens
+
+executable sln_2017_09
+  import:              day
+  main-is:             2017/09.hs
+  build-depends:       linear
+
+executable sln_2017_10
+  import:              day
+  main-is:             2017/10.hs
+  build-depends:       vector, split
+
+executable sln_2017_11
+  import:              day
+  main-is:             2017/11.hs
+
+executable sln_2017_12
+  import:              day
+  main-is:             2017/12.hs
+  build-depends:       fgl
+
+executable sln_2017_13
+  import:              day
+  main-is:             2017/13.hs
+
+executable sln_2017_14
+  import:              day
+  main-is:             2017/14.hs
+  build-depends:       vector, fgl, containers, split
+
+executable sln_2017_15
+  import:              day
+  main-is:             2017/15.hs
+
+executable sln_2017_16
+  import:              day
+  main-is:             2017/16.hs
+
+executable sln_2017_17
+  import:              day
+  main-is:             2017/17.hs
+  ghc-options:         -O2
+  build-depends:       containers
+
+executable sln_2017_18
+  import:              day
+  main-is:             2017/18.hs
+  build-depends:       containers, vector
+
+executable sln_2017_19
+  import:              day
+  main-is:             2017/19.hs
+  build-depends:       array
+
+executable sln_2017_20
+  import:              day
+  main-is:             2017/20.hs
+  build-depends:       containers, linear
+
+executable sln_2017_21
+  import:              day
+  main-is:             2017/21.hs
+  build-depends:       containers, split
+
+executable sln_2017_22
+  import:              day
+  main-is:             2017/22.hs
+  build-depends:       containers, lens
+
+executable sln_2017_23
+  import:              day
+  main-is:             2017/23.hs
+  build-depends:       containers, lens, vector
+
+executable sln_2017_24
+  import:              day
+  main-is:             2017/24.hs
+
+executable sln_2017_25
+  import:              day
+  main-is:             2017/25.hs
+  build-depends:       containers
+
+-- 2018 ---------------------------------------------------------------
+
+executable sln_2018_01
+  import:              day
+  main-is:             2018/01.hs
+  build-depends:       containers
+
+executable sln_2018_02
+  import:              day
+  main-is:             2018/02.hs
+  build-depends:       containers
+
+executable sln_2018_03
+  import:              day
+  main-is:             2018/03.hs
+  build-depends:       containers
+
+executable sln_2018_04
+  import:              day
+  main-is:             2018/04.hs
+  build-depends:       time, containers
+
+executable sln_2018_05
+  import:              day
+  main-is:             2018/05.hs
+
+executable sln_2018_06
+  import:              day
+  main-is:             2018/06.hs
+  build-depends:       containers
+
+executable sln_2018_07
+  import:              day
+  main-is:             2018/07.hs
+  build-depends:       containers
+
+executable sln_2018_08
+  import:              day
+  main-is:             2018/08.hs
+  build-depends:       yoctoparsec ^>= 0.1
+
+executable sln_2018_09
+  import:              day
+  main-is:             2018/09.hs
+  build-depends:       containers
+
+executable sln_2018_10
+  import:              day
+  main-is:             2018/10.hs
+
+executable sln_2018_11
+  import:              day
+  main-is:             2018/11.hs
+  build-depends:       array, loops
+
+executable sln_2018_12
+  import:              day
+  main-is:             2018/12.hs
+  build-depends:       vector
+
+executable sln_2018_13
+  import:              day
+  main-is:             2018/13.hs
+  build-depends:       array, containers
+
+executable sln_2018_14
+  import:              day
+  main-is:             2018/14.hs
+  build-depends:       containers
+
+executable sln_2018_15
+  import:              day
+  main-is:             2018/15.hs
+  build-depends:       array, containers
+
+executable sln_2018_16
+  import:              day
+  main-is:             2018/16.hs
+  build-depends:       containers, transformers
+
+executable sln_2018_17
+  import:              day
+  main-is:             2018/17.hs
+  build-depends:       array, containers
+
+executable sln_2018_18
+  import:              day
+  main-is:             2018/18.hs
+  build-depends:       array, containers
+
+executable sln_2018_19
+  import:              day
+  main-is:             2018/19.hs
+  build-depends:       vector, containers
+
+executable sln_2018_20
+  import:              day
+  main-is:             2018/20.hs
+  build-depends:       containers
+
+executable sln_2018_21
+  import:              day
+  main-is:             2018/21.hs
+  build-depends:       containers, vector
+
+executable sln_2018_22
+  import:              day
+  main-is:             2018/22.hs
+  build-depends:       array, containers
+
+executable sln_2018_23
+  import:              day
+  main-is:             2018/23.hs
+  build-depends:       containers
+
+executable sln_2018_24
+  import:              day
+  main-is:             2018/24.hs
+  build-depends:       containers
+
+executable sln_2018_25
+  import:              day
+  main-is:             2018/25.hs
+  build-depends:       fgl
+
+-- 2019 ---------------------------------------------------------------
+
+executable sln_2019_01
+  import:              day
+  main-is:             2019/01.hs
+
+executable sln_2019_02
+  import:              intcode
+  main-is:             2019/02.hs
+
+executable sln_2019_03
+  import:              day
+  main-is:             2019/03.hs
+  build-depends:       containers
+
+executable sln_2019_04
+  import:              day
+  main-is:             2019/04.hs
+
+executable sln_2019_05
+  import:              intcode
+  main-is:             2019/05.hs
+  build-depends:       containers
+
+executable sln_2019_06
+  import:              day
+  main-is:             2019/06.hs
+  build-depends:       containers
+
+executable sln_2019_07
+  import:              intcode
+  main-is:             2019/07.hs
+  build-depends:       containers
+
+executable sln_2019_08
+  import:              day
+  main-is:             2019/08.hs
+  build-depends:       containers
+
+executable sln_2019_09
+  import:              intcode
+  main-is:             2019/09.hs
+  build-depends:       containers
+
+executable sln_2019_10
+  import:              day
+  main-is:             2019/10.hs
+  build-depends:       containers
+
+executable sln_2019_11
+  import:              intcode
+  main-is:             2019/11.hs
+  build-depends:       containers
+
+executable sln_2019_12
+  import:              day
+  main-is:             2019/12.hs
+
+executable sln_2019_13
+  import:              intcode
+  main-is:             2019/13.hs
+  build-depends:       containers
+
+executable sln_2019_14
+  import:              day
+  main-is:             2019/14.hs
+  build-depends:       containers
+
+executable sln_2019_15
+  import:              intcode
+  main-is:             2019/15.hs
+  build-depends:       containers
+
+executable sln_2019_16
+  import:              day
+  main-is:             2019/16.hs
+  build-depends:       vector
+
+executable sln_2019_17
+  import:              intcode
+  main-is:             2019/17.hs
+  build-depends:       containers
+
+executable sln_2019_18
+  import:              day
+  main-is:             2019/18.hs
+  build-depends:       containers, array
+
+executable sln_2019_19
+  import:              intcode
+  main-is:             2019/19.hs
+
+executable sln_2019_20
+  import:              day
+  main-is:             2019/20.hs
+  build-depends:       containers, array
+
+executable sln_2019_21
+  import:              intcode
+  main-is:             2019/21.hs
+
+executable sln_2019_22
+  import:              day
+  main-is:             2019/22.hs
+  build-depends:       arithmoi
+
+executable sln_2019_23
+  import:              intcode
+  main-is:             2019/23.hs
+  build-depends:       containers
+
+executable sln_2019_24
+  import:              day
+  main-is:             2019/24.hs
+  build-depends:       containers
+
+executable sln_2019_25
+  import:              intcode
+  main-is:             2019/25.hs
+
+-- 2020 ---------------------------------------------------------------
+
+executable sln_2020_01
+  import:              day
+  main-is:             2020/01.hs
+
+executable sln_2020_02
+  import:              day
+  main-is:             2020/02.hs
+
+executable sln_2020_03
+  import:              day
+  main-is:             2020/03.hs
+  build-depends:       array
+
+executable sln_2020_04
+  import:              day
+  main-is:             2020/04.hs
+
+executable sln_2020_05
+  import:              day
+  main-is:             2020/05.hs
+
+executable sln_2020_06
+  import:              day
+  main-is:             2020/06.hs
+
+executable sln_2020_07
+  import:              day
+  main-is:             2020/07.hs
+  build-depends:       containers
+
+executable sln_2020_08
+  import:              day
+  main-is:             2020/08.hs
+  build-depends:       containers
+
+executable sln_2020_09
+  import:              day
+  main-is:             2020/09.hs
+  build-depends:       vector
+
+executable sln_2020_10
+  import:              day
+  main-is:             2020/10.hs
+
+executable sln_2020_11
+  import:              day
+  main-is:             2020/11.hs
+  build-depends:       array
+
+executable sln_2020_12
+  import:              day
+  main-is:             2020/12.hs
+
+executable sln_2020_13
+  import:              day
+  main-is:             2020/13.hs
+
+executable sln_2020_14
+  import:              day
+  main-is:             2020/14.hs
+  build-depends:       containers
+
+executable sln_2020_15
+  import:              day
+  main-is:             2020/15.hs
+  build-depends:       primitive
+  ghc-options:         -O2
+
+executable sln_2020_16
+  import:              day
+  main-is:             2020/16.hs
+  build-depends:       containers
+
+executable sln_2020_17
+  import:              day
+  main-is:             2020/17.hs
+  build-depends:       containers
+
+executable sln_2020_18
+  import:              day
+  main-is:             2020/18.hs
+
+executable sln_2020_19
+  import:              day
+  main-is:             2020/19.hs
+  build-depends:       containers
+
+executable sln_2020_20
+  import:              day
+  main-is:             2020/20.hs
+  build-depends:       containers, array
+
+executable sln_2020_21
+  import:              day
+  main-is:             2020/21.hs
+  build-depends:       containers
+
+executable sln_2020_22
+  import:              day
+  main-is:             2020/22.hs
+  build-depends:       containers, vector
+
+executable sln_2020_23
+  import:              day
+  main-is:             2020/23.hs
+  build-depends:       array
+
+executable sln_2020_24
+  import:              day
+  main-is:             2020/24.hs
+  build-depends:       containers
+
+executable sln_2020_25
+  import:              day
+  main-is:             2020/25.hs
+  build-depends:       arithmoi
+
+-- 2021 ---------------------------------------------------------------
+
+executable sln_2021_01
+  import:              day
+  main-is:             2021/01.hs
+
+executable sln_2021_02
+  import:              day
+  main-is:             2021/02.hs
+
+executable sln_2021_03
+  import:              day
+  main-is:             2021/03.hs
+
+executable sln_2021_04
+  import:              day
+  main-is:             2021/04.hs
+
+executable sln_2021_05
+  import:              day
+  main-is:             2021/05.hs
+
+executable sln_2021_06
+  import:              day
+  main-is:             2021/06.hs
+  build-depends:       containers
+
+executable sln_2021_07
+  import:              day
+  main-is:             2021/07.hs
+
+executable sln_2021_08
+  import:              day
+  main-is:             2021/08.hs
+  build-depends:       containers
+
+executable sln_2021_09
+  import:              day
+  main-is:             2021/09.hs
+  build-depends:       array
+
+executable sln_2021_10
+  import:              day
+  main-is:             2021/10.hs
+
+executable sln_2021_11
+  import:              day
+  main-is:             2021/11.hs
+  build-depends:       containers
+
+executable sln_2021_12
+  import:              day
+  main-is:             2021/12.hs
+  build-depends:       containers
+
+executable sln_2021_13
+  import:              day
+  main-is:             2021/13.hs
+  build-depends:       containers
+
+executable sln_2021_14
+  import:              day
+  main-is:             2021/14.hs
+  build-depends:       containers
+
+executable sln_2021_15
+  import:              day
+  main-is:             2021/15.hs
+  build-depends:       array
+
+executable sln_2021_16
+  import:              day
+  main-is:             2021/16.hs
+
+executable sln_2021_17
+  import:              day
+  main-is:             2021/17.hs
+
+executable sln_2021_18
+  import:              day
+  main-is:             2021/18.hs
+
+executable sln_2021_19
+  import:              day
+  main-is:             2021/19.hs
+  build-depends:       containers
+
+executable sln_2021_20
+  import:              day
+  main-is:             2021/20.hs
+  build-depends:       containers
+
+executable sln_2021_21
+  import:              day
+  main-is:             2021/21.hs
+  build-depends:       containers, transformers
+
+executable sln_2021_22
+  import:              day
+  main-is:             2021/22.hs
+  build-depends:       transformers
+
+executable sln_2021_23
+  import:              day
+  main-is:             2021/23.hs
+  build-depends:       containers
+
+executable sln_2021_24
+  import:              day
+  main-is:             2021/24.hs
+
+executable sln_2021_25
+  import:              day
+  main-is:             2021/25.hs
+  build-depends:       containers

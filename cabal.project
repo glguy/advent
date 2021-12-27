@@ -1,0 +1,4 @@
+packages:
+  common/advent.cabal
+  solutions/solutions.cabal
+  intcode/intcode.cabal
