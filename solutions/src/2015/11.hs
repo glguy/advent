@@ -1,10 +1,11 @@
 module Main where
 
-import Data.List
+import Advent.Input (getInputLines)
+import Data.List (tails)
 
 main :: IO ()
 main =
-  do key <- loadInput
+  do [key] <- getInputLines 11
      mapM_ putStrLn (take 2 (solutions key))
 
 -- | Compute the list of valid passwords starting from a given one.
@@ -34,10 +35,6 @@ hasDesc = any aux . tails
   where
   aux (x:y:z:_) = x == succ y && y == succ z
   aux _         = False
-
--- | Load starting password from input file
-loadInput :: IO String
-loadInput = head . words <$> readFile "input11.txt"
 
 -- | Test that a character is not in the set of @"iol"@
 isGoodLetter :: Char -> Bool

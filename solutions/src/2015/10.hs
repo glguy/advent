@@ -1,15 +1,14 @@
 module Main where
 
-import Data.List
+import Advent.Input (getInputLines)
+import Data.List (group)
 
 main :: IO ()
 main =
-  do steps <- iterate lookAndSay <$> loadInput
+  do [start] <- getInputLines 10
+     let steps = iterate lookAndSay start
      print (length (steps !! 40))
      print (length (steps !! 50))
-
-loadInput :: IO String
-loadInput = head . words <$> readFile "input10.txt"
 
 lookAndSay :: String -> String
 lookAndSay = foldr aux [] . group

@@ -63,4 +63,4 @@ action mapCard st = \case
   Right (TR,A270) -> mapVect turnLeft           st
 
 move :: Int -> Coord -> Coord -> Coord
-move n v = addCoord (scaleCoord n v)
+move n v d = scaleCoord n v + d

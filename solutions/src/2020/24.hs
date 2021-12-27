@@ -12,7 +12,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (counts, times)
-import Advent.Coord (Coord, addCoord, above, below, left, right, origin)
+import Advent.Coord (Coord, above, below, left, right, origin)
 import Advent.Format (format)
 import Data.Foldable (foldl')
 import Data.Map (Map)
@@ -42,7 +42,7 @@ step board
   = Map.keysSet
   $ Map.filterWithKey rule
   $ Map.unionsWith (+)
-    [Map.mapKeysMonotonic (addCoord c) neighborhood
+    [Map.mapKeysMonotonic (c +) neighborhood
     | c <- Set.toList board]
   where
     rule k v = v == 2 || v == 1 && Set.member k board

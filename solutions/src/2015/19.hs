@@ -1,29 +1,32 @@
+{-# Language QuasiQuotes, ImportQualifiedPost #-}
 module Main (main) where
 
-import Data.Array
-import Data.Char
-import Data.Map ( Map )
-import Data.Maybe
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import Advent (minimumMaybe, counts, format)
+import Data.Array (Ix(range), Array, (!), array, bounds, listArray)
+import Data.Char (isLower)
+import Data.List (groupBy, inits, tails)
+import Data.Map (Map)
+import Data.Map.Strict qualified as Map
+import Data.Maybe (mapMaybe, maybeToList)
+import Data.Set qualified as Set
 
 newtype Atom = Atom String
   deriving (Eq,Ord)
 
 main :: IO ()
 main =
-  do (rules, input) <- loadInput
+  do (rules_, input_) <- [format|19 (%s => %s%n)*%n%s%n|]
+     let rules = Map.fromListWith (++) [(Atom a, [parseMolecule b]) | (a,b) <- rules_]
+     let input = parseMolecule input_
+     print (length (counts (oneStep rules input)))
      print (minRulesNeeded rules input (Atom "e"))
 
-loadInput :: IO ( Map Atom [[Atom]], [Atom] )
-loadInput =
-  do xs <- lines <$> readFile "input19.txt"
-     return $! case break null xs of
-       (rules, ["", initial]) -> (toMap (parseRule <$> rules), parseMolecule initial)
-       _ -> error "Bad input"
-
-toMap :: Ord k => [(k,v)] -> Map k [v]
-toMap = Map.fromListWith (++) . map (fmap pure)
+oneStep :: Ord a => Map a [[a]] -> [a] -> [[a]]
+oneStep rules input =
+  [ xs ++ z ++ ys
+    | (xs,y:ys) <- zip (inits input) (tails input)
+    , z <- Map.findWithDefault [] y rules
+  ]
 
 -- | Add empty elements to the map so that every @a@ that occurs in
 -- the values of the map also occurs in the keys.
@@ -46,11 +49,7 @@ parseRule str =
 -- > parseMolecule "AbCdEF"
 -- [Atom "Ab", Atom "Cd", Atom "E", Atom "F"]
 parseMolecule :: String -> [Atom]
-parseMolecule str =
-  case str of
-    ""  -> []
-    x:xs -> case break isUpper xs of
-              (y,ys) -> Atom (x:y) : parseMolecule ys
+parseMolecule = map Atom . groupBy (\_ y -> isLower y)
 
 -- | Given a map of rewrite rules rewriting the keys to any of the
 -- alternatives, return the minimum number of rewrites needed to rewrite
@@ -97,7 +96,7 @@ minRulesNeededInt rules input = cost inputLo inputHi
   cost' (start,end,ruleIx)
     | start == end, input ! start == ruleIx = Just 0
     | otherwise = fmap succ
-                $ minimum'
+                $ minimumMaybe
                 $ mapMaybe (nonTerm start end)
                 $ rules ! ruleIx
 
@@ -105,7 +104,7 @@ minRulesNeededInt rules input = cost inputLo inputHi
     case rhs of
      []   -> Nothing
      [x]  -> cost start end x
-     x:xs -> minimum'
+     x:xs -> minimumMaybe
                [ cost1 + cost2
                | mid   <- [start .. end - length xs]
                , cost1 <- maybeToList (cost start mid x)
@@ -115,8 +114,3 @@ minRulesNeededInt rules input = cost inputLo inputHi
 -- | Generate an array given the bounds an a function from indexes to elements.
 generate :: Ix i => (i,i) -> (i -> e) -> Array i e
 generate bnd f = array bnd [ (i, f i) | i <- range bnd ]
-         
--- | Returns the minimum element of a list unless the list is empty.
-minimum' :: Ord a => [a] -> Maybe a
-minimum' [] = Nothing
-minimum' xs = Just $! minimum xs

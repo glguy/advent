@@ -1,50 +1,35 @@
 module Main where
 
-import Data.Array.Unboxed
+import Advent (countBy, arrIx, times, getInputArray)
+import Advent.Coord (Coord(C), neighbors)
+import Data.Array.Unboxed (Ix(range), IArray(bounds), UArray, (!), amap, array, elems)
 
-type Lights = UArray (Int,Int) Bool
+type Lights = UArray Coord Bool
 
 main :: IO ()
 main =
-  do input <- loadInput
-     let steps = 100
-     print $ countLights $ iterate (applyRule life) input !! steps
-     print $ countLights $ iterate (applyRule (addCorners life)) input !! steps
+  do input <- amap ('#'==) <$> getInputArray 18
+     print $ countLights $ times 100 (applyRule life) input
+     print $ countLights $ times 100 (applyRule (addCorners life)) input
 
 countLights :: Lights -> Int
-countLights = length . filter id . elems
+countLights = countBy id . elems                  
 
-loadInput :: IO Lights
-loadInput =
-  do str <- readFile "input18.txt"
-     let lights = map (map (=='#')) (lines str)
-     return $! case lights of
-       []  -> array ((1,1),(0,0)) []
-       x:_ -> array ((1,1),(length lights, length x))
-                [ ((r,c), col)
-                  | (r,row) <- zip [1..] lights
-                  , (c,col) <- zip [1..] row ]
-
-type Rule = Lights -> (Int,Int) -> Bool
+type Rule = Lights -> Coord -> Bool
 
 applyRule :: Rule -> Lights -> Lights
-applyRule f a = array (bounds a) [ (i, f a i) | i <- range (bounds a) ]
+applyRule f a = array (bounds a) [(i, f a i) | i <- range (bounds a)] 
 
 life :: Rule
-life a i@(x,y) = neighbors == 3 ||
-                 neighbors == 2 && a!i
+life a c = n == 3 ||
+           n == 2 && a!c
   where
-  neighbors = length [ () | x' <- [x-1..x+1], y' <- [y-1..y+1]
-                          , let i' = (x',y')
-                          , i /= i'
-                          , inRange (bounds a) i'
-                          , a ! i'
-                          ]
+    n = countBy (\x -> arrIx a x == Just True) (neighbors c)
 
 addCorners :: Rule -> Rule
-addCorners f a i@(x,y)
+addCorners f a i@(C y x)
   | x == xlo || x == xhi
   , y == ylo || y == yhi = True
   | otherwise            = f a i
   where
-  ((xlo,ylo),(xhi,yhi)) = bounds a
+    (C ylo xlo, C yhi xhi) = bounds a

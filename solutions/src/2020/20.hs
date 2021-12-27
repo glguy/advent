@@ -32,7 +32,7 @@ snek =
 
 -- | Rotate an image 90 degrees clockwise
 rotate :: Picture -> Picture
-rotate xs = map (addCoord (C 0 n) . turnRight) xs
+rotate xs = map ((C 0 n +) . turnRight) xs
   where
     n = maximum (map coordRow xs)
 
@@ -90,7 +90,7 @@ main =
              [ ()
              | s <- reorient snek
              , d <- A.indices pixels
-             , all (\x -> arrIx pixels (addCoord x d) == Just True) s
+             , all (\x -> arrIx pixels (x + d) == Just True) s
              ]
 
      -- cut all the snakes out of the picture

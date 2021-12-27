@@ -1,16 +1,18 @@
+{-# Language QuasiQuotes #-}
 module Main where
 
-import Data.List
+import Advent.Format (format)
+import Data.List (transpose)
 
 main :: IO ()
 main =
-  do input <- loadInput
+ do input <- [format|15 (%s: (%s %ld)&(, )%n)*|]
+    let stats = map (map snd . snd) input
+        n = fromIntegral (length input)
+        possibilities = computeStats stats <$> divisions n 100
 
-     let n = fromIntegral (length input)
-         possibilities = computeStats input <$> divisions n 100
-
-     print (maximum (map score possibilities))
-     print (maximum [score meal | meal <- possibilities, last meal == 500])
+    print (maximum (map score possibilities))
+    print (maximum [score meal | meal <- possibilities, last meal == 500])
 
 score ::
   [Integer] {- ^ properties list, calories are last -} ->
@@ -36,12 +38,6 @@ divisions cnt n =
      xs <- divisions (cnt - 1) (n-x)
      return (x:xs)
 
-parseLine :: String -> [Integer]
-parseLine = map read . everyOther . drop 1 . words . filter (/=',')
-
 everyOther :: [a] -> [a]
 everyOther (_:x:xs) = x : everyOther xs
 everyOther _        = []
-
-loadInput :: IO [[Integer]]
-loadInput = map parseLine . lines <$> readFile "input15.txt"

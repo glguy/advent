@@ -51,7 +51,7 @@ lineOfSight a = A.listArray b [mapMaybe (look i) (neighbors origin) | i <- A.ran
   where
     b = A.bounds a
     look i d =
-      do let j = addCoord i d
+      do let j = i + d
          v <- arrIx a j
          case v of
            '.' -> look j d

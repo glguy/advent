@@ -1,11 +1,12 @@
 module Main where
 
-import Data.List
-import Data.Ord
+import Data.List ( maximumBy, minimumBy )
+import Data.Ord ( comparing )
 
 data Item = Item { itemName :: String, itemCost, itemDamage, itemArmor :: Int }
   deriving (Show, Read)
 
+main :: IO ()
 main =
   do print $ minimumBy (comparing itemCost)
            $ filter fight
@@ -63,10 +64,12 @@ gearOptions =
      ring   <- chooseUpTo 2 rings
      return (foldl1 combine (weapon : armor : ring))
 
+chooseUpTo :: Int -> [a] -> [[a]]
 chooseUpTo 0 _ = [[]]
 chooseUpTo _ [] = [[]]
 chooseUpTo n (x:xs) = map (x:) (chooseUpTo (n-1) xs) ++ chooseUpTo n xs
 
+fight :: Item -> Bool
 fight gear = outcome 100 (max 1 (8 - itemArmor gear)) 104 (max 1 (itemDamage gear - 1))
 
 outcome ::

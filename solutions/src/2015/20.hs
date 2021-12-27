@@ -1,10 +1,10 @@
 module Main where
 
-import Control.Monad.Loop
-import Control.Monad.Trans.Class
+import Control.Monad.Loop ( for, exec_ )
+import Control.Monad.Trans.Class ( MonadTrans(lift) )
 import Data.Array.ST
-import Data.Array.Unboxed
-import Data.List
+import Data.Array.Unboxed ( UArray, assocs )
+import Data.List ( find )
 
 main :: IO ()
 main =

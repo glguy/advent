@@ -23,7 +23,7 @@ module Advent.Coord where
 import Data.Foldable (toList)
 import Data.Map (Map)
 import Data.Map qualified as Map
-import Data.MemoTrie
+import Data.MemoTrie (HasTrie(..))
 import GHC.Generics (Generic)
 import GHC.Ix (Ix(unsafeIndex, range, index, inRange, unsafeRangeSize), indexError)
 
@@ -154,13 +154,9 @@ south = C 1 0
 west :: Coord
 west = C 0 (-1)
 
--- | Add two coordinates as vectors from the origin
-addCoord :: Coord -> Coord -> Coord
-addCoord (C y x) (C v u) = C (y+v) (x+u)
-
 -- | Scale a coordinate as a vector from the origin
 scaleCoord :: Int -> Coord -> Coord
-scaleCoord n (C x y) = C (x*n) (y*n)
+scaleCoord n = mapCoord (n *)
 
 -- | Render a minimal bounding box containing all the characters
 -- at the given coordinates. Empty space filled with space characters.

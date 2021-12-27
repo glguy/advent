@@ -116,7 +116,6 @@ executable sln_2015_16
 executable sln_2015_17
   import:              day
   main-is:             2015/17.hs
-  build-depends:       array
 
 executable sln_2015_18
   import:              day
@@ -140,7 +139,6 @@ executable sln_2015_21
 executable sln_2015_22
   import:              day
   main-is:             2015/22.hs
-  build-depends:       containers
 
 executable sln_2015_23
   import:              day

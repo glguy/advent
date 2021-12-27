@@ -1,10 +1,10 @@
+{-# Language QuasiQuotes #-}
 module Main where
 
-import Data.List
-import Data.Maybe
-import Data.Monoid
-import Data.Ord
-import Data.Foldable
+import Advent.Format ( format )
+import Data.List ( sortBy, sort )
+import Data.Maybe ( listToMaybe )
+import Data.Ord ( comparing )
 
 data Packages = Packages { pkgSum, pkgCount, pkgProduct :: !Int }
   deriving (Eq, Show)
@@ -25,9 +25,6 @@ addPackage p pkgs = Packages
 
 instance Ord Packages where
   compare = comparing pkgCount <> comparing pkgProduct <> comparing pkgSum
-
-loadInput :: IO [Int]
-loadInput = map read . lines <$> readFile "input24.txt"
 
 search :: Int -> [Int] -> Maybe Int
 search n ps0 = listToMaybe $
@@ -54,6 +51,6 @@ search n ps0 = listToMaybe $
 
 main :: IO ()
 main =
-  do input <- loadInput
+  do input <- [format|24 (%u%n)*|]
      print (search 3 input)
      print (search 4 input)

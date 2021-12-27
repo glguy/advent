@@ -92,5 +92,5 @@ distances steps = Map.fromListWith min (zip (generatePath steps) [1..])
 -- [(0,1),(0,2),(1,2)]
 generatePath :: [(D,Int)] -> [Coord]
 generatePath
-  = scanl1 addCoord
+  = scanl1 (+)
   . concatMap (\(d,n) -> replicate n (toUnitVector d))

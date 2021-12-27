@@ -1,6 +1,8 @@
+{-# Language QuasiQuotes, RecordWildCards #-}
 module Main where
 
-import Data.List
+import Advent.Format (format)
+import Data.List (transpose)
 
 data Reindeer = Reindeer
   { speed     :: Int   -- ^ units of distance flown per second
@@ -10,23 +12,11 @@ data Reindeer = Reindeer
 
 main :: IO ()
 main =
-  do rs <- loadInput
-     let race = map (take 2503 . positions) rs
-     print (maximum (map last race))
-     print (maximum (scores race))
-
-loadInput :: IO [Reindeer]
-loadInput = map parseLine . lines <$> readFile "input14.txt"
-
-parseLine :: String -> Reindeer
-parseLine str =
-  case words str of
-    [_, _, _, n, _, _, m, _, _, _, _, _, _, o, _] ->
-       Reindeer { speed     = read n
-                , stamina   = read m
-                , breaktime = read o
-                }
-    _ -> error str
+ do input <- [format|14 (%s can fly %u km/s for %u seconds, but then must rest for %u seconds.%n)*|]
+    let rs = [Reindeer{..} | (_, speed, stamina, breaktime) <- input]    
+    let race = map (take 2503 . positions) rs
+    print (maximum (map last race))
+    print (maximum (scores race))
 
 -- | Compute the position of each reindeer at each second of the race
 positions :: Reindeer -> [Int]
@@ -52,5 +42,4 @@ awardPoints posns = [ if p == best then 1 else 0 | p <- posns ]
 -- > paritalSums [1..5]
 -- [1,3,6,10,15]
 partialSums :: Num a => [a] -> [a]
-partialSums [] = []
-partialSums xs = scanl1 (+) xs
+partialSums = scanl1 (+)
