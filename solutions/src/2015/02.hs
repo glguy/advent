@@ -1,4 +1,16 @@
 {-# Language QuasiQuotes #-}
+{-|
+Module      : Main
+Description : Day 2 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/2>
+
+Computes volumes and surface areas of boxes.
+
+-}
 module Main where
 
 import Advent (format)

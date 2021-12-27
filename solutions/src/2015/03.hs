@@ -1,4 +1,16 @@
 {-# Language ImportQualifiedPost, QuasiQuotes #-}
+{-|
+Module      : Main
+Description : Day 3 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/3>
+
+Follow up, down, left, right instructions to build a path.
+
+-}
 module Main where
 
 import Advent (chunks, format, counts)
