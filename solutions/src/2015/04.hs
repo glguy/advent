@@ -1,14 +1,25 @@
+{-|
+Module      : Main
+Description : Day 4 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/4>
+
+Compute the MD5 hashes of things.
+
+-}
 module Main where
 
-import Advent ( getInputLines )
+import Advent (getInputLines)
 import Control.Monad                 (replicateM)
 import Data.Binary.Get               (runGet, getWord32le)
 import Data.Bits                     ((.|.), (.&.), complement, rotateL, xor)
 import Data.ByteString.Builder       (Builder, toLazyByteString, lazyByteString, word8, word32LE, word64LE)
 import Data.ByteString.Builder.Extra (untrimmedStrategy, toLazyByteStringWith)
 import Data.Int                      (Int64)
-import Data.List                     (find, foldl', zipWith3)
-import Data.Monoid                   ((<>))
+import Data.List                     (find, foldl')
 import Data.Vector                   (Vector)
 import Data.Word                     (Word32)
 import qualified Data.ByteString.Lazy as L
@@ -97,7 +108,7 @@ addBlock st m
   $ applyRounds m1 rs1
   $ st
   where
-  applyRounds mix rs st = foldl' (doRound m mix) st rs
+  applyRounds mix rs st_ = foldl' (doRound m mix) st_ rs
 
   m1 b c d = d `xor` (b .&. (c `xor` d))
   m2 b c d = c `xor` (d .&. (b `xor` c))
