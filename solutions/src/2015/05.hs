@@ -1,4 +1,16 @@
 {-# Language BlockArguments, LambdaCase #-}
+{-|
+Module      : Main
+Description : Day 5 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/5>
+
+Password validation problems.
+
+-}
 module Main where
 
 import Advent (getInputLines, countBy)
