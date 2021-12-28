@@ -16,9 +16,7 @@ module Main (main) where
 import Advent (countBy, format, fromDigits)
 import Data.Bits (Bits(setBit))
 import Data.Char (ord)
-import Data.IntMap (IntMap)
-import Data.IntMap qualified as IntMapInt
-import Data.List (permutations, sort, foldl')
+import Data.List (permutations, foldl')
 import Data.Map (Map)
 import Data.Map qualified as Map
 

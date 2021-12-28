@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ViewPatterns #-}
+{-# Language BlockArguments, ViewPatterns, TypeFamilies #-}
 {-|
 Module      : Advent.ReadS
 Description : Newtype for parsing with ReadS
@@ -11,8 +11,10 @@ Make it easier to use ReadS.
 -}
 module Advent.ReadS where
 
-import Control.Applicative ( Alternative((<|>), empty) )
+import Control.Applicative ( Alternative((<|>), empty), many )
 import Control.Monad ( ap, liftM )
+import Data.Functor (void)
+import Data.String
 
 -- | Wrapper for 'ReadS'
 newtype P a = P (ReadS a)
@@ -42,3 +44,20 @@ instance Alternative P where
 
 instance MonadFail P where
     fail _ = empty
+
+instance a ~ String => IsString (P a) where
+    fromString = tok
+
+-- * Combinators
+
+sepBy1 :: P a -> P b -> P [a]
+sepBy1 p q = (:) <$> p <*> many (q *> p)
+
+sepBy :: P a -> P b -> P [a]
+sepBy p q = pure [] <|> sepBy1 p q
+
+between :: P a -> P b -> P c -> P c
+between p q x = p *> x <* q
+
+eof :: P ()
+eof = void (tok "")

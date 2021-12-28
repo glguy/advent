@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ViewPatterns, LambdaCase #-}
+{-# Language OverloadedStrings, BlockArguments, ViewPatterns, LambdaCase #-}
 {-|
 Module      : Main
 Description : Day 18 solution
@@ -16,18 +16,17 @@ of elements of our tree.
 -}
 module Main (main) where
 
-import Advent (getInputLines)
+import Advent.Input (getInputLines)
+import Advent.ReadS (P(..), runP)
 import Control.Applicative ((<|>))
-import Data.Char (isDigit)
 import Data.List (tails)
-import Text.ParserCombinators.ReadP (ReadP, char, munch1, readP_to_S)
 
 -- | >>> :main
 -- 3551
 -- 4555
 main :: IO ()
 main =
- do inp <- map parse <$> getInputLines 18
+ do inp <- map (runP (pTree (P reads))) <$> getInputLines 18
     print (magnitude (foldl1 add inp))
     print (maximum [magnitude (add x y) `max` magnitude (add y x)
                    | x:ys <- tails inp, y <- ys])
@@ -122,21 +121,8 @@ appR f (Leaf x) = Leaf (f x)
 
 -- * Parsing
 
--- | Parse an expression
---
--- >>> parse "[[[[0,9],2],3],4]"
--- (((Leaf 0 :+: Leaf 9) :+: Leaf 2) :+: Leaf 3) :+: Leaf 4
-parse :: String -> Tree Int
-parse (readP_to_S (pTree pInt) -> [(x,_)]) = x
-parse _ = error "bad input"
-
--- | Unsigned 'Int' parser
-pInt :: ReadP Int
-pInt = read <$> munch1 isDigit
-
--- | ReadP expression parser
-pTree :: ReadP a -> ReadP (Tree a)
-pTree pLeaf = tuple <|> number
-  where
-    tuple = (:+:) <$ char '[' <*> pTree pLeaf <* char ',' <*> pTree pLeaf <* char ']'
-    number = Leaf <$> pLeaf
+-- | Tree parser from a leaf parser
+pTree :: P a {- ^ leaf parser -} -> P (Tree a)
+pTree pLeaf =
+  Leaf <$> pLeaf <|>
+  (:+:) <$ "[" <*> pTree pLeaf <* "," <*> pTree pLeaf <* "]"

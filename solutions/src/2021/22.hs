@@ -16,7 +16,7 @@ unique to the current command will affect the final output.
 module Main (main) where
 
 import Advent.Format (format)
-import Control.Monad.Trans.Writer.CPS (runWriterT, writerT, WriterT)
+import Control.Monad.Trans.Writer.CPS (runWriterT, writerT)
 import Data.Kind (Type)
 import Data.Maybe (isNothing, mapMaybe)
 import Data.Monoid (All(All))

@@ -15,7 +15,7 @@ so that we can represent updates to infinite space.
 -}
 module Main (main) where
 
-import Advent (getInputLines, fromDigits, times)
+import Advent (getInputLines, fromDigits)
 import Advent.Coord(Coord(..), coordLines)
 import Data.IntSet (IntSet)
 import Data.IntSet qualified as IntSet

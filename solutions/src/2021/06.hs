@@ -18,8 +18,6 @@ module Main (main) where
 import Advent (counts, format, power)
 import Data.Map (Map)
 import Data.Map qualified as Map
-import Data.Functor ((<&>))
-import Data.Functor.Identity
 
 -- | >>> :main
 -- 376194

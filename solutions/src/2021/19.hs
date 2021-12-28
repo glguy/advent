@@ -55,7 +55,7 @@ assemble ::
   [(Coord3, Set Coord3)] {- ^ recently correlated scanners -} ->
   [(Coord3, Set Coord3)] {- ^ completed correlated locations and readings -}
 assemble _ [] = []
-assemble remains (c@(offset,reference):cs) = c : assemble remain' (new ++ cs)
+assemble remains (c@(_,reference):cs) = c : assemble remain' (new ++ cs)
   where
     (new,remain') = partitionEithers
       [ maybe (Right remain) Left (match reference remain)

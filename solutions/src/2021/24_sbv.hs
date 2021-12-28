@@ -28,16 +28,16 @@ import Data.SBV
 main :: IO ()
 main =
  do pgm <- map (runP pOp) <$> getInputLines 24
-    let go opt = putStrLn . getAnswer =<< optimize Lexicographic (runProgram opt pgm)
-    go maximize
-    go minimize
+    print =<< findAnswer maximize pgm
+    print =<< findAnswer minimize pgm
 
--- | Extract a string of the requested input digits
-getAnswer :: OptimizeResult -> String
-getAnswer (LexicographicResult m) =
-    concatMap (show . fromJust) $
-    takeWhile isJust
-    [getModelValue ("in"++show i) m :: Maybe Int64 | i <- [1::Int ..]]
+findAnswer :: Opt -> [Op] -> IO String
+findAnswer opt pgm =
+ do LexicographicResult r <- optimize Lexicographic (runProgram opt pgm)
+    pure $
+      concatMap (show . fromJust) $
+      takeWhile isJust
+      [getModelValue ("in"++show i) r :: Maybe Int64 | i <- [1::Int ..]]
 
 -- * Programs
 
