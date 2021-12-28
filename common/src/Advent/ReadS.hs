@@ -39,3 +39,6 @@ instance Monad P where
 instance Alternative P where
     P x <|> P y = P \s -> x s <|> y s
     empty = P \_ -> []
+
+instance MonadFail P where
+    fail _ = empty

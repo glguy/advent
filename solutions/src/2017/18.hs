@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, ViewPatterns #-}
+{-# Language ImportQualifiedPost, LambdaCase, MonadComprehensions #-}
 {-|
 Module      : Main
 Description : Day 18 solution
@@ -49,7 +49,8 @@ module Main
   ) where
 
 import Advent.Input ( getInputLines )
-import Control.Applicative ((<|>))
+import Advent.ReadS (P(..), runP)
+import Control.Applicative ((<|>), empty)
 import Data.Char (isAlpha, isDigit)
 import Data.Map qualified as Map
 import Data.Map.Strict (Map)
@@ -59,9 +60,13 @@ import Text.ParserCombinators.ReadP
 
 -- | Print the solution to both parts of the puzzle. Input file can be
 -- overridden via command-line argument.
+--
+-- >>> :main
+-- Just 2951
+-- 7366
 main :: IO ()
 main =
-  do pgm <- map parseInstruction <$> getInputLines 18
+  do pgm <- map (runP instruction) <$> getInputLines 18
      let start = interpreter pgm
      print (part1 start)
      print (part2 start)
@@ -195,27 +200,21 @@ data Instruction
   | Jgz Expression Expression -- ^ @jgz t o@: @if t>0 then pc+=o@
   deriving (Read, Show)
 
-parseInstruction :: String -> Instruction
-parseInstruction (readP_to_S instruction -> [(x,_)]) = x
-parseInstruction x = error ("bad instruction: " ++ x)
+instruction :: P Instruction
+instruction = P lex >>= \case
+  "snd" -> Snd <$> expression
+  "rcv" -> Rcv <$> register
+  "set" -> Set <$> register   <*> expression
+  "add" -> Add <$> register   <*> expression
+  "mul" -> Mul <$> register   <*> expression
+  "mod" -> Mod <$> register   <*> expression
+  "jgz" -> Jgz <$> expression <*> expression
+  _     -> empty
 
-instruction :: ReadP Instruction
-instruction =
-  Snd <$ string "snd " <*> expression                            <|>
-  Rcv <$ string "rcv " <*> register                              <|>
-  Set <$ string "set " <*> register   <* char ' ' <*> expression <|>
-  Add <$ string "add " <*> register   <* char ' ' <*> expression <|>
-  Mul <$ string "mul " <*> register   <* char ' ' <*> expression <|>
-  Mod <$ string "mod " <*> register   <* char ' ' <*> expression <|>
-  Jgz <$ string "jgz " <*> expression <* char ' ' <*> expression
-
-expression :: ReadP Expression
+expression :: P Expression
 expression =
   RegisterExpression <$> register <|>
-  IntegerExpression  <$> number
+  IntegerExpression  <$> P reads
 
-register :: ReadP Register
-register = Register <$> satisfy isAlpha
-
-number :: ReadP Integer
-number = read <$> ((++) <$> option "" (string "-") <*> munch1 isDigit)
+register :: P Register
+register = [Register c | [c] <- P lex, isAlpha c]

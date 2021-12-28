@@ -1,11 +1,10 @@
-{-# Language TemplateHaskell #-}
+{-# Language TemplateHaskell, LambdaCase #-}
 module AsmProg where
 
-import Control.Applicative
-import Control.Lens
-import Control.Monad.State
-import Text.ParserCombinators.ReadP
-import Data.Char
+import Advent.ReadS ( P(..) )
+import Control.Applicative ( Alternative(empty, (<|>)) )
+import Control.Lens ( LensLike', use, makeLenses )
+import Control.Monad.State ( MonadState )
 
 data Registers = Registers { _regA, _regB, _regC, _regD :: !Int }
   deriving (Read, Show, Eq, Ord)
@@ -38,15 +37,13 @@ rval v =
     Reg r -> use (reg r)
 {-# INLINE rval #-}
 
-pInt :: ReadP Int
-pInt = read <$> ((++) <$> option "" (string "-") <*> munch1 isDigit)
+pValue :: P Value
+pValue = Int <$> P reads <|> Reg <$> pReg
 
-pValue :: ReadP Value
-pValue = Int <$> pInt <|> Reg <$> pReg
-
-pReg :: ReadP Register
-pReg = choice
-  [ A <$ char 'a'
-  , B <$ char 'b'
-  , C <$ char 'c'
-  , D <$ char 'd' ]
+pReg :: P Register
+pReg = P lex >>= \case
+  "a" -> pure A
+  "b" -> pure B
+  "c" -> pure C
+  "d" -> pure D
+  _   -> empty

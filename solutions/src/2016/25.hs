@@ -1,22 +1,38 @@
 {-# Language ViewPatterns, ImportQualifiedPost, MonoLocalBinds, TemplateHaskell, LambdaCase #-}
+{-|
+Module      : Main
+Description : Day 25 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/25>
+
+Assembly that can output binary numbers. We run them
+until we can establish that the state is looping while
+producing the desired output sequence.
+
+-}
 module Main where
 
-import Advent
+import Advent.Input ( getInputLines )
+import Advent.ReadS ( P(..), runP )
 import AsmProg
-import Control.Applicative
-import Control.Lens
-import Control.Monad.Trans.State
-import Data.List
+import Control.Applicative ( Alternative(empty) )
+import Control.Lens (use, (+=), (-=), (.=), (<~), makeLenses, Contains(contains))
+import Control.Monad.Trans.State ( evalState )
+import Data.List ( find )
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
-import Text.ParserCombinators.ReadP
 
+-- | Expected next output
 data Progress = NeedOne | NeedZero
 
+-- | State of the interpreter
 data Machine = Machine
   { _machRegisters :: !Registers
   , _machProgress  :: !Progress
@@ -29,9 +45,11 @@ instance HasRegisters Machine where
   reg r = machRegisters . reg r
   {-# INLINE reg #-}
 
+-- | >>> :main
+-- Just 192
 main :: IO ()
 main =
- do program <- Vector.fromList . map parseLine <$> getInputLines 25
+ do program <- Vector.fromList . map (runP pInst) <$> getInputLines 25
     print $ find (execute program) [1..]
 
 data Inst
@@ -42,16 +60,14 @@ data Inst
   | Out Value
  deriving Show
 
-parseLine :: String -> Inst
-parseLine (readP_to_S pInst -> [(x,_)]) = x
-
-pInst :: ReadP Inst
-pInst =
-  Copy <$ string "cpy " <*> pValue <* char ' ' <*> pReg <|>
-  Jnz  <$ string "jnz " <*> pValue <* char ' ' <*> pValue <|>
-  Inc  <$ string "inc " <*> pReg <|>
-  Dec  <$ string "dec " <*> pReg <|>
-  Out  <$ string "out " <*> pValue
+pInst :: P Inst
+pInst = P lex >>= \case
+  "cpy" -> Copy <$> pValue <*> pReg
+  "jnz" -> Jnz  <$> pValue <*> pValue
+  "inc" -> Inc  <$> pReg
+  "dec" -> Dec  <$> pReg
+  "out" -> Out  <$> pValue
+  _     -> empty
 
 execute :: Vector Inst -> Int -> Bool
 execute program a =

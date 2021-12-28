@@ -1,17 +1,16 @@
-{-# Language ImportQualifiedPost, ViewPatterns, TemplateHaskell, LambdaCase #-}
+{-# Language ImportQualifiedPost, TemplateHaskell, LambdaCase #-}
 module Main where
 
-import Advent
+import Advent ( getInputLines )
+import Advent.ReadS ( P(..), runP )
 import AsmProg
 import Control.Lens
-import Control.Applicative ( Alternative((<|>)) )
-import Control.Monad.Trans.State.Strict
-import Data.Foldable
+import Control.Applicative (Alternative((<|>), empty))
+import Control.Monad.Trans.State.Strict ( evalState, State )
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
-import Text.ParserCombinators.ReadP
 
 data Inst
   = Copy Value !Register
@@ -32,22 +31,23 @@ instance HasRegisters Machine where
   reg r = machRegisters . reg r
   {-# INLINE reg #-}
 
+-- | >>> :main
+-- 13050
+-- 479009610
 main :: IO ()
 main =
-  do program <- Vector.fromList . map parseLine <$> getInputLines 23
+  do program <- Vector.fromList . map (runP pInst) <$> getInputLines 23
      print (execute program 7)
      print (execute program 12)
 
-parseLine :: String -> Inst
-parseLine (readP_to_S pInst -> [(x,_)]) = x
-
-pInst :: ReadP Inst
-pInst =
-  Copy <$ string "cpy " <*> pValue <* char ' ' <*> pReg <|>
-  Jnz  <$ string "jnz " <*> pValue <* char ' ' <*> pValue <|>
-  Tgl  <$ string "tgl " <*> pValue <|>
-  Inc  <$ string "inc " <*> pReg <|>
-  Dec  <$ string "dec " <*> pReg
+pInst :: P Inst
+pInst = P lex >>= \case
+  "cpy" -> Copy <$> pValue <*> pReg
+  "jnz" -> Jnz  <$> pValue <*> pValue
+  "tgl" -> Tgl  <$> pValue
+  "inc" -> Inc  <$> pReg
+  "dec" -> Dec  <$> pReg
+  _     -> empty
 
 execute :: Vector Inst -> Int -> Int
 execute program0 a =
@@ -57,28 +57,26 @@ execute program0 a =
       do reg A .= a
          goto 0
 
-    step pc o =
-      case o of
-        Copy i o -> (reg o <~ rval i) >> goto (pc+1)
-        Inc r    -> (reg r += 1)      >> goto (pc+1)
-        Dec r    -> (reg r -= 1)      >> goto (pc+1)
-        Tgl r    -> do v <- rval r
-                       toggle (pc+v)
-                       goto (pc+1)
-        Jnz i o  -> do v  <- rval i
-                       o' <- rval o
-                       goto (if v == 0 then pc+1 else pc+o')
+    step pc = \case
+      Copy i o -> (reg o <~ rval i) >> goto (pc+1)
+      Inc r    -> (reg r += 1)      >> goto (pc+1)
+      Dec r    -> (reg r -= 1)      >> goto (pc+1)
+      Tgl r    -> do v <- rval r
+                     toggle (pc+v)
+                     goto (pc+1)
+      Jnz i o  -> do v  <- rval i
+                     o' <- rval o
+                     goto (if v == 0 then pc+1 else pc+o')
 
     toggle :: Int -> State Machine ()
     toggle pc =
-      machProgram . ix pc %= \oper ->
-        case oper of
-          Inc x         -> Dec x
-          Dec x         -> Inc x
-          Tgl   (Reg x) -> Inc x
-          Jnz x (Reg y) -> Copy x y
-          Copy x y      -> Jnz x (Reg y)
-          _ -> error ("Nonsense toggle: " ++ show pc ++ " " ++ show oper)
+      machProgram . ix pc %= \case
+        Inc x         -> Dec x
+        Dec x         -> Inc x
+        Tgl   (Reg x) -> Inc x
+        Jnz x (Reg y) -> Copy x y
+        Copy x y      -> Jnz x (Reg y)
+        oper -> error ("Nonsense toggle: " ++ show pc ++ " " ++ show oper)
 
     goto pc =
      do program <- use machProgram
