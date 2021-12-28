@@ -1,4 +1,17 @@
 {-# Language QuasiQuotes #-}
+{-|
+Module      : Main
+Description : Day 15 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/15>
+
+We have a list of ingredients with different properties and a scoring
+function. We have to combine those ingredients to maximize the score.
+
+-}
 module Main where
 
 import Advent.Format (format)
@@ -37,7 +50,3 @@ divisions cnt n =
   do x  <- [1..n-cnt+1]
      xs <- divisions (cnt - 1) (n-x)
      return (x:xs)
-
-everyOther :: [a] -> [a]
-everyOther (_:x:xs) = x : everyOther xs
-everyOther _        = []
