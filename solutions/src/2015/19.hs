@@ -1,4 +1,22 @@
 {-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-|
+Module      : Main
+Description : Day 19 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/19>
+
+We get a bunch of reaction rules and a final string. Our goal is to find
+the smallest application of rules to produce that final string from an
+initial empty string.
+
+This solution uses dynamic programming to build the answer up out of all
+the most efficient ways to build the substrings of the final string out
+of individual starting atoms.
+
+-}
 module Main (main) where
 
 import Advent (minimumMaybe, counts, format)
@@ -35,15 +53,6 @@ extendRules rules = Map.unionWith (++) extraRules rules
   where
   extraRules = Map.fromSet (const [])
              $ Set.fromList (concat (concat (Map.elems rules)))
-
--- |
--- > parseRule "A => BC"
--- (Atom "A", [Atom "B", Atom "C"])
-parseRule :: String -> (Atom, [Atom])
-parseRule str =
-  case words str of
-    [x,"=>",y] -> (Atom x,parseMolecule y)
-    _ -> error ("Bad line: " ++ str)
 
 -- |
 -- > parseMolecule "AbCdEF"
