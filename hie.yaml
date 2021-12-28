@@ -361,5 +361,7 @@ cradle:
       component: "sln_2021_23"
     - path: "./solutions/src/2021/24.hs"
       component: "sln_2021_24"
+    - path: "./solutions/src/2021/24_sbv.hs"
+      component: "sln_2021_24_sbv"
     - path: "./solutions/src/2021/25.hs"
       component: "sln_2021_25"

@@ -35,6 +35,7 @@ library
     Advent.PQueue
     Advent.Permutation
     Advent.Prelude
+    Advent.ReadS
     Advent.Queue
     Advent.Search
     Advent.SmallSet

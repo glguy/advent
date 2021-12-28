@@ -866,6 +866,11 @@ executable sln_2021_24
   import:              day
   main-is:             2021/24.hs
 
+executable sln_2021_24_sbv
+  import:              day
+  main-is:             2021/24_sbv.hs
+  build-depends:       sbv, containers
+
 executable sln_2021_25
   import:              day
   main-is:             2021/25.hs
