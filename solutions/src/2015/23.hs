@@ -1,67 +1,98 @@
-{-# Language BangPatterns #-}
+{-# Language BangPatterns, LambdaCase, OverloadedStrings #-}
+{-|
+Module      : Main
+Description : Day 23 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/23>
+
+We're given a program that computes Collatz conjecture in a
+purpose-built assembly language.
+
+-}
 module Main (main) where
 
-import Advent ( getInputLines, arrIx )
-import Data.Char ( isAlphaNum )
-import Data.Array ( Array, listArray )
+import Advent (getInputLines, arrIx)
+import Advent.ReadS
+import Control.Applicative (empty, optional)
+import Data.Array (Array, listArray)
 
+-- | >>> :main
+-- 255
+-- 334
 main :: IO ()
 main =
-  do pgm <- loadInput
-     print (program pgm 0 0 0)
-     print (program pgm 0 1 0)
+  do pgm <- toArray . map (runP pInstr) <$> getInputLines 23
+     print (program pgm 0 0)
+     print (program pgm 1 0)
 
-data Instr
-  = Half Register
-  | Triple Register
-  | Increment Register
-  | Copy Int Register
-  | Jump Int
-  | JumpIfEven Register Int
-  | JumpIfOne Register Int
-  deriving Show
-
-data Register = A | B
-  deriving Show
-
+-- | Turn a list into a zero-indexed array
 toArray :: [a] -> Array Int a
 toArray xs = listArray (0,length xs - 1) xs
 
-parseLine :: String -> Instr
-parseLine str =
-  case words (filter (\x -> isAlphaNum x || x == '-' || x == ' ') str) of
-    ["hlf",r]   -> Half (parseRegister r)
-    ["tpl",r]   -> Triple (parseRegister r)
-    ["inc",r]   -> Increment (parseRegister r)
-    ["jmp",o]   -> Jump (read o)
-    ["cpy",r,o] -> Copy (read o) (parseRegister o)
-    ["jie",r,o] -> JumpIfEven (parseRegister r) (read o)
-    ["jio",r,o] -> JumpIfOne (parseRegister r) (read o)
-    _ -> error str
+-- | Run a program to completion starting from the first instruction.
+program ::
+  Array Int Instr {- ^ program -} ->
+  Int {- ^ initial a register -} ->
+  Int {- ^ initial b register -} ->
+  Int {- ^ final b register -}
+program pgm = loop 0
+  where
+    loop !i !a !b =
+      case arrIx pgm i of
+        Nothing -> b
+        Just instr ->
+          case instr of
+            Hlf A   -> loop (i+1) (a`quot`2) b
+            Hlf B   -> loop (i+1) a (b`quot`2)
+            Tpl A   -> loop (i+1) (3*a) b
+            Tpl B   -> loop (i+1) a (3*b)
+            Inc A   -> loop (i+1) (a+1) b
+            Inc B   -> loop (i+1) a (b+1)
+            Jmp o   -> loop (i+o) a b
+            Jie A o -> loop (i+if even a then o else 1) a b
+            Jie B o -> loop (i+if even b then o else 1) a b
+            Jio A o -> loop (i+if a == 1 then o else 1) a b
+            Jio B o -> loop (i+if b == 1 then o else 1) a b
 
-parseRegister :: String -> Register
-parseRegister "a" = A
-parseRegister "b" = B
-parseRegister r   = error ("Not register: " ++ r)
+-- * Program data type
 
-loadInput :: IO (Array Int Instr)
-loadInput = toArray . map parseLine <$> getInputLines 23
+-- | A program instruction
+data Instr
+  = Hlf Register -- ^ divide the register's contents by 2
+  | Tpl Register -- ^ multiply the register's contents by 3
+  | Inc Register -- ^ increment the register
+  | Jmp Int -- ^ jump to a fixed offset
+  | Jie Register Int -- ^ jump to a fixed offset when the register is even
+  | Jio Register Int -- ^ jump to a fixed offset when the register is odd
+  deriving Show
 
-program :: Array Int Instr -> Int -> Int -> Int -> Int
-program pgm pc !a !b =
-  let step = program pgm (pc+1) in
-  case arrIx pgm pc of
-    Nothing -> b
-    Just instr ->
-      case instr of
-        Half      A    -> step (a`quot`2) b
-        Half      B    -> step a (b`quot`2)
-        Triple    A    -> step (3*a) b
-        Triple    B    -> step a (3*b)
-        Increment A    -> step (a+1) b
-        Increment B    -> step a (b+1)
-        Jump o         -> program pgm (pc + o) a b
-        JumpIfEven A o -> if even a then program pgm (pc+o) a b else step a b
-        JumpIfEven B o -> if even b then program pgm (pc+o) a b else step a b
-        JumpIfOne A o  -> if a == 1 then program pgm (pc+o) a b else step a b
-        JumpIfOne B o  -> if b == 1 then program pgm (pc+o) a b else step a b
+-- | A program register
+data Register = A | B
+  deriving Show
+
+-- * Parsing
+
+-- | Parse a single instruction
+pInstr :: P Instr
+pInstr = P lex >>= \case
+  "hlf" -> Hlf <$> pReg
+  "tpl" -> Tpl <$> pReg
+  "inc" -> Inc <$> pReg
+  "jmp" -> Jmp <$> pOffset
+  "jie" -> Jie <$> pReg <* "," <*> pOffset
+  "jio" -> Jio <$> pReg <* "," <*> pOffset
+  _     -> empty
+
+-- | Parse a jump offset
+pOffset :: P Int
+pOffset = optional "+" *> P reads
+
+-- | Parse a register a or b
+pReg :: P Register
+pReg = P lex >>= \case
+  "a" -> pure A
+  "b" -> pure B
+  _   -> empty
