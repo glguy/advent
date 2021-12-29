@@ -21,10 +21,12 @@ module Main (main) where
 import Advent.Format (format)
 import Advent.Memo (memo3)
 import Advent.SmallSet qualified as SmallSet
+import Control.Monad.Trans.State.Strict
 import Data.Char (isUpper)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
 import Data.List (mapAccumL)
+import Data.Map (Map)
 import Data.Map qualified as Map
 
 -- | >>> :main
@@ -64,14 +66,22 @@ start paths = go 0 SmallSet.empty
       in sum [v * f k | (k,v) <- IntMap.toList (paths IntMap.! here)]
 
 -- | Map all the cave names to integers. Use negative integers for big caves.
+-- @start@ always gets assigned @0@ and @end@ gets @1@
 label :: [(String, String)] -> [(Int,Int)]
-label = snd . mapAccumL f (Map.fromList [("start",0),("end",1)])
-  where
-    g m x = case Map.lookup x m of
-              Just i -> (m, i)
-              Nothing -> (Map.insert x i m, i)
-                where i = if isUpper (head x) then -Map.size m else Map.size m
-    f m (x,y) = (m2, (x',y'))
-      where
-        (m1,x') = g m x
-        (m2,y') = g m1 y
+label xs =
+  evalState
+    (traverse (both (state . label1)) xs)
+    (Map.fromList [("start",0), ("end",1)])
+
+-- | Assigns a unique integer label for each cave name. Big cave names
+-- are assigned negative integers.
+label1 :: String -> Map String Int -> (Int, Map String Int)
+label1 x m =
+  case Map.lookup x m of
+    Just i  -> (i, m)
+    Nothing -> (i, Map.insert x i m)
+      where i = if isUpper (head x) then -Map.size m else Map.size m
+
+-- | Traverse over the first and second components of a pair.
+both :: Applicative f => (a -> f b) -> (a,a) -> f (b,b)
+both f (x,y) = (,) <$> f x <*> f y
