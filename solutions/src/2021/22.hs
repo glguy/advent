@@ -124,7 +124,7 @@ subtractBox b1 b2 =
 -- subset of the second argument.
 subtractBox' :: Box n -> Box n -> [Box n]
 subtractBox' Pt Pt = []
-subtractBox' (Dim a b xs) (Dim c d ys)
-    = [Dim c a ys | c < a] ++
-      [Dim b d ys | b < d] ++
-      [Dim a b zs | zs <- subtractBox' xs ys]
+subtractBox' (Dim a b xs) (Dim c d ys) =
+  [Dim c a ys | c < a] ++
+  [Dim b d ys | b < d] ++
+  [Dim a b zs | zs <- subtractBox' xs ys]
