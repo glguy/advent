@@ -42,17 +42,17 @@ part2 bots = manhattan point origin
     candidates = concatMap octohedron bots
     visibleFrom pos = countBy (\(Bot botPos botRad) -> manhattan pos botPos <= botRad) bots
     out = [(p, visibleFrom p) | p <- candidates]
-    a = maximumBy (comparing (\(pos, n) -> n)) out
+    a = maximumBy (comparing snd) out
     point = minimize 10000 visibleFrom (fst a)
 
 octohedron :: Bot -> [Coord3]
 octohedron (Bot (C3 x y z) r) =
-  [ C3 (x+r) (y  ) (z  )
-  , C3 (x-r) (y  ) (z  )
-  , C3 (x  ) (y+r) (z  )
-  , C3 (x  ) (y-r) (z  )
-  , C3 (x  ) (y  ) (z+r)
-  , C3 (x  ) (y  ) (z-r)
+  [ C3 (x+r) y z
+  , C3 (x-r) y z
+  , C3 x (y+r) z
+  , C3 x (y-r) z
+  , C3 x y (z+r)
+  , C3 x y (z-r)
   ]
 
 minimize :: Int -> (Coord3 -> Int) -> Coord3 -> Coord3

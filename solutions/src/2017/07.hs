@@ -49,8 +49,7 @@ import Data.Foldable (asum)
 import Data.Functor.Classes (Show1(liftShowsPrec))
 import Data.Map (Map)
 import Data.Map qualified as Map
-import Data.Maybe (fromMaybe)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Set (Set)
 import Data.Set qualified as Set
 

@@ -111,7 +111,7 @@ reachable next = aux Map.empty
 
 -- | Test if an index is contained within an array.
 inArray :: (Ix i, IArray a e) => a i e -> i -> Bool
-inArray a c = A.inRange (A.bounds a) c
+inArray = A.inRange . A.bounds
 
 -- | Convert a list of coordinates into an array marked 'True' for the
 -- listed coordinates.

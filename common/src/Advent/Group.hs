@@ -1,4 +1,12 @@
 {-# Language TypeOperators, MultiParamTypeClasses #-}
+{-|
+Module      : Advent.Group
+Description : Support for abstract algebraic groups
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+-}
 module Advent.Group
   ( Group(inverse)
   , RightAction(rightAction)

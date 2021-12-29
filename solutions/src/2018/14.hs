@@ -12,8 +12,7 @@ module Main (main) where
 
 import Advent.Format (format)
 import Data.Char (digitToInt)
-import Data.List (findIndex, isPrefixOf, tails)
-import Data.List (foldl')
+import Data.List (findIndex, isPrefixOf, tails, foldl')
 import Data.Maybe (fromJust)
 import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq

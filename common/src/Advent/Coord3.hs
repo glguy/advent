@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, DeriveGeneric #-}
+{-# Language DeriveGeneric, DeriveDataTypeable #-}
 {-|
 Module      : Advent.Coord3
 Description : 3D coordinates
@@ -9,7 +9,10 @@ Maintainer  : emertens@gmail.com
 -}
 module Advent.Coord3 where
 
-data Coord3 = C3 !Int !Int !Int deriving (Eq, Ord, Show)
+import Data.Data (Data)
+import GHC.Generics (Generic)
+
+data Coord3 = C3 !Int !Int !Int deriving (Eq, Ord, Show, Generic, Data)
 
 origin :: Coord3
 origin = C3 0 0 0

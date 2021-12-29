@@ -130,7 +130,7 @@ effectivePower grp = size grp * attack grp
 targetSelectionOrder ::
   [Group] {- ^ unordered groups        -} ->
   [Group] {- ^ target preference order -}
-targetSelectionOrder groups = sortOn prj groups
+targetSelectionOrder = sortOn prj
   where
     -- ascending sort lexicographic order:
     -- * effectiveness (negated for descending order)

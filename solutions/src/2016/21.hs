@@ -54,7 +54,7 @@ rotateLeft :: Int -> [a] -> [a]
 rotateLeft n xs = b ++ a
   where
     n' = n `mod` length xs
-    (a,b) = splitAt (n') xs
+    (a,b) = splitAt n' xs
 
 set :: Int -> a -> [a] -> [a]
 set i x xs = a ++ [x] ++ b

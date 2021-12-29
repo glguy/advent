@@ -71,9 +71,9 @@ search delta jumps links start end =
      -- travel through a warp tile
      [ AStep (Pos exit depth') (cost + 1) 0
         | (enter, cost) <- Map.findWithDefault [] here jumps
-        , exit          <- toList (Map.lookup enter links)
         , let depth' = depth + delta enter
         , depth' >= 0
+        , exit <- toList (Map.lookup enter links)
         ] ++
      -- finish maze
      [ AStep (Pos enter 0) cost 0

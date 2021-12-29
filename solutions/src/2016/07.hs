@@ -21,7 +21,7 @@ split (x:y:z) =
 supportsTLS :: [String] -> Bool
 supportsTLS xs =
   case split xs of
-    (supers, hypers) -> any hasABBA supers && all (not . hasABBA) hypers
+    (supers, hypers) -> any hasABBA supers && not (any hasABBA hypers)
   where
     hasABBA ys = any isABBA (tails ys)
 
