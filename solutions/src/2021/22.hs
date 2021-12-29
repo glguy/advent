@@ -8,9 +8,11 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2021/day/22>
 
-This problem is made simple by processing commands
-by subtracting away all future cuboids. Only the region
-unique to the current command will affect the final output.
+This solution processing commands in order and tracks the
+currently lit regions with a list of disjoint cubes. When
+processing a new cube, the cube is deleted from the list of
+lit cubes and then added back in as a whole cube if the command
+would turn lights on.
 
 -}
 module Main (main) where
