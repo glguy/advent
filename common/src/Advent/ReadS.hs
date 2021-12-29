@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ViewPatterns, TypeFamilies #-}
+{-# Language BlockArguments, ViewPatterns, LambdaCase, TypeFamilies #-}
 {-|
 Module      : Advent.ReadS
 Description : Newtype for parsing with ReadS
@@ -28,6 +28,11 @@ runP _ x = error ("failed to parse: " ++ x)
 tok :: String -> P String
 tok t = do u <- P lex; if t == u then pure u else empty
 
+-- | Match a leading character
+char :: Char -> P ()
+char c = P \case
+  x:xs | c == x -> [((),xs)]
+  _             -> []
 instance Functor P where
     fmap = liftM
 

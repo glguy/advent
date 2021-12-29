@@ -1,37 +1,47 @@
-{-# LANGUAGE ViewPatterns, GeneralizedNewtypeDeriving, OverloadedStrings, LambdaCase #-}
+{-# LANGUAGE ViewPatterns, OverloadedStrings, LambdaCase #-}
+{-|
+Module      : Main
+Description : Day 18 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/12>
+
+Sum up the numbers in a JSON value.
+
+Rather than pull in a heavy JSON parsing dependency, this
+just parses out the subset of JSON that the problem uses.
+
+-}
 module Main where
 
-import Advent (getInputLines)
-import Text.ParserCombinators.ReadP (option, string, char, ReadP, sepBy, munch1, between, readP_to_S )
-import Control.Applicative
-import Data.Char (isDigit)
+import Advent.Input (getInputLines)
+import Advent.ReadS (P(..), char, runP, sepBy, between)
+import Control.Applicative (Alternative((<|>)))
 
+-- | >>> :main
+-- 119433
+-- 68466
 main :: IO ()
 main =
  do [input] <- getInputLines 12
-    let value = parseValue input 
+    let value = runP pValue input 
     print (numbers       value)
     print (nonredNumbers value)
 
-parseValue :: String -> Value
-parseValue (readP_to_S pValue -> [(x,_)]) = x
-parseValue x = error ("bad input: " ++ x)
-
-pValue :: ReadP Value
+pValue :: P Value
 pValue =
-  Object <$> between (char '{') (char '}') (pEntry `sepBy` char ',') <|>
-  Array  <$> between (char '[') (char ']') (pValue `sepBy` char ',') <|>
+  Object <$> between "{" "}" (pEntry `sepBy` ",") <|>
+  Array  <$> between "[" "]" (pValue `sepBy` ",") <|>
   String <$> pString <|>
-  Number <$> pNumber
+  Number <$> P reads
 
-pNumber :: ReadP Int
-pNumber = read <$> ((++) <$> option "" (string "-") <*> munch1 isDigit)
+pString :: P String
+pString = P reads
 
-pString :: ReadP String
-pString = between (char '"') (char '"') (munch1 ('"'/=))
-
-pEntry :: ReadP Value
-pEntry = pString *> char ':' *> pValue
+pEntry :: P Value
+pEntry = pString *> char ':' *> pValue -- use char as : and - lex together
 
 -- | Sum of all the number values in in JSON value.
 numbers :: Value -> Int
