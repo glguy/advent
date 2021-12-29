@@ -1,4 +1,4 @@
-{-# Language ViewPatterns #-}
+{-# Language ImportQualifiedPost, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -37,10 +37,10 @@ applied to 2x2 or 3x3 subtiles of the whole grid.
 -}
 module Main where
 
-import           Advent
-import           Data.List
-import           Data.List.Split
-import qualified Data.Map as Map
+import Advent (chunks, count, getInputLines)
+import Data.List (transpose)
+import Data.List.Split (splitOn)
+import Data.Map qualified as Map
 
 -- $setup
 -- >>> let printGrid = mapM_ putStrLn
@@ -103,8 +103,8 @@ rotateCCW = reverse . transpose
 mapSubSquares :: (Grid -> Grid) -> Grid -> Grid
 mapSubSquares rules xs =
   concatMap
-    (map concat . transpose . map rules . transpose . map (chunksOf n))
-    (chunksOf n xs)
+    (map concat . transpose . map rules . transpose . map (chunks n))
+    (chunks n xs)
   where
     n | even (length xs) = 2
       | otherwise        = 3
