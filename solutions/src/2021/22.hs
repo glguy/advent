@@ -1,4 +1,4 @@
-{-# Language StandaloneDeriving, KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes #-}
+{-# Language StandaloneDeriving, KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 22 solution
@@ -36,8 +36,8 @@ main =
         steps = [ (c, seg x1 x2 :* seg y1 y2 :* seg z1 z2 :* Pt)
                 | (c, x1, x2, y1, y2, z1, z2) <- inp]
         p1seg = seg (-50) 50
-        p1cube = p1seg :* p1seg :* p1seg :* Pt
-    print (solve [(c,x') | (c, x) <- steps, Just x' <- [intersectBox p1cube x]])
+        p1box = p1seg :* p1seg :* p1seg :* Pt
+    print (solve [(c, b) | (c, intersectBox p1box -> Just b) <- steps])
     print (solve steps)
 
 -- | Figure out how many lights the given instructions turn on.
