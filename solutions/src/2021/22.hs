@@ -1,4 +1,4 @@
-{-# Language KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes #-}
+{-# Language StandaloneDeriving, KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 22 solution
@@ -117,13 +117,12 @@ data Box :: N -> Type where
 
 infixr 6 :* -- a little higher than list cons
 
+deriving instance Eq (Box n)
+
+-- | Custom 'Show' instance avoids redundant parentheses
 instance Show (Box n) where
   showsPrec _ Pt        = showString "Pt"
   showsPrec p (x :* xs) = showParen (p > 6) (shows x . showString " :* " . showsPrec 6 xs)
-
-instance Eq (Box n) where
-  Pt      == Pt      = True
-  x :* xs == y :* ys = x == y && xs == ys
 
 -- | Returns the number of points contained in a box.
 --
@@ -143,6 +142,9 @@ size Pt         = 1
 size (s :* box) = len s * size box
 
 -- | The intersection of two boxes is the intersection of their segments.
+--
+-- >>> intersectBox (Seg 0 2 :* Seg 0 3 :* Pt) (Seg 1 4 :* Seg 2 4 :* Pt)
+-- Just (Seg 1 2 :* Seg 2 3 :* Pt)
 intersectBox :: Box n -> Box n -> Maybe (Box n)
 intersectBox = traverseBox2 intersectSeg
 
