@@ -41,7 +41,7 @@ instance Applicative P where
     pure x = P \s -> [(x,s)]
 
 instance Monad P where
-    P m >>= f = P \s -> do (x,s) <- m s; case f x of P g -> g s
+    P m >>= f = P \s -> do (x,s') <- m s; case f x of P g -> g s'
 
 instance Alternative P where
     P x <|> P y = P \s -> x s <|> y s

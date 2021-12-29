@@ -11,8 +11,6 @@ Maintainer  : emertens@gmail.com
 module Advent.Queue (Queue(Empty, (:<|)), (|>), singleton, fromList, snoc, pop, appendList) where
 
 import Data.Foldable (Foldable(..))
-import Data.Monoid   (Dual(..))
-import Data.Coerce   (coerce)
 
 -- | FIFO Queue implementation
 data Queue a = Queue [a] [a] !Int
@@ -57,6 +55,7 @@ instance Foldable Queue where
     where
       rot []     (y:_ ) = f y
       rot (x:xs) (y:ys) = f x <> rot xs ys <> f y
+      rot _      _      = error "PANIC: Advent.Queue invariant violated"
   foldMap f (Queue (x:l) r i) = f x <> foldMap f (Queue l r (i-1))
 
 
@@ -119,6 +118,7 @@ exec :: [a] -> [a] -> Int -> Queue a
 exec f r 0    = fromList (rotate f r [])
 exec f r i = Queue f r (i-1)
 
+rotate :: [a] -> [a] -> [a] -> [a]
 rotate []     (y:_ ) a = y : a
 rotate (x:xs) (y:ys) a = x : rotate xs ys (y:a)
 rotate _      _      _ = error "Advent.Queue.rotate: panic"

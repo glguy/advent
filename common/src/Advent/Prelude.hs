@@ -21,7 +21,6 @@ import Data.IntMap qualified as IntMap
 import Data.List (foldl', inits, sortBy, tails, mapAccumL)
 import Data.Map (Map)
 import Data.Map.Strict qualified as SMap
-import Data.MemoTrie (HasTrie, memo3, mup)
 import Data.Ord (comparing)
 import Data.Set (Set)
 import Data.Set qualified as Set
