@@ -45,7 +45,10 @@ countBy p = foldl' (\acc x -> if p x then acc+1 else acc) 0
 -- >>> same [1,1,2]
 -- False
 same :: Foldable t => Eq a => t a -> Bool
-same xs = all (head (toList xs) ==) xs
+same x =
+  case toList x of
+    []   -> True
+    y:ys -> all (y ==) ys
 
 -- | Returns a list of ways to select an element from a list without
 -- replacement.

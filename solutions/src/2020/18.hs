@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ViewPatterns, OverloadedStrings #-}
+{-# Language BlockArguments, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 18 solution
