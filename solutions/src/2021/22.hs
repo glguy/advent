@@ -102,7 +102,7 @@ size (s :* box) = len s * size box
 intersectBox :: Box n -> Box n -> Maybe (Box n)
 intersectBox = traverseBox2 intersectSeg
 
--- | Subtract the second box from the first box returning a list of boxes
+-- | Subtract the first box from the second box returning a list of boxes
 -- that cover all the remaining area.
 --
 -- >>> subBox (Seg 2 3 :* Pt) (Seg 0 4 :* Pt)
@@ -113,7 +113,7 @@ intersectBox = traverseBox2 intersectSeg
 subBox ::
   Box n {- ^ remove this -} ->
   Box n {- ^ from this -} ->
-  [Box n]
+  [Box n] {- ^ leaving these -}
 subBox b1 b2
   | isNothing (intersectBox b1 b2) = [b2]
   | otherwise = [b | (b, All False) <- runWriterT (traverseBox2 segs b1 b2)]
