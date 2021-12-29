@@ -855,7 +855,6 @@ executable sln_2021_21
 executable sln_2021_22
   import:              day
   main-is:             2021/22.hs
-  build-depends:       transformers
 
 executable sln_2021_23
   import:              day

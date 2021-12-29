@@ -18,10 +18,9 @@ would turn lights on.
 module Main (main) where
 
 import Advent.Format (format)
-import Control.Monad.Trans.Writer.CPS (runWriterT, writerT)
 import Data.Kind (Type)
-import Data.Maybe (isNothing, mapMaybe)
-import Data.Monoid (Any(Any))
+import Data.List (delete)
+import Data.Maybe (mapMaybe)
 
 -- | On and off commands from the input file
 data C = Con {- ^ lights on -} | Coff {- ^ lights off -}
@@ -122,6 +121,10 @@ instance Show (Box n) where
   showsPrec _ Pt        = showString "Pt"
   showsPrec p (x :* xs) = showParen (p > 6) (shows x . showString " :* " . showsPrec 6 xs)
 
+instance Eq (Box n) where
+  Pt      == Pt      = True
+  x :* xs == y :* ys = x == y && xs == ys
+
 -- | Returns the number of points contained in a box.
 --
 -- >>> size Pt -- 0D point
@@ -164,11 +167,10 @@ subtractBox ::
   Box n {- ^ remove this -} ->
   Box n {- ^ from this -} ->
   [Box n] {- ^ leaving these -}
-subtractBox b1 b2
-  | isNothing (intersectBox b1 b2) = [b2]
-  | otherwise = [b | (b, Any True) <- runWriterT (traverseBox2 segs b1 b2)]
-  where
-    segs s1 s2 = writerT [(s, Any (isNothing (intersectSeg s s1))) | s <- cutSeg s1 s2]
+subtractBox b1 b2 =
+  case intersectBox b1 b2 of
+    Nothing -> [b2]
+    Just overlap -> delete overlap (traverseBox2 cutSeg b1 b2)
 
 -- | Zip two boxes together.
 traverseBox2 :: Applicative f => (Seg -> Seg -> f Seg) -> Box n -> Box n -> f (Box n)
