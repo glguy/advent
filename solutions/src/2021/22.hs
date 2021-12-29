@@ -1,4 +1,4 @@
-{-# Language StandaloneDeriving, KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
+{-# Language KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 22 solution
@@ -92,8 +92,6 @@ data Box :: N -> Type where
   (:*) :: Seg -> Box n -> Box ('S n) -- ^ A box extended along an axis
 
 infixr 6 :* -- a little higher than list cons
-
-deriving instance Eq (Box n)
 
 -- | Custom 'Show' instance avoids redundant parentheses
 instance Show (Box n) where
