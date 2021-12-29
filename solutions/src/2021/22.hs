@@ -19,7 +19,6 @@ module Main (main) where
 
 import Advent.Format (format)
 import Data.Kind (Type)
-import Data.Maybe (mapMaybe)
 
 -- | On and off commands from the input file
 data C = Con {- ^ lights on -} | Coff {- ^ lights off -}
@@ -38,7 +37,7 @@ main =
                 | (c, x1, x2, y1, y2, z1, z2) <- inp]
         p1seg = seg (-50) 50
         p1cube = p1seg :* p1seg :* p1seg :* Pt
-    print (solve (mapMaybe (traverse (intersectBox p1cube)) steps))
+    print (solve [(c,x') | (c, x) <- steps, Just x' <- [intersectBox p1cube x]])
     print (solve steps)
 
 -- | Figure out how many lights the given instructions turn on.
@@ -156,7 +155,7 @@ subtractBox b1 b2 =
 -- subset of the second argument.
 subtractBox' :: Box n -> Box n -> [Box n]
 subtractBox' Pt Pt = []
-subtractBox' (s@(Seg a b) :* is) (Seg c d :* ys)
+subtractBox' (x@(Seg a b) :* xs) (Seg c d :* ys)
     = [Seg c a :* ys | c < a] ++
       [Seg b d :* ys | b < d] ++
-      map (s :*) (subtractBox' is ys)
+      map (x :*) (subtractBox' xs ys)
