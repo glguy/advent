@@ -1,4 +1,4 @@
-{-# Language KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
+{-# Language StandaloneDeriving, KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 22 solution
@@ -22,7 +22,7 @@ import Data.Kind (Type)
 
 -- | On and off commands from the input file
 data C = Con {- ^ lights on -} | Coff {- ^ lights off -}
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq)
 
 mempty -- template haskell staging
 
@@ -32,11 +32,11 @@ mempty -- template haskell staging
 main :: IO ()
 main =
  do inp <- [format|22 (@C x=%d..%d,y=%d..%d,z=%d..%d%n)*|]
-    let seg lo hi = Seg lo (hi+1) -- make upper bound exclusive
-        steps = [ (c, seg x1 x2 :* seg y1 y2 :* seg z1 z2 :* Pt)
+    let dim lo hi = Dim lo (hi+1) -- make upper bound exclusive
+        steps = [ (c, dim x1 x2 (dim y1 y2 (dim z1 z2 Pt)))
                 | (c, x1, x2, y1, y2, z1, z2) <- inp]
-        p1seg = seg (-50) 50
-        p1box = p1seg :* p1seg :* p1seg :* Pt
+        p1Dim = dim (-50) 50
+        p1box = p1Dim (p1Dim (p1Dim Pt))
     print (solve [(c, b) | (c, intersectBox p1box -> Just b) <- steps])
     print (solve steps)
 
@@ -49,35 +49,7 @@ applyCommand ::
   [Box n]    {- ^ pre-lit boxes  -} ->
   (C, Box n) {- ^ command        -} ->
   [Box n]    {- ^ post-lit boxes -}
-applyCommand ons (c, b) = [b | Con == c] ++ concatMap (subtractBox b) ons
-
--- * Segments
-
--- | A segment defined by an inclusive lower-bound and an exclusive upper-bound.
-data Seg = Seg !Int !Int deriving (Eq, Ord, Show)
-
--- | Compute the length of a segment
---
--- >>> len (Seg 3 7)
--- 4
-len :: Seg -> Int
-len (Seg lo hi) = hi - lo
-
--- | Determine if two segments have some overlap
---
--- >>> intersectSeg (Seg 0 1) (Seg 1 2)
--- Nothing
---
--- >>> intersectSeg (Seg 0 10) (Seg 3 6)
--- Just (Seg 3 6)
---
--- >>> intersectSeg (Seg 0 6) (Seg 3 9)
--- Just (Seg 3 6)
-intersectSeg :: Seg -> Seg -> Maybe Seg
-intersectSeg (Seg alo ahi) (Seg blo bhi) = [Seg lo hi | lo < hi]
-  where
-    lo = max alo blo
-    hi = min ahi bhi
+applyCommand ons (c, b) = [b | Con == c] ++ (subtractBox b =<< ons)
 
 -- * N-dimensional boxes
 
@@ -88,57 +60,56 @@ data N
 
 -- | An n-dimensional box.
 data Box :: N -> Type where
-  Pt   ::                 Box 'Z     -- ^ A single point
-  (:*) :: Seg -> Box n -> Box ('S n) -- ^ A box extended along an axis
+  Pt  ::  Box 'Z -- ^ A single point
+  Dim ::  !Int {- ^ inclusive lower bound -} ->
+          !Int {- ^ exclusive upper bound -} ->
+          Box n {- ^ lower dimensional box -} ->
+          Box ('S n) -- ^ A box extended along an axis
 
-infixr 6 :* -- a little higher than list cons
-
--- | Custom 'Show' instance avoids redundant parentheses
-instance Show (Box n) where
-  showsPrec _ Pt        = showString "Pt"
-  showsPrec p (x :* xs) = showParen (p > 6) (shows x . showString " :* " . showsPrec 6 xs)
+deriving instance Show (Box n)
 
 -- | Returns the number of points contained in a box.
 --
 -- >>> size Pt -- 0D point
 -- 1
 --
--- >>> size (Seg 1 4 :* Pt) -- 1D segment; length
+-- >>> size (Dim 1 4 Pt) -- 1D segment; length
 -- 3
 --
--- >>> size (Seg 1 4 :* Seg 0 3 :* Pt) -- 2D rectangle; area
+-- >>> size (Dim 1 4 (Dim 0 3 Pt)) -- 2D rectangle; area
 -- 9
 --
--- >>> size (Seg 1 4 :* Seg 0 3 :* Seg 0 2 :* Pt) -- 3D cuboid; volume
+-- >>> size (Dim 1 4 (Dim 0 3 (Dim 0 2 Pt))) -- 3D cuboid; volume
 -- 18
 size :: Box n -> Int
-size Pt         = 1
-size (s :* box) = len s * size box
+size Pt              = 1
+size (Dim lo hi box) = (hi - lo) * size box
 
 -- | The intersection of two boxes is the intersection of their segments.
 --
--- >>> intersectBox (Seg 0 2 :* Seg 0 3 :* Pt) (Seg 1 4 :* Seg 2 4 :* Pt)
--- Just (Seg 1 2 :* Seg 2 3 :* Pt)
+-- >>> intersectBox (Dim 0 2 (Dim 0 3 Pt)) (Dim 1 4 (Dim 2 4 Pt))
+-- Just (Dim 1 2 (Dim 2 3 Pt))
 intersectBox :: Box n -> Box n -> Maybe (Box n)
-intersectBox (x :* xs) (y :* ys) = (:*) <$> intersectSeg x y <*> intersectBox xs ys
-intersectBox Pt        Pt        = Just Pt
+intersectBox Pt Pt = Just Pt
+intersectBox (Dim a b xs) (Dim c d ys) =
+  [Dim x y zs | let x = max a c, let y = min b d, x < y, zs <- intersectBox xs ys]
 
 -- | Subtract the first box from the second box returning a list of boxes
 -- that cover all the remaining area.
 --
--- >>> subtractBox (Seg 2 3 :* Pt) (Seg 0 4 :* Pt)
--- [Seg 0 2 :* Pt,Seg 3 4 :* Pt]
+-- >>> subtractBox (Dim 2 3 Pt) (Dim 0 4 Pt)
+-- [Dim 0 2 Pt,Dim 3 4 Pt]
 --
--- >>> subtractBox (Seg 3 5 :* Pt) (Seg 0 4 :* Pt)
--- [Seg 0 3 :* Pt]
+-- >>> subtractBox (Dim 3 5 Pt) (Dim 0 4 Pt)
+-- [Dim 0 3 Pt]
 --
--- >>> subtractBox (Seg 0 1 :* Pt) (Seg 1 2 :* Pt)
--- [Seg 1 2 :* Pt]
+-- >>> subtractBox (Dim 0 1 Pt) (Dim 1 2 Pt)
+-- [Dim 1 2 Pt]
 --
--- >>> subtractBox (Seg 0 1 :* Seg 0 1 :* Pt) (Seg 0 2 :* Seg 0 2 :* Pt)
--- [Seg 1 2 :* Seg 0 2 :* Pt,Seg 0 1 :* Seg 1 2 :* Pt]
+-- >>> subtractBox (Dim 0 1 (Dim 0 1 Pt)) (Dim 0 2 (Dim 0 2 Pt))
+-- [Dim 1 2 (Dim 0 2 Pt),Dim 0 1 (Dim 1 2 Pt)]
 --
--- >>> subtractBox (Seg 0 9 :* Pt) (Seg 3 6 :* Pt)
+-- >>> subtractBox (Dim 0 9 Pt) (Dim 3 6 Pt)
 -- []
 subtractBox ::
   Box n {- ^ remove this -} ->
@@ -153,7 +124,7 @@ subtractBox b1 b2 =
 -- subset of the second argument.
 subtractBox' :: Box n -> Box n -> [Box n]
 subtractBox' Pt Pt = []
-subtractBox' (x@(Seg a b) :* xs) (Seg c d :* ys)
-    = [Seg c a :* ys | c < a] ++
-      [Seg b d :* ys | b < d] ++
-      map (x :*) (subtractBox' xs ys)
+subtractBox' (Dim a b xs) (Dim c d ys)
+    = [Dim c a ys | c < a] ++
+      [Dim b d ys | b < d] ++
+      [Dim a b zs | zs <- subtractBox' xs ys]
