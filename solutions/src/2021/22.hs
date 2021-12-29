@@ -1,4 +1,4 @@
-{-# Language KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, BlockArguments, TemplateHaskell, ImportQualifiedPost, QuasiQuotes #-}
+{-# Language KindSignatures, GADTs, DataKinds, ParallelListComp, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 22 solution
@@ -8,7 +8,7 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2021/day/22>
 
-This solution processing commands in order and tracks the
+This solution processes commands in order and tracks the
 currently lit regions with a list of disjoint cubes. When
 processing a new cube, the cube is deleted from the list of
 lit cubes and then added back in as a whole cube if the command
@@ -35,7 +35,7 @@ mempty -- template haskell staging
 main :: IO ()
 main =
  do inp <- [format|22 (@C x=%d..%d,y=%d..%d,z=%d..%d%n)*|]
-    let seg lo hi = Seg lo (hi+1) -- make upper limit exclusive
+    let seg lo hi = Seg lo (hi+1) -- make upper bound exclusive
         steps = [ (c, seg x1 x2 :* seg y1 y2 :* seg z1 z2 :* Pt)
                 | (c, x1, x2, y1, y2, z1, z2) <- inp]
         p1seg = seg (-50) 50
