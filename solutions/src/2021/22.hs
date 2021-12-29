@@ -19,7 +19,6 @@ module Main (main) where
 
 import Advent.Format (format)
 import Data.Kind (Type)
-import Data.List (delete)
 import Data.Maybe (mapMaybe)
 
 -- | On and off commands from the input file
@@ -81,28 +80,6 @@ intersectSeg (Seg alo ahi) (Seg blo bhi) = [Seg lo hi | lo < hi]
     lo = max alo blo
     hi = min ahi bhi
 
--- | Split up the input segment, if needed, at the terminal points of the extra
--- segment.
---
--- >>> cutSeg (Seg 2 4) (Seg 0 9)
--- [Seg 0 2,Seg 2 4,Seg 4 9]
---
--- >>> cutSeg (Seg 0 5) (Seg 2 7)
--- [Seg 2 5,Seg 5 7]
---
--- >>> cutSeg (Seg 0 3) (Seg 5 8)
--- [Seg 5 8]
---
--- >>> cutSeg (Seg 0 9) (Seg 3 6)
--- [Seg 3 6]
-cutSeg ::
-  Seg {- ^ extra points -} ->
-  Seg {- ^ input segment -} ->
-  [Seg] {- ^ split up input segment -}
-cutSeg (Seg a b) (Seg c d) = [Seg lo hi | lo <- pts | hi <- tail pts]
-  where
-    pts = [c] ++ [a | c < a, a < d] ++ [b | c < b, b < d] ++ [d]
-
 -- * N-dimensional boxes
 
 -- | Natural numbers (used for type index)
@@ -146,7 +123,8 @@ size (s :* box) = len s * size box
 -- >>> intersectBox (Seg 0 2 :* Seg 0 3 :* Pt) (Seg 1 4 :* Seg 2 4 :* Pt)
 -- Just (Seg 1 2 :* Seg 2 3 :* Pt)
 intersectBox :: Box n -> Box n -> Maybe (Box n)
-intersectBox = traverseBox2 intersectSeg
+intersectBox (x :* xs) (y :* ys) = (:*) <$> intersectSeg x y <*> intersectBox xs ys
+intersectBox Pt        Pt        = Just Pt
 
 -- | Subtract the first box from the second box returning a list of boxes
 -- that cover all the remaining area.
@@ -161,7 +139,7 @@ intersectBox = traverseBox2 intersectSeg
 -- [Seg 1 2 :* Pt]
 --
 -- >>> subtractBox (Seg 0 1 :* Seg 0 1 :* Pt) (Seg 0 2 :* Seg 0 2 :* Pt)
--- [Seg 0 1 :* Seg 1 2 :* Pt,Seg 1 2 :* Seg 0 1 :* Pt,Seg 1 2 :* Seg 1 2 :* Pt]
+-- [Seg 1 2 :* Seg 0 2 :* Pt,Seg 0 1 :* Seg 1 2 :* Pt]
 --
 -- >>> subtractBox (Seg 0 9 :* Pt) (Seg 3 6 :* Pt)
 -- []
@@ -172,9 +150,13 @@ subtractBox ::
 subtractBox b1 b2 =
   case intersectBox b1 b2 of
     Nothing -> [b2]
-    Just overlap -> delete overlap (traverseBox2 cutSeg b1 b2)
+    Just b  -> subtractBox' b b2
 
--- | Zip two boxes together.
-traverseBox2 :: Applicative f => (Seg -> Seg -> f Seg) -> Box n -> Box n -> f (Box n)
-traverseBox2 f (x :* xs) (y :* ys) = (:*) <$> f x y <*> traverseBox2 f xs ys
-traverseBox2 _ Pt        Pt        = pure Pt
+-- | Worker for 'subtractBox' where the first argument is a
+-- subset of the second argument.
+subtractBox' :: Box n -> Box n -> [Box n]
+subtractBox' Pt Pt = []
+subtractBox' (s@(Seg a b) :* is) (Seg c d :* ys)
+    = [Seg c a :* ys | c < a] ++
+      [Seg b d :* ys | b < d] ++
+      map (s :*) (subtractBox' is ys)
