@@ -35,8 +35,8 @@ main =
     let dim lo hi = Dim lo (hi+1) -- make upper bound exclusive
         steps = [ (c, dim x1 x2 (dim y1 y2 (dim z1 z2 Pt)))
                 | (c, x1, x2, y1, y2, z1, z2) <- inp]
-        p1Dim = dim (-50) 50
-        p1box = p1Dim (p1Dim (p1Dim Pt))
+        p1dim = dim (-50) 50
+        p1box = p1dim (p1dim (p1dim Pt))
     print (solve [(c, b) | (c, intersectBox p1box -> Just b) <- steps])
     print (solve steps)
 
