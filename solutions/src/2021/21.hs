@@ -51,10 +51,12 @@ part1 turns p1 p2 p1s p2s
     p1'    = wrap (p1 + 6 - turns) 10
     p1s'   = p1s + p1'
 
+-- | Count the number of ways player 1 can win given that the game is played
+-- rolling 3d3.
 part2 ::
-  Int {- player 1's starting location -} ->
-  Int {- player 2's starting location -} ->
-  Int {- ways player 1 can win -}
+  Int {- ^ player 1's starting location -} ->
+  Int {- ^ player 2's starting location -} ->
+  Int {- ^ ways player 1 can win -}
 part2 p1 p2 = sum (zipWith (*) p1Wins p2Live)
   where
     rolls  = counts (sum <$> replicateM 3 [1..3])
