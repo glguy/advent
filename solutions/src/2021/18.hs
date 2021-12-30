@@ -39,26 +39,25 @@ add x y = reduce (x :+: y)
 
 -- | Reduce an expression until it won't reduce
 reduce :: Tree Int -> Tree Int
-reduce x = maybe x reduce (explode <$> unstable x <|> split x)
+reduce x =
+  let x' = explode x in
+  maybe x' reduce (split x')
 
--- | Find the left-most pair at depth 4.
-unstable :: Tree a -> Maybe (a, a, Zip a)
-unstable = go 4 []
+-- | Explode /all/ the pairs at depth 4 from left to right.
+explode :: Tree Int -> Tree Int
+explode = down 0 []
   where
-    go :: Int -> Zip a -> Tree a -> Maybe (a, a, Zip a)
-    go 0 z (Leaf l :+: Leaf r) = Just (l, r, z)
-    go 0 _ _ = Nothing
-    go d z (l :+: r) = go (d-1) ((R,r):z) l <|> go (d-1) ((L,l):z) r
-    go _ _ _ = Nothing
+    down 4 z (Leaf l :+: Leaf r) =
+      up 4 (Leaf 0) $ appUp L (appR (l+))
+                    $ appUp R (appL (r+)) z
+    down 4 z t = up 4 t z
 
--- Add the left and right components to the nearest number
--- on the left and right respectively. Replace the hole with
--- a zero.
-explode :: (Int, Int, Zip Int) -> Tree Int
-explode (l, r, z)
-  = fromZip (Leaf 0)
-  $ appUp L (appR (l+))
-  $ appUp R (appL (r+)) z
+    down d z (l :+: r) = down (d+1) ((R,r):z) l
+    down d z t = up d t z
+
+    up _ t [] = t
+    up d l ((R,r):z) = down d ((L,l):z) r
+    up d r ((L,l):z) = up (d-1) (l :+: r) z
 
 -- | Replace the first number with value 10 or more with a pair
 -- of it divided in half rounding first down then up.
@@ -94,12 +93,6 @@ data Side = L | R deriving (Eq, Show)
 
 -- | A hole in a binary tree. Rebuild the tree with 'fromZip'
 type Zip a = [(Side, Tree a)]
-
--- | Rebuild a tree given a zipper and the value to put in the hole.
-fromZip :: Tree a -> Zip a -> Tree a
-fromZip = foldl \x -> \case
-  (L, l) -> l :+: x
-  (R, r) -> x :+: r
 
 -- | Apply the given function to the nearest parent
 -- sibling on the given side.

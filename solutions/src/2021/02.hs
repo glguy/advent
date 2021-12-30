@@ -19,7 +19,7 @@ import Data.Foldable (foldMap')
 -- | Three possible commands a submarine can recieve.
 data C = Cforward | Cdown | Cup
 
-pure [] -- puts C into view of format's reify below
+mempty -- puts C into view of format's reify below
 
 -- | >>> :main
 -- 1636725
