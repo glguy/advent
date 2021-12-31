@@ -8,14 +8,18 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2018/day/8>
 
+Parse a tree out of a list of integers and then answer a pair of queries
+about the tree.
+
 -}
 {-# Language DeriveTraversable #-}
 module Main (main) where
 
 import Advent (format)
 import Control.Monad (replicateM)
+import Control.Monad.Trans.State.Strict (StateT(..))
+import Data.List (uncons)
 import Data.Maybe (fromMaybe)
-import Control.Monad.Yoctoparsec qualified as Y
 
 -- | Print the answers to day 8
 --
@@ -24,37 +28,37 @@ import Control.Monad.Yoctoparsec qualified as Y
 -- 33649
 main :: IO ()
 main =
-  do input <- [format|8 %u& %n|]
-     let Just (tree, []) = Y.parseString parseTree input
-     print (part1 tree)
-     print (part2 tree)
+ do input <- [format|8 %u& %n|]
+    let Just (tree, []) = runStateT parseTree input
+    print (sum tree)
+    print (part2 tree)
 
 -- | A tree can have children and metadata entries.
 data Tree a = Tree [Tree a] [a] -- ^ children and metadata
-  deriving (Functor, Foldable, Traversable)
-
--- | Sum of all metadata entries
-part1 :: Tree Int -> Int
-part1 = sum
+  deriving (Functor, Foldable, Traversable, Show)
 
 -- | Sum of metadata entries on leaf nodes and recursive call on
 -- child nodes identified by indexes stored in metadata.
 part2 :: Tree Int -> Int
 part2 (Tree xs ys)
   | null xs   = sum ys
-  | otherwise = sum [ fromMaybe 0 (index i (map part2 xs)) | i <- ys ]
+  | otherwise = sum [ sum (index (map part2 xs) (i-1)) | i <- ys, i > 0]
 
--- | 1-based list index returning Nothing on failure.
-index :: Int -> [a] -> Maybe a
-index n xs
-  | n >= 1, a:_ <- drop (n-1) xs = Just a
-  | otherwise                    = Nothing
+-- | list index returning Nothing on failure.
+index :: [a] -> Int -> Maybe a
+index xs n
+  | a:_ <- drop n xs = Just a
+  | otherwise        = Nothing
+
+-- | Get the next integer
+int :: StateT [Int] Maybe Int
+int = StateT uncons
 
 -- | Parse a tree from a list of integers
-parseTree :: Y.Parser Maybe Int (Tree Int)
+parseTree :: StateT [Int] Maybe (Tree Int)
 parseTree =
-  do n <- Y.token
-     m <- Y.token
-     a <- replicateM n parseTree
-     b <- replicateM m Y.token
-     pure (Tree a b)
+ do n <- int
+    m <- int
+    a <- replicateM n parseTree
+    b <- replicateM m int
+    pure (Tree a b)
