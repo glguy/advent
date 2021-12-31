@@ -14,12 +14,18 @@ processing a new cube, the cube is deleted from the list of
 lit cubes and then added back in as a whole cube if the command
 would turn lights on.
 
+A slower, but also popular solution using the Inclusion-Exclusion Principle
+can be found in 'solveInEx'.
+
+<https://en.wikipedia.org/wiki/Inclusion%E2%80%93exclusion_principle>
+
 -}
 module Main (main) where
-
 import Advent.Format (format)
 import Data.Kind (Type)
-
+import Data.Map (Map)
+import Data.Map.Strict qualified as Map
+import Data.Foldable (foldl')
 -- | On and off commands from the input file
 data C = Con {- ^ lights on -} | Coff {- ^ lights off -}
   deriving (Show, Eq)
@@ -39,6 +45,17 @@ main =
         p1box = p1dim (p1dim (p1dim Pt))
     print (solve [(c, b) | (c, intersectBox p1box -> Just b) <- steps])
     print (solve steps)
+
+{-
+incexc :: [(C,Box n)] -> Int
+incexc cmds =
+  case foldl step ([],[]) cmds of
+    (ons, offs) -> sum (map size ons) - sum (map size offs)
+  where
+    step (ons, offs) (c, box) =
+      ([ box | c == Con] ++ mapMaybe (intersectBox box) offs ++ ons,
+                            mapMaybe (intersectBox box) ons ++ offs)
+-}
 
 -- | Figure out how many lights the given instructions turn on.
 solve :: [(C, Box n)] -> Int
@@ -67,6 +84,8 @@ data Box :: N -> Type where
           Box ('S n) -- ^ A box extended along an axis
 
 deriving instance Show (Box n)
+deriving instance Eq (Box n)
+deriving instance Ord (Box n)
 
 -- | Returns the number of points contained in a box.
 --
@@ -128,3 +147,26 @@ subtractBox' (Dim a b xs) (Dim c d ys) =
   [Dim c a ys | c < a] ++
   [Dim b d ys | b < d] ++
   [Dim a b zs | zs <- subtractBox' xs ys]
+
+-- * Alternative solution
+
+-- | This solution uses the inclusion-exclusion principle instead
+-- of relying on 'subtractBox'
+solveInEx :: [(C, Box n)] -> Int
+solveInEx cmds =
+  sum [size k * v | (k,v) <- Map.assocs (foldl' addCommandInEx Map.empty cmds)]
+
+-- | Update the inclusion and exclusion regions based on a single command.
+-- This uses the same logic as 'solve' in that it turns off all the lights
+-- in the given region first and then it turns them back on if the command
+-- is /on/ and leaves them off if the command is /off/.
+addCommandInEx ::
+  Map (Box n) Int {- ^ inclusions and exclusions -} ->
+  (C, Box n)      {- ^ command and region        -} ->
+  Map (Box n) Int {- ^ inclusions and exclusions -}
+addCommandInEx boxes (cmd, box)
+  = Map.filter (0 /=) -- optimization to avoid finding intersections that don't matter
+  $ Map.unionWith (+) boxes
+  $ Map.fromListWith (+)
+  $ [(box,1) | cmd == Con] ++
+    [(k, -v) | (intersectBox box -> Just k,v) <- Map.assocs boxes] 
