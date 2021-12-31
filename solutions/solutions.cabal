@@ -444,7 +444,7 @@ executable sln_2018_10
 executable sln_2018_11
   import:              day
   main-is:             2018/11.hs
-  build-depends:       array, loops
+  build-depends:       array
 
 executable sln_2018_12
   import:              day

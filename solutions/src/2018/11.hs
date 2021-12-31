@@ -23,11 +23,9 @@ module Main (main) where
 
 import Advent.Coord (Coord(C))
 import Advent.Format (format)
-import Control.Monad.Loop qualified as L
 import Data.Array.Unboxed qualified as A
 import Data.Foldable (foldl')
-import Data.List (foldl1', maximumBy, intercalate)
-import Data.Ord (comparing)
+import Data.List (intercalate)
 
 type Grid = A.UArray Coord Int
 
@@ -53,9 +51,9 @@ main =
 -- >>> part1 (summedAreaTable (powerLevel 42))
 -- "21,61"
 part1 :: Grid -> String
-part1 areas = intercalate "," (map show [x,y])
-  where
-    (C y x, _) = maximumSquare areas 3 3
+part1 areas =
+  case maximumSquare areas 3 3 of
+    (C y x, _) -> intercalate "," (map show [x,y])    
 
 -- | Compute the position and size of the largest-valued square on the grid
 --
@@ -64,9 +62,9 @@ part1 areas = intercalate "," (map show [x,y])
 -- >>> part2 (summedAreaTable (powerLevel 42))
 -- "232,251,12"
 part2 :: Grid -> String
-part2 areas = intercalate "," (map show [x,y,s])
-  where
-    (C y x, s) = maximumSquare areas 1 dim
+part2 areas =
+  case maximumSquare areas 1 dim of
+    (C y x, s) -> intercalate "," (map show [x,y,s])
 
 -- | Compute power level of power cell given the cells coordinate
 -- and the player's serial number.
@@ -95,12 +93,13 @@ maximumSquare ::
   Int          {- ^ candidate size upper bound    -} ->
   (Coord, Int) {- ^ coordinate and size of square -}
 maximumSquare areas sizelo sizehi =
-  fst $ maximize $ L.loop $
-  do size <- range sizelo (sizehi+1)
-     x    <- range 1      (dim-size)
-     y    <- range 1      (dim-size)
-     let !area = rectangleSum areas (C y x) size size
-     return ((C y x, size), area)
+  fst $ maximize
+    [((C y x, size), area)
+      | size <- [sizelo .. sizehi]
+      , x    <- [1 .. dim-size-1]
+      , y    <- [1 .. dim-size-1]
+      , let !area = rectangleSum areas (C y x) size size
+      ]
 
   -- I'm using the loops package here because it saves time
   -- over generating a large list. In addition, maximumBy
@@ -108,13 +107,6 @@ maximumSquare areas sizelo sizehi =
   -- fold.
   where
     maximize = foldl' (\x y -> if snd x > snd y then x else y) ((C 0 0, 0), minBound)
-
--- | Iterate by one from the lower bound up-to but excluding the upper bound.
-range ::
-  Int {- ^ initial value -} ->
-  Int {- ^ upper bound   -} ->
-  L.Loop Int
-range lo hi = L.for lo (< hi) (1+)
 
 -- | Compute the sum of the power levels contained in a rectangle
 -- specified by its top-left corner coordinate, width, and height.
