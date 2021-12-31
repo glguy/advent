@@ -430,7 +430,7 @@ executable sln_2018_07
 executable sln_2018_08
   import:              day
   main-is:             2018/08.hs
-  build-depends:       yoctoparsec ^>= 0.1
+  build-depends:       transformers
 
 executable sln_2018_09
   import:              day
