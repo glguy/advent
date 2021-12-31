@@ -19,7 +19,6 @@ import Advent (format)
 import Control.Monad (replicateM)
 import Control.Monad.Trans.State.Strict (StateT(..))
 import Data.List (uncons)
-import Data.Maybe (fromMaybe)
 
 -- | Print the answers to day 8
 --
