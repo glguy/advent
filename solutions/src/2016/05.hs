@@ -1,34 +1,46 @@
+{-# Language ImportQualifiedPost, QuasiQuotes #-}
+{-|
+Module      : Main
+Description : Day 5 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/5>
+
+Search for a password that satisfies a leading zeros MD5 property.
+
+-}
 module Main where
 
-import           Crypto.Hash.MD5
-import qualified Data.IntMap as IntMap
-import           Data.IntMap (IntMap)
-import qualified Data.ByteString       as BS
-import qualified Data.ByteString.Char8 as B
-import           System.IO
-import           Text.Printf
+import Advent.Format (format)
+import Crypto.Hash.MD5 (hash)
+import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as B
+import Data.IntMap (IntMap)
+import Data.IntMap qualified as IntMap
+import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
+import Text.Printf (printf)
 
 main :: IO ()
 main =
-  do hSetBuffering stdout NoBuffering
-     putStrLn password1
-     putStrLn password2
-
-input :: B.ByteString
-input = B.pack "ffykfhsq"
+ do input <- B.pack <$> [format|05 %s%n|]
+    hSetBuffering stdout NoBuffering
+    putStrLn (password1 input)
+    putStrLn (password2 input)
 
 passwordLen :: Int
 passwordLen = 8
 
-password1 :: String
-password1 = fst <$> take passwordLen digitStream
+password1 :: B.ByteString -> String
+password1 input = fst <$> take passwordLen (digitStream input)
 
-password2 :: String
-password2 = replicate passwordLen '_'
+password2 :: B.ByteString -> String
+password2 input = replicate passwordLen '_'
          ++ go 0 IntMap.empty digitStream'
   where
     digitStream' =
-        [ (key, val) | (pos,val) <- digitStream
+        [ (key, val) | (pos,val) <- digitStream input
         , let key = fromEnum pos - fromEnum '0'
         , 0 <= key, key < passwordLen
         ]
@@ -55,8 +67,8 @@ render n seen =
 hexRep :: BS.ByteString -> String
 hexRep bs = printf "%02x" =<< BS.unpack bs
 
-digitStream :: [(Char,Char)]
-digitStream = go (0 :: Int)
+digitStream :: B.ByteString -> [(Char,Char)]
+digitStream input = go (0 :: Int)
   where
     go i =
       case splitAt 5 (hexRep (hash (input <> B.pack (show i)))) of
