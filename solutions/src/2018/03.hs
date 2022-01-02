@@ -9,13 +9,12 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2018/day/3>
 
 -}
-{-# Language OverloadedStrings #-} -- for parser
 module Main (main) where
 
 import Advent (format, pickOne)
 import Advent.Box (Box(..), size, intersectBox, subtractBox)
-import Data.List (tails)
 import Data.Foldable (Foldable(toList))
+import Data.List (tails)
 import Data.Maybe (isNothing)
 
 -- | Print the answers to part 1 and 2 of day 3's task.
@@ -26,21 +25,22 @@ import Data.Maybe (isNothing)
 main :: IO ()
 main =
  do input <- [format|3 (#%u %@ %u,%u: %ux%u%n)*|]
-    let boxes = [(i,Dim x (x+sx) (Dim y (y+sy) Pt)) | (i,x,y,sx,sy) <- input]
-    print (overlaps (map snd boxes))
+    let boxes = [(i, Dim x (x+sx) (Dim y (y+sy) Pt)) | (i,x,y,sx,sy) <- input]
+    print (regionSize (overlaps (map snd boxes)))
     print (noOverlaps boxes)
 
--- | Determine region size of area covered by more than one patch.
-overlaps :: [Box n] -> Int
-overlaps boxes = regionSize [o | p:ps <- tails boxes, q <- ps, o <- toList (intersectBox p q)]
+-- | Determine all pair-wise overlapping regions between the list of patches.
+overlaps :: [Box n] -> [Box n]
+overlaps boxes =
+  [q | p:ps <- tails boxes, (intersectBox p -> Just q) <- ps]
 
 -- | Determine identifier of patch with no overlaps.
-noOverlaps :: [(a, Box n)] -> a
+noOverlaps :: [(i, Box n)] -> i
 noOverlaps boxes =
   head [i | ((i,p),ps) <- pickOne boxes, all (isNothing . intersectBox p . snd) ps]
 
 -- | Determine the size of a region covered by boxes.
-regionSize :: Foldable t => t (Box n) -> Int
-regionSize = sum . map size . foldl f []
+regionSize :: [Box n] -> Int
+regionSize = sum . map size . foldl addBox []
   where
-    f xs box = box : concatMap (subtractBox box) xs
+    addBox xs box = box : (subtractBox box =<< xs)
