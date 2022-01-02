@@ -8,6 +8,8 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2018/day/3>
 
+Given a bunch of 2D regions find regions that do and do not overlap.
+
 -}
 module Main (main) where
 
