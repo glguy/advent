@@ -24,6 +24,7 @@ library
 
   exposed-modules:
     Advent
+    Advent.Box
     Advent.Chinese
     Advent.Coord
     Advent.Coord3
@@ -32,11 +33,12 @@ library
     Advent.Group
     Advent.Input
     Advent.Memo
-    Advent.PQueue
+    Advent.Nat
     Advent.Permutation
+    Advent.PQueue
     Advent.Prelude
-    Advent.ReadS
     Advent.Queue
+    Advent.ReadS
     Advent.Search
     Advent.SmallSet
 
