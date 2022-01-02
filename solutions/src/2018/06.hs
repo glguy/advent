@@ -13,18 +13,13 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent        (format, counts)
-import Advent.Coord  (Coord(C), cardinal, coordCol, coordRow,
-                      above, below, right, left, manhattan, boundingBox)
-import Data.List     (groupBy, foldl', sort, sortBy)
+import Advent.Coord (Coord(C), cardinal, coordCol, coordRow,
+                     above, below, right, left, manhattan, boundingBox)
+import Advent.Search (dfs)
+import Data.List (groupBy, sort, sortBy)
 import Data.Function (on)
-import Data.Ix       (range)
+import Data.Ix (range)
 import Data.Map qualified as Map
-import Data.Set qualified as Set
-
--- | Magic number used in part 2 when computing the region that
--- isn't too far from all the points.
-far :: Int
-far = 10000
 
 -- | Print the answers to day 6
 --
@@ -34,7 +29,7 @@ far = 10000
 main :: IO ()
 main =
  do let toCoord (x,y) = C y x
-    input <- map toCoord <$> [format|6 (%d, %d%n)*|]
+    input <- map toCoord <$> [format|6 (%u, %u%n)*|]
     print (part1 input)
     print (part2 input)
 
@@ -83,22 +78,14 @@ part1 input
 -- is in bounds. Once we're unable to grow the region any further we return its
 -- size.
 part2 :: [Coord] -> Int
-part2 input = search Set.empty (Set.singleton startingPoint)
-
+part2 input = length (dfs step startingPoint)
   where
     distances :: Coord -> Int
-    distances (C y x) = sum (map (manhattan (C y x)) input)
+    distances c = sum (map (manhattan c) input)
+
+    step c = [n | n <- cardinal c, distances n < 10000]
 
     startingPoint = C (median (map coordRow input)) (median (map coordCol input))
-
-    search seen next =
-      case Set.minView next of
-        Nothing -> Set.size seen
-        Just (i, next')
-          | Set.notMember i seen, distances i < far ->
-              search (Set.insert i seen)
-                     (foldl' (flip Set.insert) next' (cardinal i))
-          | otherwise -> search seen next'
 
 -- | Return the median element of a list. For even lists return the second
 -- of the two middle elements.
