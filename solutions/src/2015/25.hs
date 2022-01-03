@@ -1,4 +1,4 @@
-{-# Language MagicHash, UnboxedSums #-}
+{-# Language MagicHash, UnboxedSums, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 25 solution
@@ -11,13 +11,16 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
+import Advent.Format (format)
 import GHC.Natural (Natural)
 import GHC.Num.Integer (integerPowMod#)
 
 -- | >>> :main
 -- 8997277
 main :: IO ()
-main = print (code 3010 3019)
+main =
+ do (row,col) <- [format|25 To continue, please consult the code grid in the manual.  Enter the code at row %lu, column %lu.%n|]
+    print (code row col)
 
 -- | Compute the value at a location on Santa's infinite sheet of paper. 
 code ::
