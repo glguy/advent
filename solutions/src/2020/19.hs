@@ -35,13 +35,13 @@ type Rule = Either Char [[Int]]
 -- 323
 main :: IO ()
 main =
-  do (rs,ws) <- [format|19 (%u: ("%c"|%u& &( %| ))%n)*%n(%s%n)*|]
-     let rules1 = IntMap.fromList rs
-         rules2 = IntMap.insert  8 (Right [[42   ],[42, 8   ]])
-                $ IntMap.insert 11 (Right [[42,31],[42,11,31]])
-                $ rules1
-     print (run rules1 ws)
-     print (run rules2 ws)
+ do (rs,ws) <- [format|19 (%u: ("%c"|%u& &( %| ))%n)*%n(%s%n)*|]
+    let rules1 = IntMap.fromList rs
+        rules2 = IntMap.insert  8 (Right [[42   ],[42, 8   ]])
+               $ IntMap.insert 11 (Right [[42,31],[42,11,31]])
+               $ rules1
+    print (run rules1 ws)
+    print (run rules2 ws)
 
 -- | Count the number of input strings that satisfy the parse rules.
 run ::
