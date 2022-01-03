@@ -14,7 +14,7 @@ module Advent.Memo (
   memo, memo2, memo3, memo4, memo5, memo6,
   ) where
 
-import Data.MemoTrie
+import Data.MemoTrie (HasTrie, memo, memo2, memo3, mup)
 
 -- | Memoize a quaternary function on successive arguments.
 -- Take care to exploit any partial evaluation.
@@ -23,6 +23,7 @@ memo4 ::
   (a -> b -> c -> d -> e) ->
   (a -> b -> c -> d -> e)
 memo4 = mup memo3
+
 -- | Memoize a quaternary function on successive arguments.
 -- Take care to exploit any partial evaluation.
 memo5 ::
@@ -30,6 +31,7 @@ memo5 ::
   (a -> b -> c -> d -> e -> f) ->
   (a -> b -> c -> d -> e -> f)
 memo5 = mup memo4
+
 -- | Memoize a quaternary function on successive arguments.
 -- Take care to exploit any partial evaluation.
 memo6 ::
