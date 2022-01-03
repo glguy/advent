@@ -15,7 +15,7 @@ module Main (main) where
 
 import Advent.Format (format)
 
--- | :main
+-- | >>> :main
 -- 3188480
 -- 4779847
 main :: IO ()
