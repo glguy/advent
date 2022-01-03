@@ -32,7 +32,8 @@ and compute distances on it.
 module Main where
 
 import Advent.Format (format)
-import Advent.Coord (Coord(..), above, below, left, right, origin)
+import Advent.Coord (Coord(..), north, east, south, west)
+import Data.List (scanl')
 
 data D = Dn | Dne | Dnw | Dse | Dsw | Ds deriving Show
 
@@ -47,10 +48,9 @@ mempty
 main :: IO ()
 main =
   do input <- [format|11 @D&,%n|]
-     let distances = distance <$> scanl (flip move) origin input
+     let distances = distance <$> partialSums (map translate input)
      print (last    distances)
      print (maximum distances)
-
 
 -- | Compute minimum path distance from the origin on the hex grid.
 --
@@ -61,14 +61,21 @@ main =
 distance :: Coord -> Int
 distance (C y x) = maximum (map abs [x,y,x+y])
 
--- | Move one cell on the hex grid.
+-- | Translate hex direction to grid projection.
 --
--- >>> (`move` origin) <$> [Dn,Ds,Dne,Dse,Dnw,Dsw]
+-- >>> translate <$> [Dn,Ds,Dne,Dse,Dnw,Dsw]
 -- [C 1 0,C (-1) 0,C 0 1,C (-1) 1,C 1 (-1),C 0 (-1)]
-move :: D -> Coord -> Coord
-move Dn  = below
-move Ds  = above
-move Dne = right
-move Dsw = left
-move Dnw = left . below
-move Dse = right . above
+translate :: D -> Coord
+translate Dn  = south
+translate Ds  = north
+translate Dne = east
+translate Dsw = west
+translate Dnw = south + west
+translate Dse = north + east
+
+-- | Compute the partial sums of a list.
+--
+-- >>> partialSums [1,4,7]
+-- [0,1,5,12]
+partialSums :: Num a => [a] -> [a]
+partialSums = scanl' (+) 0

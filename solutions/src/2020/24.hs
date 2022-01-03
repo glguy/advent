@@ -14,7 +14,7 @@ Cellular automaton on a hexagonal grid
 module Main (main) where
 
 import Advent (counts, times)
-import Advent.Coord (Coord, above, below, left, right, origin)
+import Advent.Coord (Coord, north, east, south, west)
 import Advent.Format (format)
 import Data.Foldable (foldl')
 import Data.Map (Map)
@@ -50,15 +50,15 @@ step board
     rule k v = v == 2 || v == 1 && Set.member k board
 
 neighborhood :: Map Coord Int
-neighborhood = counts [move d origin | d <- [Dw,De,Dne,Dse,Dnw,Dsw]]
+neighborhood = counts (map translate [Dw,De,Dne,Dse,Dnw,Dsw])
 
 walk :: [D] -> Coord
-walk = foldl' (flip move) origin
+walk = sum . map translate
 
-move :: D -> Coord -> Coord
-move Dw  = left
-move De  = right
-move Dne = above . right
-move Dse = below
-move Dnw = above
-move Dsw = below . left
+translate :: D -> Coord
+translate Dw  = west
+translate De  = east
+translate Dne = north + east
+translate Dse = south
+translate Dnw = north
+translate Dsw = south + west
