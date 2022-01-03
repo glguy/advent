@@ -48,7 +48,7 @@ mempty
 main :: IO ()
 main =
   do input <- [format|11 @D&,%n|]
-     let distances = distance <$> partialSums (map translate input)
+     let distances = map distance (partialSums (map translate input))
      print (last    distances)
      print (maximum distances)
 
