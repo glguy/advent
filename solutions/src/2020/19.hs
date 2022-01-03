@@ -8,14 +8,19 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2020/day/19>
 
+Run a parser define by a simple list of alternatives of sequences or
+literal matches.
+
 -}
 module Main (main) where
 
 import Advent (countBy)
 import Advent.Format (format)
+import Data.Foldable (traverse_, asum)
+import Data.Functor (void)
 import Data.IntMap.Strict (IntMap)
 import Data.IntMap qualified as IntMap
-import Text.ParserCombinators.ReadP (ReadP, char, choice, eof, pfail, readP_to_S)
+import Advent.ReadS (P(..), char, eof)
 
 -- | Rules either match a literal string, or match a sum
 -- of product of sub-rules.
@@ -38,24 +43,21 @@ main =
      print (run rules1 ws)
      print (run rules2 ws)
 
+-- | Count the number of input strings that satisfy the parse rules.
 run ::
   IntMap Rule {- ^ parse rules                      -} ->
   [String]    {- ^ input strings                    -} ->
   Int         {- ^ number of matching input strings -}
-run rules = countBy (not . null . readP_to_S topParser)
+run rules = countBy (not . null . topParser)
   where
-    topParser :: ReadP ()
-    topParser = parsers IntMap.! 0 >> eof
+    topParser :: ReadS ()
+    P topParser = parsers IntMap.! 0 >> eof
 
-    parsers :: IntMap (ReadP Char)
+    parsers :: IntMap (P ())
     parsers = ruleParser <$> rules
 
-    ruleParser :: Rule -> ReadP Char
-    ruleParser (Left  c) = char c
-    ruleParser (Right x) = choice (map order x)
+    ruleParser :: Rule -> P ()
+    ruleParser = either (void . char) (asum . map order)
 
-    order []     = pfail
-    order [x]    = parsers IntMap.! x
-    order (x:xs) = parsers IntMap.! x >> order xs
-
-
+    order :: [Int] -> P ()
+    order = traverse_ (parsers IntMap.!)
