@@ -1,4 +1,14 @@
 {-# Language QuasiQuotes #-}
+{-|
+Module      : Main
+Description : Day 22 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/22>
+
+-}
 module Main where
 
 import Advent.Format ( format )

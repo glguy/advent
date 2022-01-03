@@ -14,13 +14,16 @@ module Main where
 import GHC.Natural (Natural)
 import GHC.Num.Integer (integerPowMod#)
 
+-- | >>> :main
+-- 8997277
 main :: IO ()
 main = print (code 3010 3019)
 
+-- | Compute the value at a location on Santa's infinite sheet of paper. 
 code ::
   Integer {- ^ row    -} ->
   Integer {- ^ column -} ->
-  Integer
+  Integer {- ^ cell value -}
 code row col
   = 20151125
   * powModInteger 252533 (cell (row-1) (col-1)) 33554393
