@@ -54,7 +54,7 @@ main =
 
 -- | Compute minimum path distance from the origin on the hex grid.
 --
--- >>> distance <$> [C (-1) 0,C (-1) 1,C 0 (-1),C 0 1,C 1 (-1),C 1 0)]
+-- >>> distance <$> [C (-1) 0,C (-1) 1,C 0 (-1),C 0 1,C 1 (-1),C 1 0]
 -- [1,1,1,1,1,1]
 -- >>> distance <$> [C (-1) (-1),C 1 1,C 2 (-1)]
 -- [2,2,2]
@@ -64,14 +64,14 @@ distance (C y x) = maximum (map abs [x,y,x+y])
 -- | Translate hex direction to grid projection.
 --
 -- >>> translate <$> [Dn,Ds,Dne,Dse,Dnw,Dsw]
--- [C 1 0,C (-1) 0,C 0 1,C (-1) 1,C 1 (-1),C 0 (-1)]
+-- [C (-1) 0,C 1 0,C (-1) 1,C 0 1,C 0 (-1),C 1 (-1)]
 translate :: D -> Coord
-translate Dn  = south
-translate Ds  = north
-translate Dne = east
-translate Dsw = west
-translate Dnw = south + west
-translate Dse = north + east
+translate Dne = north + east
+translate Dn  = north
+translate Dnw = west
+translate Dsw = south + west
+translate Ds  = south
+translate Dse = east
 
 -- | Compute the partial sums of a list.
 --
