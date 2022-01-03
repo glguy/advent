@@ -12,7 +12,7 @@ Build a huge polymer chain and compute how many of
 each element it contains.
 
 This problem requires memoization as the size of the
-resulting polymer would be humungous!
+resulting polymer would be humongous!
 
 -}
 module Main (main) where

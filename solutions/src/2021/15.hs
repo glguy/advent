@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 Finding the shortest route through a cave, and then
 finding the shortest route through a slightly larger cave.
 
-This solution uses Djikstra's Algorithm to perform a
+This solution uses Dijkstra's Algorithm to perform a
 shortest path search through the cave. (A* with a zero
 heuristic degenerates to this)
 

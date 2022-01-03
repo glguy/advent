@@ -8,7 +8,7 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2021/day/6>
 
-Multiplying fish! To make this problem tractible
+Multiplying fish! To make this problem tractable
 track how many of each age of fish we have rather
 than tracking all the individual ages of the fish.
 

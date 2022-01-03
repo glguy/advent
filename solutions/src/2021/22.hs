@@ -47,17 +47,6 @@ main =
     print (solve [(c, b) | (c, intersectBox p1box -> Just b) <- steps])
     print (solve steps)
 
-{-
-incexc :: [(C,Box n)] -> Int
-incexc cmds =
-  case foldl step ([],[]) cmds of
-    (ons, offs) -> sum (map size ons) - sum (map size offs)
-  where
-    step (ons, offs) (c, box) =
-      ([ box | c == Con] ++ mapMaybe (intersectBox box) offs ++ ons,
-                            mapMaybe (intersectBox box) ons ++ offs)
--}
-
 -- | Figure out how many lights the given instructions turn on.
 solve :: [(C, Box n)] -> Int
 solve = sum . map size . foldl applyCommand []

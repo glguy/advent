@@ -85,7 +85,7 @@ corners (Bot (C3 x y z) r) =
   ]
 
 -- | Translation of bot 3D center and radius into a 4D cube consisting of the four pairs
--- of two parallel planes that define an octohedron.
+-- of two parallel planes that define an octahedron.
 botBox :: Bot -> Box ('S ('S ('S ('S 'Z))))
 botBox (Bot (C3 x y z) r) = dim cx (dim cy (dim cz (dim cw Pt)))
   where

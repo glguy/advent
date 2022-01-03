@@ -8,13 +8,13 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2021/day/16>
 
-Decode an expression from a bitstream.
+Decode an expression from a bit stream.
 
 This solution uses the ReadP parser combinator module.
 Since ReadP only operates on 'String' parsing bits is
 simulated by parsing strings of the characters @'0'@ and @'1'@.
 ReadP's 'ReadP.gather' operation is useful for computing
-the bitsize of a packet which comes up in some of the
+the bit size of a packet which comes up in some of the
 operator packets.
 
 = Examples

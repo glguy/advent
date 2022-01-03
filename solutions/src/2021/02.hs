@@ -16,7 +16,7 @@ module Main (main) where
 import Advent (format)
 import Data.Foldable (foldMap')
 
--- | Three possible commands a submarine can recieve.
+-- | Three possible commands a submarine can receive.
 data C = Cforward | Cdown | Cup
 
 mempty -- puts C into view of format's reify below
