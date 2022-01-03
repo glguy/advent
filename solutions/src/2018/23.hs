@@ -21,6 +21,8 @@ import Data.Ord (comparing)
 data Bot = Bot { botPos :: !Coord3, botRadius :: !Int }
   deriving (Eq, Ord, Show)
 
+-- | Predicate for points that a bot's signal is strong enough to reach.
+-- These points form a regular octohedron centered at the bot's location.
 botSees :: Bot -> Coord3 -> Bool
 botSees (Bot c r) p = manhattan c p <= r
 
@@ -82,6 +84,8 @@ corners (Bot (C3 x y z) r) =
   , C3 x y (z-r)
   ]
 
+-- | Translation of bot 3D center and radius into a 4D cube consisting of the four pairs
+-- of two parallel planes that define an octohedron.
 botBox :: Bot -> Box ('S ('S ('S ('S 'Z))))
 botBox (Bot (C3 x y z) r) = dim cx (dim cy (dim cz (dim cw Pt)))
   where
