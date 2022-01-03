@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/15>
+
 Day 15 has us comparing two number sequence generators together to find
 pairs that match on the lowest 16 bits.
 

@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/14>
+
 Day 14 ties Day 10 and Day 12 together presumably to see how quickly
 we can combine our previous results to make something new.
 

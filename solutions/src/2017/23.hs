@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/23>
+
 Part 1 is just a copy/paste of day 18
 
 Part 2 was done with manual analysis

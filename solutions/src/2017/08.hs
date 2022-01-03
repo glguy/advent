@@ -6,9 +6,12 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/8>
+
 Day 8 poses a problem of parsing a simple programming language,
 executing it, and computing simple metrics on the values stored
 in variables during execution.
+
 -}
 module Main where
 

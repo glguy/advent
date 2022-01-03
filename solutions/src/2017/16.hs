@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/16>
+
 Day 16 defines a language of renaming and permutations and asks us
 to iterate the program one billion times!
 

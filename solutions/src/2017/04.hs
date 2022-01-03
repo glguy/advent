@@ -5,6 +5,9 @@ Description : Day 4 solution
 Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2017/day/4>
+
 -}
 module Main where
 

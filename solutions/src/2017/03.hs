@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/3>
+
 Day 3 asks questions about Ulam's Spiral <https://en.wikipedia.org/wiki/Ulam_spiral>
 
 -}

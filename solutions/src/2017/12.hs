@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/12>
+
 Day 12 asks us questions about connected components of a graph.
 For fun we'll just use the @fgl@ package to do this.
 -}

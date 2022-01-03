@@ -5,6 +5,9 @@ Description : Day 6 solution
 Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2017/day/6>
+
 -}
 module Main where
 

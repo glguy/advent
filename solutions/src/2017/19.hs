@@ -5,6 +5,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/19>
+
 Day 19 has us follow an ASCII art trail and report on the letters
 we find along the way as well as the total trail path length.
 

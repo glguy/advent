@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/13>
+
 Day 13 asks us questions about packets traveling through
 a periodic scanner.
 -}

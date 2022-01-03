@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/10>
+
 Day 10 poses a convoluted knot-tying algorithm to implement.
 
 -}

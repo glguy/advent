@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/9>
+
 Day 9 poses a problem of parsing a nested bracket structure.
 
 -}

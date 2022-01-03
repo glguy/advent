@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/17>
+
 Day 17 has us repeatedly insert elements into a circular buffer and
 asks about the elements following some needle.
 

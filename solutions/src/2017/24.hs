@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/24>
+
 Build long bridges out of pieces with a pin count on each
 end. Pieces can be flipped over and to be connected the pin
 counts of two pieces must match.
