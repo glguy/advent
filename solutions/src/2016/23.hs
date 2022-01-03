@@ -1,4 +1,14 @@
 {-# Language ImportQualifiedPost, TemplateHaskell, LambdaCase #-}
+{-|
+Module      : Main
+Description : Day 23 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/23>
+
+-}
 module Main where
 
 import Advent ( getInputLines )

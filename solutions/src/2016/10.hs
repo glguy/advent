@@ -1,4 +1,14 @@
 {-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost #-}
+{-|
+Module      : Main
+Description : Day 10 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/10>
+
+-}
 module Main where
 
 import Advent.Format (format)

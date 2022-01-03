@@ -1,4 +1,14 @@
 {-# Language ImportQualifiedPost #-}
+{-|
+Module      : Main
+Description : Day 19 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/19>
+
+-}
 module Main where
 
 import Data.Sequence (Seq)

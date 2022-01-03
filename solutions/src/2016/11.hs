@@ -1,4 +1,14 @@
 {-# Language ImportQualifiedPost, TemplateHaskell #-}
+{-|
+Module      : Main
+Description : Day 11 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/11>
+
+-}
 module Main (main) where
 
 import Control.Lens

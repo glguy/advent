@@ -1,4 +1,14 @@
 {-# Language TransformListComp #-}
+{-|
+Module      : Main
+Description : Day 13 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/13>
+
+-}
 module Main where
 
 import Data.Bits (Bits(popCount))

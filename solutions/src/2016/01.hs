@@ -1,4 +1,14 @@
 {-# Language QuasiQuotes, TemplateHaskell #-}
+{-|
+Module      : Main
+Description : Day 1 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/1>
+
+-}
 module Main where
 
 import           Advent

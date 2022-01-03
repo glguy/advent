@@ -1,4 +1,14 @@
 {-# Language MagicHash, UnboxedSums #-}
+{-|
+Module      : Main
+Description : Day 25 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/25>
+
+-}
 module Main where
 
 import GHC.Natural (Natural)

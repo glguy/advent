@@ -1,4 +1,14 @@
 {-# Language QuasiQuotes #-}
+{-|
+Module      : Main
+Description : Day 4 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/4>
+
+-}
 module Main where
 
 import Advent

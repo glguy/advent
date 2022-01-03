@@ -1,3 +1,13 @@
+{-|
+Module      : Main
+Description : Day 6 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/6>
+
+-}
 module Main where
 
 import           Advent

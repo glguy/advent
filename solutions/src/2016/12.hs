@@ -1,4 +1,14 @@
 {-# Language RankNTypes, ImportQualifiedPost, LambdaCase #-}
+{-|
+Module      : Main
+Description : Day 12 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/12>
+
+-}
 module Main where
 
 import Advent ( getInputLines )

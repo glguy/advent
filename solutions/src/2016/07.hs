@@ -1,4 +1,14 @@
 {-# Language QuasiQuotes, BlockArguments #-}
+{-|
+Module      : Main
+Description : Day 7 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/7>
+
+-}
 module Main where
 
 import Advent

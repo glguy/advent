@@ -1,4 +1,14 @@
 {-# Language QuasiQuotes, TupleSections #-}
+{-|
+Module      : Main
+Description : Day 8 solution
+Copyright   : (c) Eric Mertens, 2021
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2016/day/8>
+
+-}
 module Main (main) where
 
 import Advent
