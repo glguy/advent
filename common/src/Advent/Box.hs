@@ -2,8 +2,9 @@
 module Advent.Box where
 
 import Advent.Nat (Nat(S,Z))
+import Control.Monad (foldM)
 import Data.Kind (Type)
--- * N-dimensional boxes
+import GHC.Stack (HasCallStack)
 
 -- | An n-dimensional box.
 data Box :: Nat -> Type where
@@ -42,6 +43,11 @@ intersectBox :: Box n -> Box n -> Maybe (Box n)
 intersectBox Pt Pt = Just Pt
 intersectBox (Dim a b xs) (Dim c d ys) =
   [Dim x y zs | let x = max a c, let y = min b d, x < y, zs <- intersectBox xs ys]
+
+-- | Intersection of one or more boxes.
+intersectBoxes :: HasCallStack => [Box n] -> Maybe (Box n)
+intersectBoxes []     = error "intersectBoxes: empty intersection"
+intersectBoxes (x:xs) = foldM intersectBox x xs
 
 -- | Subtract the first box from the second box returning a list of boxes
 -- that cover all the remaining area.

@@ -12,15 +12,17 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (countBy, format)
-import Advent.Box (Box(..), intersectBox)
-import Advent.Coord3 (manhattan, origin, Coord3(..))
+import Advent.Box (Box(..), intersectBoxes)
+import Advent.Coord3 (manhattan, Coord3(..))
 import Advent.Nat (Nat(S, Z))
 import Data.List (maximumBy)
-import Data.Maybe (fromJust)
 import Data.Ord (comparing)
 
-data Bot = Bot !Coord3 !Int
+data Bot = Bot { botPos :: !Coord3, botRadius :: !Int }
   deriving (Eq, Ord, Show)
+
+botSees :: Bot -> Coord3 -> Bool
+botSees (Bot c r) p = manhattan c p <= r
 
 -- | Print the answers to day 23
 --
@@ -34,12 +36,12 @@ main =
     print (part1 bots)
     print (part2 bots)
 
--- | Compute the maximum number of nanobots (including self) that are in
--- range of any nanobot.
+-- | Compute the number of nanobots (including self) that are in
+-- range of the nanobot with the largest radius.
 part1 :: [Bot] -> Int
-part1 bots = countBy (\(Bot bot _) -> manhattan bot here <= r) bots
+part1 bots = countBy (botSees strongBot . botPos) bots
   where
-    Bot here r = maximumBy (comparing (\(Bot _ r) -> r)) bots
+    strongBot = maximumBy (comparing botRadius) bots
 
 -- | Compute the minimum distance to the point that is in range of the
 -- maximum number of nanobots.
@@ -52,11 +54,11 @@ part1 bots = countBy (\(Bot bot _) -> manhattan bot here <= r) bots
 part2 :: [Bot] -> Int
 part2 bots
   = snd $ minimum
-    [(-length bots', distToOrigin region)
+    [(-length boxes, distToOrigin region)
     | bot <- bots
     , p   <- corners bot
-    , let bots' = filter (\(Bot botPos botRad) -> manhattan p botPos <= botRad) bots
-    , let region = foldl1 (\acc x -> fromJust (intersectBox acc x)) (map botBox bots')
+    , let boxes = [botBox b | b <- bots, botSees b p]
+    , let Just region = intersectBoxes boxes -- all the boxes see p, so 'Just' is assured.
     ]
 
 -- | Compute the minimum distance of any point contained within a box to the origin.
