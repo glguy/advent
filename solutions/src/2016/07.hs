@@ -11,15 +11,18 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent
-import Control.Monad
-import Data.List
+import Advent (format)
+import Control.Monad (guard)
+import Data.List (isInfixOf, tails)
 
+-- | >>> :main
+-- 118
+-- 260
 main :: IO ()
 main =
-  do xs <- [format|7 ((%a*)&(]|[)%n)*|]
-     print (length (filter supportsTLS xs))
-     print (length (filter supportsSSL xs))
+ do xs <- [format|7 ((%a*)&(]|[)%n)*|]
+    print (length (filter supportsTLS xs))
+    print (length (filter supportsSSL xs))
 
 split :: [String] -> ([String], [String])
 split [] = ([],[])

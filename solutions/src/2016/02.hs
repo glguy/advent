@@ -12,7 +12,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (arrIx, format)
-import Advent.Coord
+import Advent.Coord (Coord(..), east, north, origin, south, west)
 import Data.Foldable (foldl')
 import Data.Array (Array, (!), listArray)
 
@@ -20,11 +20,14 @@ data D = DL | DR | DU | DD
 
 mempty
 
+-- | >>> :main
+-- 97289
+-- 9A7DC
 main :: IO ()
 main =
-  do cmds <- [format|2 (@D*%n)*|]
-     putStrLn (computeCode keys1 cmds)
-     putStrLn (computeCode keys2 cmds)
+ do cmds <- [format|2 (@D*%n)*|]
+    putStrLn (computeCode keys1 cmds)
+    putStrLn (computeCode keys2 cmds)
 
 keys1 :: Array Coord Char
 keys1 = listArray (C (-1) (-1), C 1 1)
@@ -54,15 +57,13 @@ process ks = foldl' aux
       | isValid ks pos' = pos'
       | otherwise       = pos
       where
-        pos' = step pos mov
+        pos' = pos + translate mov
 
 isValid :: Array Coord Char -> Coord -> Bool
 isValid ks i = maybe False (/= '.') (arrIx ks i)
 
-step :: Coord -> D -> Coord
-step c mov =
-  case mov of
-    DL -> left c
-    DR -> right c
-    DU -> above c
-    DD -> below c
+translate :: D -> Coord
+translate DL = west
+translate DR = east
+translate DU = north
+translate DD = south

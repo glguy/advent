@@ -11,19 +11,22 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent
-import Data.Char
-import Data.List
+import Advent (format, counts)
+import Data.Char (ord, chr)
+import Data.List (sortBy)
 import qualified Data.Map as Map
 
 type Entry = ([String], Int, String)
 
+-- | >>> :main
+-- 158835
+-- [993]
 main :: IO ()
 main =
-  do input <- [format|4 ((%a+-)*%d[%a*]%n)*|]
-     let valid = [e | e <- input, isGoodEntry e]
-     print (sum [sid | (_, sid, _) <- valid])
-     print [sid | e@(_, sid, _) <- valid, decryptEntry e == "northpole object storage"]
+ do input <- [format|4 ((%a+-)*%d[%a*]%n)*|]
+    let valid = [e | e <- input, isGoodEntry e]
+    print (sum [sid | (_, sid, _) <- valid])
+    print [sid | e@(_, sid, _) <- valid, decryptEntry e == "northpole object storage"]
 
 decryptEntry :: Entry -> String
 decryptEntry (name, sid, _) = unwords (map (map (decrypt sid)) name)

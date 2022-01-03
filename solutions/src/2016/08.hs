@@ -8,16 +8,17 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2016/day/8>
 
+Run a series of pixel rotation commands to find the
+solution image.
+
 -}
 module Main (main) where
 
-import Advent
-import Advent.Coord
-import Control.Concurrent
-import Control.Monad
+import Advent (format, countBy)
+import Advent.Coord (Coord(..), drawCoords)
+import Control.Monad (when)
 import Data.Array.IO
-import Data.Foldable
-
+import Data.Foldable (for_, traverse_)
 
 rows, cols :: Int
 rows = 6
@@ -34,47 +35,39 @@ toCommand (Left (Left (x,y))) = Rect x y
 toCommand (Left (Right (y,n))) = RotateRow y n
 toCommand (Right (x,n)) = RotateCol x n
 
+-- | >>> :main
+-- 128
+-- ████  ██   ██  ███   ██  ███  █  █ █   █ ██   ██
+-- █    █  █ █  █ █  █ █  █ █  █ █  █ █   ██  █ █  █
+-- ███  █  █ █  █ █  █ █    █  █ ████  █ █ █  █ █  █
+-- █    █  █ ████ ███  █ ██ ███  █  █   █  ████ █  █
+-- █    █  █ █  █ █ █  █  █ █    █  █   █  █  █ █  █
+-- ████  ██  █  █ █  █  ███ █    █  █   █  █  █  ██
 main :: IO ()
 main =
-  do xs <- [format|8 ((rect %ux%u|rotate row y=%u by %u|rotate column x=%u by %u)%n)*|]
-     
-     interp (toCommand <$> xs)
-
-interp :: [Command] -> IO ()
-interp cmds =
-  do a <- newArray (C 0 0,C (rows-1) (cols-1)) False
+ do input <- [format|8 ((rect %ux%u|rotate row y=%u by %u|rotate column x=%u by %u)%n)*|]
+    let cmds = map toCommand input
+    a <- newArray (C 0 0,C (rows-1) (cols-1)) False
           :: IO (IOUArray Coord Bool)
-
-     for_ cmds $ \cmd ->
-       do interpCommand a cmd
-          print cmd
-          drawScreen a
-          threadDelay 25000
-
-     n <- countPixels a
-     putStrLn ("Pixels: " ++ show n)
+    traverse_ (interpCommand a) cmds
+    print =<< countPixels a
+    drawScreen a
 
 drawScreen :: IOUArray Coord Bool -> IO ()
 drawScreen a =
-  for_ [0..5] $ \y ->
-    do xs <- traverse (\x -> readArray a (C y x)) [0..cols-1]
-       putStrLn (map toBlock xs)
+ do xs <- getAssocs a
+    putStr (drawCoords [c | (c, True) <- xs])
 
 countPixels :: IOUArray Coord Bool -> IO Int
 countPixels a =
   do xs <- getElems a
      return $! countBy id xs
 
-toBlock :: Bool -> Char
-toBlock True  = '█'
-toBlock False = ' '
-
 interpCommand :: IOUArray Coord Bool -> Command -> IO ()
 interpCommand a (Rect xn yn) =
   for_ [0 .. xn-1] $ \x ->
   for_ [0 .. yn-1] $ \y ->
   writeArray a (C y x) True
-
 interpCommand a (RotateCol x n) = rotate a (`C` x) rows n
 interpCommand a (RotateRow y n) = rotate a (C y) cols n
 

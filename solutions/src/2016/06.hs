@@ -1,3 +1,4 @@
+{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 6 solution
@@ -10,16 +11,19 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import           Advent
-import           Data.List
-import qualified Data.Map as Map
-import           Data.Ord
+import Advent (getInputLines)
+import Data.List (transpose, maximumBy)
+import Data.Map qualified as Map
+import Data.Ord (Down(Down), comparing)
 
+-- | >>> :main
+-- xdkzukcf
+-- cevsgyvd
 main :: IO ()
 main =
-  do input <- getInputLines 6
-     putStrLn (decode id   input)
-     putStrLn (decode Down input)
+ do input <- getInputLines 6
+    putStrLn (decode id   input)
+    putStrLn (decode Down input)
 
 decode :: Ord a => (Int -> a) -> [String] -> String
 decode f xs = mostCommon f <$> transpose xs

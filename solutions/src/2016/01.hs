@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, TemplateHaskell #-}
 {-|
 Module      : Main
 Description : Day 1 solution
@@ -11,22 +11,24 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import           Advent
-import           Advent.Coord
-
-import           Data.List
-import qualified Data.Set as Set
+import Advent (format)
+import Advent.Coord (Coord, manhattan, north, origin, turnLeft, turnRight)
+import Data.List (mapAccumL)
+import Data.Set qualified as Set
 
 data D = DL | DR
 
 mempty
 
+-- | >>> :main
+-- 241
+-- Just 116
 main :: IO ()
 main =
-  do cmds <- [format|1 (@D%d)&(, )%n|]
-     let path = computePath cmds
-     print (part1 path)
-     print (part2 path)
+ do cmds <- [format|1 (@D%d)&(, )%n|]
+    let path = computePath cmds
+    print (part1 path)
+    print (part2 path)
 
 -- | Given a list of steps determine the ultimate Manhattan-distance from
 -- the starting position.
