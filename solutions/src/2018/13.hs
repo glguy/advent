@@ -42,10 +42,10 @@ type CartQueue = Map Coord Cart
 -- 50,100
 main :: IO ()
 main =
-  do road <- Road <$> getInputArray 13
-     let carts = findCarts road
-     putStrLn (part1 road carts)
-     putStrLn (part2 road carts)
+ do road <- Road <$> getInputArray 13
+    let carts = findCarts road
+    putStrLn (part1 road carts)
+    putStrLn (part2 road carts)
 
 -- | Format a coordinate into X,Y notation.
 --
@@ -65,15 +65,6 @@ part2 road carts = format (simulate onCollision road carts)
     -- when a car collides, clear that location and resume the simulation
     onCollision pos ready done =
       tick onCollision road (Map.delete pos ready) (Map.delete pos done)
-
--- | Parse the input file as a 'Road'
-parseRoad :: [String] -> Road
-parseRoad rs = Road (A.array (C 0 0, C (h-1) (w-1)) assocs)
-  where
-    w      = length (head rs)
-    h      = length rs
-    assocs = [(C y x, c) | (y,r) <- zip [0..] rs
-                         , (x,c) <- zip [0..] r]
 
 -- | Look up the road element at a particular coordinate
 indexRoad :: Road -> Coord -> Char
