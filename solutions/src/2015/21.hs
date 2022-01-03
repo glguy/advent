@@ -1,3 +1,4 @@
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -7,23 +8,31 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2015/day/21>
 
+Buy an equipment loadout and see how it fairs against a boss in a battle.
+
 -}
 module Main where
 
+import Advent.Format (format)
 import Data.List ( maximumBy, minimumBy )
 import Data.Ord ( comparing )
 
 data Item = Item { itemName :: String, itemCost, itemDamage, itemArmor :: Int }
   deriving (Show, Read)
 
+-- | >>> :main
+-- 78
+-- 148
 main :: IO ()
 main =
-  do print $ minimumBy (comparing itemCost)
-           $ filter fight
-           $ gearOptions
-     print $ maximumBy (comparing itemCost)
-           $ filter (not . fight)
-           $ gearOptions
+ do (hp,dmg,armor) <- [format|21 Hit Points: %u%nDamage: %u%nArmor: %u%n|]
+    let win = fight hp dmg armor
+    print $ minimum $ map itemCost
+          $ filter win
+          $ gearOptions
+    print $ maximum $ map itemCost
+          $ filter (not . win)
+          $ gearOptions
 
 emptyItem :: String -> Item
 emptyItem name = Item name 0 0 0 
@@ -79,8 +88,13 @@ chooseUpTo 0 _ = [[]]
 chooseUpTo _ [] = [[]]
 chooseUpTo n (x:xs) = map (x:) (chooseUpTo (n-1) xs) ++ chooseUpTo n xs
 
-fight :: Item -> Bool
-fight gear = outcome 100 (max 1 (8 - itemArmor gear)) 104 (max 1 (itemDamage gear - 1))
+fight ::
+  Int {- ^ hit points -} ->
+  Int {- ^ damage -} ->
+  Int {- ^ armor -} ->
+  Item ->
+  Bool
+fight hp dmg armor gear = outcome 100 (max 1 (dmg - itemArmor gear)) hp (max 1 (itemDamage gear - armor))
 
 outcome ::
   Int -> Int ->
