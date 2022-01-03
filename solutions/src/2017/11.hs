@@ -6,6 +6,8 @@ Copyright   : (c) Eric Mertens, 2017
 License     : ISC
 Maintainer  : emertens@gmail.com
 
+<https://adventofcode.com/2017/day/11>
+
 Day 11 asks us to implement a hex grid coordinate system
 and compute distances on it.
 
@@ -38,10 +40,14 @@ mempty
 
 -- | Print the solutions to day 11. The input file can be overridden
 -- via the command-line.
+--
+-- >>> :main
+-- 761
+-- 1542
 main :: IO ()
 main =
   do input <- [format|11 @D&,%n|]
-     let distances = distance <$> scanl move origin input
+     let distances = distance <$> scanl (flip move) origin input
      print (last    distances)
      print (maximum distances)
 
@@ -57,12 +63,12 @@ distance (C y x) = maximum (map abs [x,y,x+y])
 
 -- | Move one cell on the hex grid.
 --
--- >>> move origin <$> [Dn,Ds,Dne,Dse,Dnw,Dsw]
+-- >>> (`move` origin) <$> [Dn,Ds,Dne,Dse,Dnw,Dsw]
 -- [C 1 0,C (-1) 0,C 0 1,C (-1) 1,C 1 (-1),C 0 (-1)]
-move :: Coord -> D -> Coord
-move c Dn  = below c
-move c Ds  = above c
-move c Dne = right c
-move c Dsw = left c
-move c Dnw = left (below c)
-move c Dse = right (above c)
+move :: D -> Coord -> Coord
+move Dn  = below
+move Ds  = above
+move Dne = right
+move Dsw = left
+move Dnw = left . below
+move Dse = right . above
