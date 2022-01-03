@@ -8,6 +8,8 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2020/day/24>
 
+Cellular automaton on a hexagonal grid
+
 -}
 module Main (main) where
 

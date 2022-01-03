@@ -8,6 +8,8 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2020/day/20>
 
+Assembling a jigsaw puzzle and searching for sea serpents in the final image
+
 -}
 module Main (main) where
 
