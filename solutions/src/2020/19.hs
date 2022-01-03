@@ -14,13 +14,12 @@ literal matches.
 -}
 module Main (main) where
 
-import Advent (countBy)
-import Advent.Format (format)
+import Advent (countBy, format)
+import Advent.ReadS (P(..), char, eof)
 import Data.Foldable (traverse_, asum)
 import Data.Functor (void)
-import Data.IntMap.Strict (IntMap)
 import Data.IntMap qualified as IntMap
-import Advent.ReadS (P(..), char, eof)
+import Data.IntMap (IntMap)
 
 -- | Rules either match a literal string, or match a sum
 -- of product of sub-rules.
