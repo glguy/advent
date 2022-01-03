@@ -1,4 +1,15 @@
 {-# Language StandaloneDeriving, KindSignatures, GADTs, DataKinds, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
+{-|
+Module      : Advent.Box
+Description : N-dimensional boxes
+Copyright   : 2021 Eric Mertens
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+This module expresses boxes as a list of bounds on each axis. This representation
+enables efficient intersection and subtraction operations.
+
+-}
 module Advent.Box where
 
 import Advent.Nat (Nat(S,Z))

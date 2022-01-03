@@ -1,6 +1,6 @@
 {-# Language LambdaCase, ImportQualifiedPost, BangPatterns #-}
 {-|
-Module      : Main
+Module      : Advent.Search
 Description : Generalized graph search
 Copyright   : (c) Eric Mertens, 2019-2021
 License     : ISC

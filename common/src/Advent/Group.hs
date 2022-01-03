@@ -13,13 +13,16 @@ module Advent.Group
   , type (><|)((:><|))
   ) where
 
-import Data.Semigroup (Sum(Sum))
+import Data.Semigroup (Sum(Sum), Product(Product))
 
 class Monoid a => Group a where
   inverse :: a -> a
 
 instance Num a => Group (Sum a) where
   inverse (Sum n) = Sum (negate n)
+
+instance Fractional a => Group (Product a) where
+  inverse (Product n) = Product (recip n)
 
 -- | Outer semi-direct product
 data a ><| b = a :><| b deriving Show

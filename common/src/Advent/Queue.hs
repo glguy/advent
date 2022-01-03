@@ -1,7 +1,7 @@
 {-|
 Module      : Advent.Queue
-Description : Banker's queue implementation
-Copyright   : (c) Eric Mertens, 2018
+Description : FIFO queue implementation
+Copyright   : (c) Eric Mertens, 2021
 License     : ISC
 Maintainer  : emertens@gmail.com
 
