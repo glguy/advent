@@ -107,14 +107,14 @@ between a b = [a + scaleCoord i unit | i <- [1 .. n-1]]
 -- True
 toAngle :: Coord -> Rational
 toAngle (C y x)
-  | x == 0, y == 0 = -1             -- center
-  | x >= 0, y <  0 = mk 1 x (-y)    -- northeast
-  | x >  0, y >= 0 = mk 2 y x       -- southeast
-  | x <= 0, y >  0 = mk 3 (-x) y    -- southwest
-  | otherwise      = mk 4 (-y) (-x) -- northwest
+  | x == 0, y == 0 = -1          -- center
+  | x >= 0, y <  0 = mk 1 x (-y) -- northeast
+  | x >  0, y >= 0 = mk 2 y x    -- southeast
+  | x <= 0, y >  0 = mk 3 (-x) y -- southwest
+  | otherwise      = mk 4 y x    -- northwest
   where
     -- q in [1,2,3,4]; a >= 0; b > 0
-    mk q a b = q - fromIntegral b % fromIntegral (a+b)
+    mk q a b = fromIntegral (q*(a+b)-b) % fromIntegral (a+b)
 
 -- * List utilities
 
