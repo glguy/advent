@@ -1,4 +1,4 @@
-{-# Language BangPatterns, LambdaCase, ViewPatterns #-}
+{-# Language ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 24 solution

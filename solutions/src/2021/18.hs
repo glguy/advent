@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings, BlockArguments, ViewPatterns, LambdaCase #-}
+{-# Language OverloadedStrings, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 18 solution

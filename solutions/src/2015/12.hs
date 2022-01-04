@@ -1,4 +1,4 @@
-{-# LANGUAGE ViewPatterns, OverloadedStrings, LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 18 solution

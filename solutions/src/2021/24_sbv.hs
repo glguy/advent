@@ -1,4 +1,4 @@
-{-# Language BangPatterns, LambdaCase, ViewPatterns, BlockArguments, ImportQualifiedPost #-}
+{-# Language LambdaCase, BlockArguments, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 24 solution

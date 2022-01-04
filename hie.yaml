@@ -6,6 +6,8 @@ cradle:
       component: "asmprog"
     - path: "./knothash/KnotHash.hs"
       component: "knothash"
+    - path: "./intcode/"
+      component: "intcode"
 
     - path: "./solutions/src/2015/01.hs"
       component: "sln_2015_01"
