@@ -43,7 +43,10 @@ findBase m = maximum [(countBy (lineOfSight m i) m, i) | i <- toList m]
 
 -- | Return the coordinates ordered in a spiral given a center
 -- location.
-spiral :: Coord -> Set Coord -> [Coord]
+spiral ::
+  Coord {- ^ center of spiral -} ->
+  Set Coord {- ^ objects -} ->
+  [Coord] {- ^ spiral ordered objects -}
 spiral base
   = concat
   . transpose
@@ -52,7 +55,9 @@ spiral base
   . Set.toList
 
 -- | Check if two asteroids have line of sight between each other.
-lineOfSight :: Set Coord -> Coord -> Coord -> Bool
+lineOfSight ::
+  Set Coord {- ^ obstructions -} ->
+  Coord -> Coord -> Bool
 lineOfSight ast a b = a /= b && and [Set.notMember c ast | c <- between a b]
 
 -- * Coordinate utilities
