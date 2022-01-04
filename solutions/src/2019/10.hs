@@ -8,18 +8,23 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2019/day/10>
 
+We're in an asteroid field of infinitesimal asteroids on a lattice.
+We'll need to figure out which location can see the most other asteroids
+and then figure out what order a clockwise sweep of them those asteroids
+fall into.
+
 -}
 module Main (main) where
 
 import Advent (getInputLines, countBy)
 import Advent.Coord (coordLines, Coord(..), manhattan, scaleCoord)
-import Data.List (sortOn, transpose)
 import Data.Foldable (Foldable(toList), maximumBy)
-import Data.Set (Set)
-import Data.Set qualified as Set
+import Data.List (sortOn, transpose)
 import Data.Map qualified as Map
 import Data.Ord (comparing)
 import Data.Ratio ((%))
+import Data.Set (Set)
+import Data.Set qualified as Set
 
 -- | >>> :main
 -- 227
