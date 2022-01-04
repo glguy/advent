@@ -11,6 +11,48 @@ Maintainer  : emertens@gmail.com
 I copied my Day 19 solution and then modified it to check the state
 of the running program.
 
+Manually decompiling my input I find this C program:
+
+@
+#include \<stdio.h\>
+#include \<stdlib.h\>
+
+static void program(int const r0) {
+    int r5 = 0;
+
+    do {
+        int r4 = r5 | 0x10000;
+        r5 = 0xec01bb;
+
+        r5 += (r4 >> 0) & 0xff;
+        r5 *= 0x1016b;
+        r5 &= 0xffffff;
+
+        r5 += (r4 >> 8) & 0xff;
+        r5 *= 0x1016b;
+        r5 &= 0xffffff;
+
+        r5 += (r4 >> 16) & 0xff;
+        r5 *= 0x1016b;
+        r5 &= 0xffffff;
+
+        printf("r5 = %06x\n", r5);
+    } while (r5 != r0);
+}
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        program(atoi(argv[1]));
+    }
+}
+@
+
+This program generates a stream of 24-bit numbers and tests those
+against register zero. This stream of numbers eventually repeats
+itself. To find the shortest execution we must find the first
+number generated in the cycle. To find the longest execution we must
+find the last number generated.
+
 -}
 module Main (main) where
 
