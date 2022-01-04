@@ -14,26 +14,46 @@ of the running program.
 Manually decompiling my input I find this C program:
 
 @
+#include \<inttypes.h\>
+#include \<stdint.h\>
 #include \<stdio.h\>
 #include \<stdlib.h\>
-#include \<inttypes.h\>
 
-static void program(uint32_t const r0) {
+// Set a bit in the seen array at the given index; return previous bit value
+static int mark(uint64_t *seen, uint32_t x) {
+    const size_t i = x / 64;
+    const uint64_t j = UINT64_C(1) << (x % 64);
+    const int prev = (seen[i] & j) == j;
+    seen[i] |= j;
+    return prev;
+}
+
+static void program(uint32_t *part1, uint32_t *part2) {
+    uint64_t seen[0x1000000 / 64] = {0};
+    int started = 0;
     uint32_t r5 = 0;
-    do {
+
+    for(;;) {
         r5 = 0xed43a1
            + 0x04dc53 * (0xff & r5)
            + 0xd802b9 * (0xff & (r5 >> 8))
            + 0x01016b * (1 | 0xff & (r5 >> 16));
         r5 &= 0xffffff;
-        printf("r5 = %06" PRIx32 "\\n", r5);
-    } while (r5 != r0);
+
+        if (!started) {
+            started = 1;
+            *part1 = r5;
+        }
+
+        if (mark(seen, r5)) return;
+        *part2 = r5;
+    }
 }
 
 int main(int argc, char **argv) {
-    if (argc > 1) {
-        program(atoi(argv[1]));
-    }
+    uint32_t part1, part2;
+    program(&part1, &part2);
+    printf("part1: %" PRIu32 "\\npart2: %" PRIu32 "\\n", part1, part2);
 }
 @
 
