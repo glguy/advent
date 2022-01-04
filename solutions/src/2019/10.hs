@@ -12,11 +12,12 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (getInputLines, countBy)
-import Advent.Coord (coordLines, Coord(..))
-import Data.List (sortOn)
+import Advent.Coord (coordLines, Coord(..), manhattan, scaleCoord)
+import Data.List (sortOn, transpose)
 import Data.Foldable (Foldable(toList), maximumBy)
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Data.Map qualified as Map
 import Data.Ord (comparing)
 import Data.Ratio ((%))
 
@@ -28,30 +29,33 @@ main =
  do inp <- getInputLines 10
     let m = Set.fromList [c | (c,'#') <- coordLines inp]
 
-    let (base, vis) = maximumBy (comparing snd)
-                      [ (i, countBy (visible m i) m) | i <- toList m ]
+    let (base, vis) = maximumBy (comparing snd) [(i, countBy (lineOfSight m i) m) | i <- toList m]
     print vis
-    let C y x = part2 base (Set.delete base m) !! 199
+    let C y x = spiral base m !! 200
     print (x * 100 + y)
 
-part2 :: Coord -> Set Coord -> [Coord]
-part2 base m
-  | Set.null m = []
-  | otherwise  = these ++ part2 base (m Set.\\ Set.fromList these)
-  where
-    these = filter (visible m base) (sortOn (toAngle . subtract base) (toList m))
+spiral :: Coord -> Set Coord -> [Coord]
+spiral base
+  = concat
+  . transpose
+  . map (sortOn (manhattan base))
+  . groupOn (toAngle . subtract base)
+  . Set.toList
 
-visible :: Set Coord -> Coord -> Coord -> Bool
-visible _ x y | x == y = False
-visible ast (C y x) (C v u) =
-  and [ Set.notMember (C (v + stepy * i) (u + stepx * i)) ast | i <- [1 .. steps-1] ]
-  where
-    dx = x - u
-    dy = y - v
-    steps = gcd dx dy
+groupOn :: Ord b => (a -> b) -> [a] -> [[a]]
+groupOn f xs = Map.elems (Map.fromListWith (++) [(f x, [x]) | x <- xs])
 
-    stepx = dx `div` steps
-    stepy = dy `div` steps
+-- | Return all the locations that fall on a line between two coordinates.
+between :: Coord -> Coord -> [Coord]
+between a b = [a + scaleCoord i unit | i <- [1 .. n-1]]
+  where
+    C dy dx = b - a 
+    n = gcd dx dy
+    unit = C (dy `quot` n) (dx `quot` n)
+
+-- | Check if two asteroids have line of sight between each other.
+lineOfSight :: Set Coord -> Coord -> Coord -> Bool
+lineOfSight ast a b = a /= b && and [Set.notMember c ast | c <- between a b]
 
 -- | Angles ordered starting from pointing up and proceeding
 -- clockwise.
