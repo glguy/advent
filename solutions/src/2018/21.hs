@@ -16,27 +16,17 @@ Manually decompiling my input I find this C program:
 @
 #include \<stdio.h\>
 #include \<stdlib.h\>
+#include \<inttypes.h\>
 
-static void program(int const r0) {
-    int r5 = 0;
-
+static void program(uint32_t const r0) {
+    uint32_t r5 = 0;
     do {
-        int r4 = r5 | 0x10000;
-        r5 = 0xec01bb;
-
-        r5 += (r4 >> 0) & 0xff;
-        r5 *= 0x1016b;
+        r5 = 0xed43a1
+           + 0x04dc53 * (0xff & r5)
+           + 0xd802b9 * (0xff & (r5 >> 8))
+           + 0x01016b * (1 | 0xff & (r5 >> 16));
         r5 &= 0xffffff;
-
-        r5 += (r4 >> 8) & 0xff;
-        r5 *= 0x1016b;
-        r5 &= 0xffffff;
-
-        r5 += (r4 >> 16) & 0xff;
-        r5 *= 0x1016b;
-        r5 &= 0xffffff;
-
-        printf("r5 = %06x\n", r5);
+        printf("r5 = %06" PRIx32 "\\n", r5);
     } while (r5 != r0);
 }
 
