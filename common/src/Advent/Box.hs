@@ -15,6 +15,7 @@ module Advent.Box where
 import Advent.Nat (Nat(S,Z))
 import Control.Monad (foldM)
 import Data.Kind (Type)
+import Data.List (foldl1')
 import GHC.Stack (HasCallStack)
 
 -- | An n-dimensional box.
@@ -94,3 +95,12 @@ subtractBox' (Dim a b xs) (Dim c d ys) =
   [Dim c a ys | c < a] ++
   [Dim b d ys | b < d] ++
   [Dim a b zs | zs <- subtractBox' xs ys]
+
+-- | Compute the box that encompasses both arguments.
+unionBox :: Box n -> Box n -> Box n
+unionBox (Dim a b x) (Dim c d y) = Dim (min a c) (max b d) (unionBox x y)
+unionBox Pt Pt = Pt
+
+-- | Compute the box that encompasses all of the boxes in the list.
+unionBoxes :: [Box n] -> Box n
+unionBoxes = foldl1' unionBox

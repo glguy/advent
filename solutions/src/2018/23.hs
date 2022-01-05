@@ -1,4 +1,4 @@
-{-# Language DataKinds, GADTs, QuasiQuotes #-}
+{-# Language ViewPatterns, ImportQualifiedPost, DataKinds, GADTs, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 23 solution
@@ -12,10 +12,12 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (countBy, format)
-import Advent.Box (Box(..), intersectBoxes)
+import Advent.Box (Box(..), intersectBoxes, intersectBox, unionBoxes)
 import Advent.Coord3 (manhattan, Coord3(..))
 import Advent.Nat (Nat(S, Z))
-import Data.List (maximumBy)
+import Data.List (maximumBy, foldl1')
+import Data.Map qualified as Map
+import Data.Maybe (isJust)
 import Data.Ord (comparing)
 
 data Bot = Bot { botPos :: !Coord3, botRadius :: !Int }
@@ -54,14 +56,11 @@ part1 bots = countBy (botSees strongBot . botPos) bots
 -- comprised of the maximum number of nanobots, and then take the minimum
 -- distance to the origin for any of those regions.
 part2 :: [Bot] -> Int
-part2 bots
-  = snd $ minimum
-    [(-length boxes, distToOrigin region)
-    | bot <- bots
-    , p   <- corners bot
-    , let boxes = [botBox b | b <- bots, botSees b p]
-    , let Just region = intersectBoxes boxes -- all the boxes see p, so 'Just' is assured.
-    ]
+part2 bots = distToOrigin maxRegion
+  where
+    boxes          = map botBox bots
+    p              = searchBoxInMaxOverlap boxes
+    Just maxRegion = intersectBoxes [b | b <- boxes, isJust (intersectBox b p)]
 
 -- | Compute the minimum distance of any point contained within a box to the origin.
 distToOrigin :: Box n -> Int
@@ -72,17 +71,6 @@ distToOrigin (Dim lo hi xs) = here `max` distToOrigin xs
       | hi <= 0 = 1-hi
       | 0 <= lo = lo
       | otherwise = 0
-
--- | Find all the extremes of the octohedron around a bot.
-corners :: Bot -> [Coord3]
-corners (Bot (C3 x y z) r) =
-  [ C3 (x+r) y z
-  , C3 (x-r) y z
-  , C3 x (y+r) z
-  , C3 x (y-r) z
-  , C3 x y (z+r)
-  , C3 x y (z-r)
-  ]
 
 -- | Translation of bot 3D center and radius into a 4D cube consisting of the four pairs
 -- of two parallel planes that define an octahedron.
@@ -95,3 +83,33 @@ botBox (Bot (C3 x y z) r) = dim cx (dim cy (dim cz (dim cw Pt)))
     cy = x + y - z
     cz = x - y - z
     cw = x - y + z
+
+-- | Find a box that is completely contained within the maximally overlapping region.
+searchBoxInMaxOverlap :: [Box n] -> Box n
+searchBoxInMaxOverlap boxes = go [unionBoxes boxes]
+  where
+    -- If the only candidate is completely contained within the boxes
+    -- with which it overlaps, then the search is complete.
+    go [x] | all (maybe True (x==) . intersectBox x) boxes = x
+
+    go candidates = go $ Map.elems $ snd $ foldl1' merge
+      [ (length touches, Map.singleton touches s)
+        | s <- splitBox =<< candidates
+        , let touches = [b | b <- boxes, isJust (intersectBox b s) ]
+      ]
+      
+    merge (n1,m1) (n2,m2)
+      | n1 > n2 = (n1,m1)
+      | n1 < n2 = (n2,m2)
+      | otherwise = (n1, Map.union m1 m2)
+
+-- | Split a box along each of its axes unless that axis is only one unit wide.
+splitBox :: Box n -> [Box n]
+splitBox Pt = [Pt]
+splitBox (Dim lo hi x) =
+ do y <- splitBox x
+    if lo + 1 == hi then
+      [Dim lo hi y]
+    else
+     do let m = lo + (hi-lo)`div`2
+        [Dim lo m y, Dim m hi y]
