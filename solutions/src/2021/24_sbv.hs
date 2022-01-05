@@ -28,8 +28,8 @@ import Data.SBV
 main :: IO ()
 main =
  do pgm <- map (runP pOp) <$> getInputLines 2021 24
-    print =<< findAnswer maximize pgm
-    print =<< findAnswer minimize pgm
+    putStrLn =<< findAnswer maximize pgm
+    putStrLn =<< findAnswer minimize pgm
 
 findAnswer :: Opt -> [Op] -> IO String
 findAnswer opt pgm =

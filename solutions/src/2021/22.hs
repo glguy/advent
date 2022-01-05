@@ -38,7 +38,7 @@ mempty -- template haskell staging
 -- 1162571910364852
 main :: IO ()
 main =
- do inp <- [format|2021 2021 22 (@C x=%d..%d,y=%d..%d,z=%d..%d%n)*|]
+ do inp <- [format|2021 22 (@C x=%d..%d,y=%d..%d,z=%d..%d%n)*|]
     let dim lo hi = Dim lo (hi+1) -- make upper bound exclusive
         steps = [ (c, dim x1 x2 (dim y1 y2 (dim z1 z2 Pt)))
                 | (c, x1, x2, y1, y2, z1, z2) <- inp]
