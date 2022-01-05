@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings, BlockArguments #-}
+{-# Language OverloadedStrings, BlockArguments, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 18 solution
@@ -19,7 +19,7 @@ module Main (main) where
 import Advent.Input (getInputLines)
 import Advent.ReadS (P(..), runP)
 import Control.Applicative ((<|>))
-import Data.List (tails)
+import Data.List (foldl1', tails)
 
 -- | >>> :main
 -- 3551
@@ -27,44 +27,39 @@ import Data.List (tails)
 main :: IO ()
 main =
  do inp <- map parse <$> getInputLines 2021 18
-    print (magnitude (foldl1 add inp))
+    print (magnitude (foldl1' add inp))
     print (maximum [magnitude (add x y) `max` magnitude (add y x)
                    | x:ys <- tails inp, y <- ys])
 
 -- * Snailfish operations
 
 -- | Add two expressions and reduce them
-add :: Tree Int -> Tree Int -> Tree Int
+add :: Tree -> Tree -> Tree
 add x y = reduce (x :+: y)
 
 -- | Reduce an expression until it won't reduce
-reduce :: Tree Int -> Tree Int
-reduce x =
-  let x' = explode x in
-  maybe x' reduce (split x')
+reduce :: Tree -> Tree
+reduce (explode -> x) = maybe x reduce (split x) 
 
 -- | Explode /all/ the pairs at depth 4 from left to right.
-explode :: Tree Int -> Tree Int
+explode :: Tree -> Tree
 explode = down 0 []
   where
-    down 4 z (Leaf l :+: Leaf r) =
-      up 4 (Leaf 0) $ appUp L (appR (l+))
-                    $ appUp R (appL (r+)) z
-    down 4 z t = up 4 t z
+    down 4 z (Leaf l :+: Leaf r) = up 4 (sendUp L l (sendUp R r z)) (Leaf 0)
+    down d z (l :+: r) | d < 4   = down (d+1) ((R,r):z) l
+    down d z t                   = up d z t
 
-    down d z (l :+: r) = down (d+1) ((R,r):z) l
-    down d z t = up d t z
-
-    up _ t [] = t
-    up d l ((R,r):z) = down d ((L,l):z) r
-    up d r ((L,l):z) = up (d-1) (l :+: r) z
+    up _ []        t = t
+    up d ((R,r):z) l = down d ((L,l):z) r
+    up d ((L,l):z) r = up (d-1) z (l :+: r)
 
 -- | Replace the first number with value 10 or more with a pair
 -- of it divided in half rounding first down then up.
-split :: Tree Int -> Maybe (Tree Int)
-split (Leaf x) | x >= 10 = case quotRem x 2 of (q,r) -> Just (Leaf q :+: Leaf (q+r))
+split :: Tree -> Maybe Tree
 split (l :+: r) = (:+: r) <$> split l <|> (l :+:) <$> split r
-split _ = Nothing
+split (Leaf x)
+  | x >= 10, (q,r) <- quotRem x 2 = Just (Leaf q :+: Leaf (q+r))
+  | otherwise                     = Nothing
 
 -- | Compute the /magnitude/ of an expression
 --
@@ -73,16 +68,16 @@ split _ = Nothing
 --
 -- >>> magnitude (parse "[[1,2],[[3,4],5]]")
 -- 143
-magnitude :: Tree Int -> Int
+magnitude :: Tree -> Int
 magnitude (Leaf x) = x
 magnitude (l :+: r) = 3 * magnitude l + 2 * magnitude r
 
 -- * Binary trees
 
--- | A binary tree with data at the leaves
-data Tree a
-  = Tree a :+: Tree a -- ^ tuple
-  | Leaf a  -- ^ regular number
+-- | A binary tree with integers at the leaves
+data Tree
+  = Tree :+: Tree -- ^ tuple
+  | Leaf !Int  -- ^ number
   deriving Show
 
 -- * Tree zippers
@@ -92,34 +87,34 @@ data Tree a
 data Side = L | R deriving (Eq, Show)
 
 -- | A hole in a binary tree. Rebuild the tree with 'fromZip'
-type Zip a = [(Side, Tree a)]
+type Zip = [(Side, Tree)]
 
 -- | Apply the given function to the nearest parent
 -- sibling on the given side.
-appUp :: Side -> (Tree a -> Tree a) -> Zip a -> Zip a
-appUp L f ((L,l):zs) = (L, f l):zs
-appUp R f ((R,r):zs) = (R, f r):zs
-appUp h f (z    :zs) = z : appUp h f zs
-appUp _ _ []         = []
+sendUp :: Side -> Int -> Zip -> Zip
+sendUp L x ((L,l):zs) = (L, sendR x l):zs
+sendUp R x ((R,r):zs) = (R, sendL x r):zs
+sendUp h x (z    :zs) = z : sendUp h x zs
+sendUp _ _ []         = []
 
--- | Apply a function to the left-most leaf
-appL :: (a -> a) -> Tree a -> Tree a
-appL f (l :+: r) = appL f l :+: r
-appL f (Leaf x) = Leaf (f x)
+-- | Add a number to the left-most leaf
+sendL :: Int -> Tree -> Tree
+sendL x (l :+: r) = sendL x l :+: r
+sendL x (Leaf y)  = Leaf (x + y)
 
--- | Apply a function to the rightmost leaf
-appR :: (a -> a) -> Tree a -> Tree a
-appR f (l :+: r) = l :+: appR f r
-appR f (Leaf x) = Leaf (f x)
+-- | Add a number to the rightmost leaf
+sendR :: Int -> Tree -> Tree
+sendR x (l :+: r) = l :+: sendR x r
+sendR x (Leaf y)  = Leaf (x + y)
 
 -- * Parsing
 
 -- | Parse a snailfish expression
-parse :: String -> Tree Int
-parse = runP (pTree (P reads))
+parse :: String -> Tree
+parse = runP pTree
 
 -- | Tree parser from a leaf parser
-pTree :: P a {- ^ leaf parser -} -> P (Tree a)
-pTree pLeaf =
-  Leaf <$> pLeaf <|>
-  (:+:) <$ "[" <*> pTree pLeaf <* "," <*> pTree pLeaf <* "]"
+pTree :: P Tree
+pTree =
+  Leaf <$> P reads <|>
+  (:+:) <$ "[" <*> pTree <* "," <*> pTree <* "]"

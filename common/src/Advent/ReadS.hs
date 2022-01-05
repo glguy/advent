@@ -11,10 +11,10 @@ Make it easier to use ReadS.
 -}
 module Advent.ReadS where
 
-import Control.Applicative ( Alternative((<|>), empty), many )
-import Control.Monad ( ap, liftM )
+import Control.Applicative (Alternative((<|>), empty), many)
+import Control.Monad (ap, liftM)
 import Data.Functor (void)
-import Data.String
+import Data.String (IsString(..))
 
 -- | Wrapper for 'ReadS'
 newtype P a = P (ReadS a)
@@ -33,6 +33,7 @@ char :: Char -> P ()
 char c = P \case
   x:xs | c == x -> [((),xs)]
   _             -> []
+
 instance Functor P where
     fmap = liftM
 
@@ -50,19 +51,33 @@ instance Alternative P where
 instance MonadFail P where
     fail _ = empty
 
+-- | String literals match with 'tok'
 instance a ~ String => IsString (P a) where
     fromString = tok
 
 -- * Combinators
 
-sepBy1 :: P a -> P b -> P [a]
+-- | Parse a separated, nonempty list.
+sepBy1 :: P a {- ^ element -} -> P b {- ^ separator -} -> P [a]
 sepBy1 p q = (:) <$> p <*> many (q *> p)
 
-sepBy :: P a -> P b -> P [a]
+-- | Parse a separated list.
+sepBy :: P a {- ^ element -} -> P b {- ^ separator -} -> P [a]
 sepBy p q = pure [] <|> sepBy1 p q
 
-between :: P a -> P b -> P c -> P c
+-- | Convenience function for surrounding a parser with other other parsers.
+between :: P a {- ^ open -} -> P b {- ^ close -} -> P c {- ^ body -} -> P c
 between p q x = p *> x <* q
 
+-- | Parser that succeeds at end of input string.
 eof :: P ()
 eof = void (tok "")
+
+-- | Left-biased choice. Uses righthand-side if lefthand-side fails.
+(<++) :: P a -> P a -> P a
+P f <++ P g = P \s -> f s `orElse` g s
+  where
+    orElse [] ys = ys
+    orElse xs _  = xs
+
+infixr 3 <++
