@@ -27,7 +27,7 @@ import Data.List (uncons)
 -- 33649
 main :: IO ()
 main =
- do input <- [format|8 %u& %n|]
+ do input <- [format|2018 8 %u& %n|]
     let Just (tree, []) = runStateT parseTree input
     print (sum tree)
     print (part2 tree)

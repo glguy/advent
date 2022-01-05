@@ -23,7 +23,7 @@ import Data.Map.Strict qualified as Map
 -- 2033
 main :: IO ()
 main =
-  do inp <- bugCoords <$> getInputLines 24
+  do inp <- bugCoords <$> getInputLines 2019 24
      print (biodiversity (findDup (iterate (update (filter inside . cardinal)) inp)))
 
      let inp3 = Set.map to3 inp

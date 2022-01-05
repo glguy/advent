@@ -30,7 +30,7 @@ data Particle = P !Int !Int -- ^ position velocity
 main :: IO ()
 main =
  do let toPs (x,y,z) = [P x 0, P y 0, P z 0]
-    threeD_sim <- map toPs <$> [format|12 (<x=%d, y=%d, z=%d>%n)*|]
+    threeD_sim <- map toPs <$> [format|2019 12 (<x=%d, y=%d, z=%d>%n)*|]
     let oneD_sims = transpose threeD_sim
     print (part1 oneD_sims)
     print (part2 oneD_sims)

@@ -29,7 +29,7 @@ mempty
 
 main :: IO ()
 main =
-  do input <- V.fromList <$> [format|23 (@C (%a|%ld) (%a|%ld)%n)*|]
+  do input <- V.fromList <$> [format|2017 23 (@C (%a|%ld) (%a|%ld)%n)*|]
      let pgm n = runProgram input
      print (pgm 0)
 

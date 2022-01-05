@@ -11,10 +11,10 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent.Format ( format )
-import Data.List ( sortBy, sort )
-import Data.Maybe ( listToMaybe )
-import Data.Ord ( comparing )
+import Advent.Format (format)
+import Data.List (sortBy, sort)
+import Data.Maybe (listToMaybe)
+import Data.Ord (comparing)
 
 data Packages = Packages { pkgSum, pkgCount, pkgProduct :: !Int }
   deriving (Eq, Show)
@@ -61,6 +61,6 @@ search n ps0 = listToMaybe $
 
 main :: IO ()
 main =
-  do input <- [format|24 (%u%n)*|]
+  do input <- [format|2015 24 (%u%n)*|]
      print (search 3 input)
      print (search 4 input)

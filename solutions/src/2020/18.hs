@@ -22,7 +22,7 @@ import Text.ParserCombinators.ReadP
 -- 320536571743074
 main :: IO ()
 main =
-  do inp <- getInputLines 18
+  do inp <- getInputLines 2020 18
      print (sum (map (run expr1) inp))
      print (sum (map (run expr2) inp))
 

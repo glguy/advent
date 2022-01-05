@@ -32,7 +32,7 @@ data Picture = Picture { _background :: !Bool, exceptions :: !(Set Coord) }
 -- 16112
 main :: IO ()
 main =
- do algStr : "" : imgStrs <- getInputLines 20
+ do algStr : "" : imgStrs <- getInputLines 2021 20
     let alg = IntSet.fromList ('#' `elemIndices` algStr)
         pic = Picture False (Set.fromList [c | (c, '#') <- coordLines imgStrs])
         steps = iterate (step alg) pic

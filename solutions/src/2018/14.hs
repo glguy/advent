@@ -24,7 +24,7 @@ import Data.Sequence qualified as Seq
 -- 20316365
 main :: IO ()
 main =
-  do input <- [format|14 %u%n|]
+  do input <- [format|2018 14 %u%n|]
      putStrLn (part1 input)
      print (part2 input)
 

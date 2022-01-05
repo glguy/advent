@@ -30,7 +30,7 @@ cutoff = 100
 
 main :: IO ()
 main =
- do input <- [format|22
+ do input <- [format|2016 22
       root%@ebhq-gridcenter# df -h%n
       Filesystem              Size  Used  Avail  Use%%%n
       (/dev/grid/node-x%u-y%u *%uT *%uT *%uT *%u%%%n)*

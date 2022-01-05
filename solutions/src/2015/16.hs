@@ -18,7 +18,7 @@ import Advent.Format (format)
 
 main :: IO ()
 main =
- do input <- [format|16 (Sue %d: (%s: %d)&(, )%n)*|]
+ do input <- [format|2015 16 (Sue %d: (%s: %d)&(, )%n)*|]
     print [i | (i, props) <- input, matchesClues1 props]
     print [i | (i, props) <- input, matchesClues2 props]
 

@@ -42,7 +42,7 @@ type CartQueue = Map Coord Cart
 -- 50,100
 main :: IO ()
 main =
- do road <- Road <$> getInputArray 13
+ do road <- Road <$> getInputArray 2018 13
     let carts = findCarts road
     putStrLn (part1 road carts)
     putStrLn (part2 road carts)

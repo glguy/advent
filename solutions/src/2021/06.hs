@@ -24,7 +24,7 @@ import Data.Map qualified as Map
 -- 1693022481538
 main :: IO ()
 main =
- do inp <- counts <$> [format|6 %u&,%n|]
+ do inp <- counts <$> [format|2021 6 %u&,%n|]
     let bigFish = maximum (Map.keys inp)
     let oneStep = rule bigFish
     let nSteps = power (fmap . applyRule) oneStep

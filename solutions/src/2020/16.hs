@@ -37,7 +37,7 @@ match (_,range) x = any (match1 x) range
 main :: IO ()
 main =
   do (fields, yourTicket, nearbyTickets) <-
-       [format|16
+       [format|2020 16
          (%s& : (%lu-%lu)&( or )%n)*%n
          your ticket:%n
          (%lu&,)%n

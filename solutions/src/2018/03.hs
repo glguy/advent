@@ -26,7 +26,7 @@ import Data.Maybe (isNothing)
 -- 275
 main :: IO ()
 main =
- do input <- [format|3 (#%u %@ %u,%u: %ux%u%n)*|]
+ do input <- [format|2018 3 (#%u %@ %u,%u: %ux%u%n)*|]
     let boxes = [(i, Dim x (x+sx) (Dim y (y+sy) Pt)) | (i,x,y,sx,sy) <- input]
     print (regionSize (overlaps (map snd boxes)))
     print (noOverlaps boxes)

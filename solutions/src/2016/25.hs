@@ -49,7 +49,7 @@ instance HasRegisters Machine where
 -- Just 192
 main :: IO ()
 main =
- do program <- Vector.fromList . map (runP pInst) <$> getInputLines 25
+ do program <- Vector.fromList . map (runP pInst) <$> getInputLines 2016 25
     print $ find (execute program) [1..]
 
 data Inst

@@ -19,7 +19,7 @@ import Data.Char (digitToInt)
 -- command-line.
 main :: IO ()
 main =
-  do xs <- map digitToInt <$> [format|1 %s%n|]
+  do xs <- map digitToInt <$> [format|2017 1 %s%n|]
      print (part1 xs)
      print (part2 xs)
 

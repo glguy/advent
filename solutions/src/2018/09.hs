@@ -29,7 +29,7 @@ import Data.Sequence qualified as Seq
 -- 3552041936
 main :: IO ()
 main =
-  do [(players, marbles)] <- [format|9 (%u players; last marble is worth %u points%n)*|]
+  do [(players, marbles)] <- [format|2018 9 (%u players; last marble is worth %u points%n)*|]
      print (game players marbles)
      print (game players (100*marbles))
 

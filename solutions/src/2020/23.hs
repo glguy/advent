@@ -54,7 +54,7 @@ readRing a n i
 -- 42271866720
 main :: IO ()
 main =
-  do inp <- map digitToInt <$> [format|23 %s%n|]
+  do inp <- map digitToInt <$> [format|2020 23 %s%n|]
      p1 inp
      p2 inp
 

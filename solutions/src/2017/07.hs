@@ -143,7 +143,7 @@ instance Show1 Node where
 -- can be overridden via command-line arguments.
 main :: IO ()
 main =
- do input <- [format|7 (%s %(%u%)(| -> %s&(, ))%n)*|]
+ do input <- [format|2017 7 (%s %(%u%)(| -> %s&(, ))%n)*|]
     let nodes = Map.fromList [(n, Node c (fromMaybe [] xs)) | (n, c, xs) <- input]    
     -- part 1
     let top = topName nodes

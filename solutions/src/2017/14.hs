@@ -30,7 +30,7 @@ import Data.Graph.Inductive
 -- 1164
 main :: IO ()
 main =
-  do input <- [format|14 %s%n|]
+  do input <- [format|2017 14 %s%n|]
 
      let g = coordsToGraph (gridToCoords (buildGrid input))
 

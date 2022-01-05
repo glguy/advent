@@ -21,7 +21,7 @@ import Data.Map qualified as Map
 
 main :: IO ()
 main =
-  do n <- [format|3 %u%n|]
+  do n <- [format|2017 3 %u%n|]
      print (part1 n)
      print (part2 n)
 

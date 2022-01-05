@@ -27,7 +27,7 @@ import Text.Read (readMaybe)
 -- 11911316711816
 main :: IO ()
 main =
- do pgm <- map extract . chunks 18 . map words <$> getInputLines 24
+ do pgm <- map extract . chunks 18 . map words <$> getInputLines 2021 24
     print (solve [9,8..1] pgm)
     print (solve [1,2..9] pgm)
 

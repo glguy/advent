@@ -98,7 +98,7 @@ mempty
 -- 12963935
 main :: IO ()
 main =
- do (ip, pgm') <- [format|19 #ip %u%n(@C %u %u %u%n)*|]
+ do (ip, pgm') <- [format|2018 2018 19 #ip %u%n(@C %u %u %u%n)*|]
     let pgm = Vector.fromList [I o a b c | (o,a,b,c) <- pgm']
     let regs = Vector.replicate 6 0
     let xs = run ip (fmap semantics pgm) regs

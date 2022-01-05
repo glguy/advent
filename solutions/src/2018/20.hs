@@ -57,7 +57,7 @@ newtype Regexp a = RE [[Either a (Regexp a)]]
 -- 8636
 main :: IO ()
 main =
- do [input] <- getInputLines 20
+ do [input] <- getInputLines 2018 20
     let [(re,_)] = readP_to_S parseRe0 input 
     let (doors, _) = route (Set.singleton origin) re
     let ds = distances (neighbor doors) (C 0 0)

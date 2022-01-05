@@ -22,7 +22,7 @@ import Data.Tree (Tree(Node, rootLabel, subForest))
 -- 276
 main :: IO ()
 main =
-  do intcode <- [format|15 %d&,%n|]
+  do intcode <- [format|2019 15 %d&,%n|]
      let part1:_ = filter (onOxygen . rootLabel)
                  $ explore (searchTree (run (new intcode)))
      let d1 = distance (rootLabel part1)

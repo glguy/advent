@@ -36,7 +36,7 @@ isRoom (C _ c) = c == 3 || c == 5 || c == 7 || c == 9
 
 main :: IO ()
 main =
- do inp <- Map.mapMaybe toCell <$> getInputMap 23
+ do inp <- Map.mapMaybe toCell <$> getInputMap 2021 23
     print (head [cost | (w, cost) <- astar step inp, done w])
 
 -- | Step the simulation once tracking the cost of the move.

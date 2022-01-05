@@ -20,7 +20,7 @@ import Data.Vector.Unboxed qualified as V
 -- 26857164
 main :: IO ()
 main =
-  do inp <- [format|16 %s%n|]
+  do inp <- [format|2019 16 %s%n|]
      let ns = digits inp
 
      putStrLn $ concatMap show $ V.toList $ V.take 8 $ iterate (fft 0) ns !! 100

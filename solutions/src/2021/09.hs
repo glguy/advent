@@ -28,7 +28,7 @@ type BasinIds = Array Coord (Maybe Coord)
 -- 964712
 main :: IO ()
 main =
- do heights <- heightArray <$> getInputArray 9
+ do heights <- heightArray <$> getInputArray 2021 9
     let basinIds = heightsToBasinIds heights
 
     print (sum [1+h | (c, Just h) <- assocs heights, Just c == basinIds!c])

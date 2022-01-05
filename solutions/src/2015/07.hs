@@ -14,7 +14,7 @@ data Op2 = And | Or | LShift | RShift
 
 main :: IO ()
 main =
- do circuit1 <- parseLines <$> getInputLines 7
+ do circuit1 <- parseLines <$> getInputLines 2015 7
     let answer1 = findAnswer circuit1
     print answer1
 

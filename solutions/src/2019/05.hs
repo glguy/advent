@@ -44,7 +44,7 @@ import Intcode (intcodeToList)
 -- 9006327
 main :: IO ()
 main =
-  do inp <- [format|5 %d&,%n|]
+  do inp <- [format|2019 5 %d&,%n|]
      let go i = print (last (intcodeToList inp [i]))
      go 1
      go 5

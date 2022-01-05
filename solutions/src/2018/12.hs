@@ -31,7 +31,7 @@ import Data.Vector.Unboxed qualified as Vector
 -- 2900000001856
 main :: IO ()
 main =
-  do (rawInitial, rawRules) <- [format|12 initial state: %s%n%n(%s => %c%n)*|]
+  do (rawInitial, rawRules) <- [format|2018 12 initial state: %s%n%n(%s => %c%n)*|]
      let garden = mkGarden ['#' == x | x <- rawInitial]
      let rule = mkRule [(map ('#'==) xs, '#' == x) | (xs,x) <- rawRules]
      let xs = iterate (update rule) garden

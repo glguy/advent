@@ -22,7 +22,7 @@ import Data.List (sort)
 -- 267520550
 main :: IO ()
 main =
-  do input <- [format|1 (%u%n)*|]
+  do input <- [format|2020 1 (%u%n)*|]
      print (solve input 2)
      print (solve input 3)
 

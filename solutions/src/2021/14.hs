@@ -26,7 +26,7 @@ import Data.Map.Strict qualified as Map
 -- 2158894777814
 main :: IO ()
 main =
- do (seed, table) <- [format|14 %s%n%n(%c%c -> %c%n)*|]
+ do (seed, table) <- [format|2021 14 %s%n%n(%c%c -> %c%n)*|]
     let rule = tableToRule table
     print (solve rule 10 seed)
     print (solve rule 40 seed)

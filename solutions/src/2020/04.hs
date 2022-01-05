@@ -28,7 +28,7 @@ pure[]
 -- 133
 main :: IO ()
 main =
-  do inp <- [format|4 (@F:%s( |%n))*&%n|]
+  do inp <- [format|2020 4 (@F:%s( |%n))*&%n|]
      let xs = filter complete inp
      print (length xs)
      print (countBy (all (uncurry validate)) xs)

@@ -26,7 +26,7 @@ import Data.Map qualified as Map
 -- hhvsdkatysmiqjxunezgwcdpr
 main :: IO ()
 main =
-  do inp <- getInputLines 2
+  do inp <- getInputLines 2018 2
      print (part1 inp)
      putStrLn (part2 inp)
 

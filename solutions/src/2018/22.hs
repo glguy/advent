@@ -36,7 +36,7 @@ import Data.List (delete)
 -- | Print the answers to day 22
 main :: IO ()
 main =
-  do (depth, tx, ty) <- [format|22 depth: %u%ntarget: %u,%u%n|]
+  do (depth, tx, ty) <- [format|2018 22 depth: %u%ntarget: %u,%u%n|]
      let target = C ty tx
      let risk = mkRisk depth target
      print (part1 risk target)

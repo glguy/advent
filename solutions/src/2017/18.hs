@@ -66,7 +66,7 @@ import Text.ParserCombinators.ReadP
 -- 7366
 main :: IO ()
 main =
-  do pgm <- map (runP instruction) <$> getInputLines 18
+  do pgm <- map (runP instruction) <$> getInputLines 2017 18
      let start = interpreter pgm
      print (part1 start)
      print (part2 start)

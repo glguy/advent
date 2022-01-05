@@ -24,7 +24,7 @@ import Text.Printf (printf)
 
 main :: IO ()
 main =
- do input <- B.pack <$> [format|05 %s%n|]
+ do input <- B.pack <$> [format|2016 05 %s%n|]
     hSetBuffering stdout NoBuffering
     putStrLn (password1 input)
     putStrLn (password2 input)

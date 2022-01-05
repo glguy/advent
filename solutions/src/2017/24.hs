@@ -21,7 +21,7 @@ import Data.List (delete)
 -- | Print solutions to both parts of the task.
 main :: IO ()
 main =
-  do input <- [format|24 (%d/%d%n)*|]
+  do input <- [format|2017 24 (%d/%d%n)*|]
 
      let bridges = search 0 0 0 input
 

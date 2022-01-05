@@ -47,7 +47,7 @@ mempty
 -- 5923
 main :: IO ()
 main =
- do (goods, bads) <- [format|24
+ do (goods, bads) <- [format|2018 24
       Immune System:%n
       (%u units each with %u hit points(| %((@E to @D&(, ))&(; )%)) with an attack that does %u @D damage at initiative %u%n)*
       %n

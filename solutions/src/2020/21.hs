@@ -25,7 +25,7 @@ import Data.Set qualified as Set
 -- rhvbn,mmcpg,kjf,fvk,lbmt,jgtb,hcbdb,zrb
 main :: IO ()
 main =
-  do inp <- [format|21 (%s&  %(contains %s&(, )%)%n)*|]
+  do inp <- [format|2020 21 (%s&  %(contains %s&(, )%)%n)*|]
      let [soln]   = uniqueAssignment (toConstraints inp)
          badFoods = Set.fromList (Map.elems soln)
 

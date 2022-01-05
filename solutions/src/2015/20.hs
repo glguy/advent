@@ -25,7 +25,7 @@ import Data.Array.Unboxed (UArray, assocs)
 -- 884520
 main :: IO ()
 main =
- do target <- [format|20 %u%n|]
+ do target <- [format|2015 20 %u%n|]
     print (findHouse target (solve1 target))
     print (findHouse target (solve2 target))
 

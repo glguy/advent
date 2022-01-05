@@ -111,7 +111,7 @@ instance Num a => Monoid (LinearFn a) where
 -- 46116012647793
 main :: IO ()
 main =
-  do techniques <- map toTechnique <$> [format|22
+  do techniques <- map toTechnique <$> [format|2019 22
       (cut %ld%n
       |deal with increment %ld%n
       |deal into new stack%n

@@ -26,7 +26,7 @@ import Data.Set qualified as Set
 -- 5648
 main :: IO ()
 main =
-  do world <- getInputArray 20
+  do world <- getInputArray 2019 20
 
      let labels = findLabels world
          links  = findLinks labels

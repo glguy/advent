@@ -27,7 +27,7 @@ import Data.Vector.Unboxed qualified as V
 -- 34771
 main :: IO ()
 main =
-  do (xs,ys) <- [format|22 Player 1:%n(%u%n)*%nPlayer 2:%n(%u%n)*|]
+  do (xs,ys) <- [format|2020 22 Player 1:%n(%u%n)*%nPlayer 2:%n(%u%n)*|]
      let p1 = Seq.fromList xs
      let p2 = Seq.fromList ys
      print (score (play1 p1 p2))

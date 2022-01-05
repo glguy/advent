@@ -18,7 +18,7 @@ type Blacklist = [(Integer,Integer)]
 
 main :: IO ()
 main =
-  do blacklist <- processBlacklist <$> [format|20 (%lu-%lu%n)*|]
+  do blacklist <- processBlacklist <$> [format|2016 20 (%lu-%lu%n)*|]
      print (lowest     blacklist)
      print (countValid blacklist)
 

@@ -24,7 +24,7 @@ import Data.Array (Array, listArray)
 -- 334
 main :: IO ()
 main =
-  do pgm <- toArray . map (runP pInstr) <$> getInputLines 23
+  do pgm <- toArray . map (runP pInstr) <$> getInputLines 2015 23
      print (program pgm 0 0)
      print (program pgm 1 0)
 

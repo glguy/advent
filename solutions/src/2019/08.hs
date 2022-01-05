@@ -33,7 +33,7 @@ mempty
 -- █░░█░░██░░█░░█░░██░░░░█░░
 main :: IO ()
 main =
-  do inp <- [format|8 @P*%n|]
+  do inp <- [format|2019 8 @P*%n|]
      let layers = chunks 6 (chunks 25 inp)
      print (part1 layers)
      mapM_ (putStrLn . map render) (overlayLayers layers)

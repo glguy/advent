@@ -39,7 +39,7 @@ type Registers = IntMap Int
 -- 557
 main :: IO ()
 main =
- do (inp1, inp2) <- [format|16
+ do (inp1, inp2) <- [format|2018 16
       (Before: [%u&(, )]%n
       %u %u %u %u%n
       After:  [%u&(, )]%n)&%n

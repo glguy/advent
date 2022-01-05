@@ -19,7 +19,7 @@ import Intcode
 -- 3892
 main :: IO ()
 main =
-  do pgm <- new <$> [format|2 %d&,%n|]
+  do pgm <- new <$> [format|2019 2 %d&,%n|]
      print (startup 12 2 pgm)
      print (head [ 100 * noun + verb
                  | noun <- [0..99]

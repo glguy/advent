@@ -31,7 +31,7 @@ pure []
 -- 3768
 main :: IO ()
 main =
-  do inp <- [format|24 (@D*%n)*|]
+  do inp <- [format|2020 24 (@D*%n)*|]
      let board = odds (map walk inp)
      print (Set.size board)
      print (Set.size (times 100 step board))

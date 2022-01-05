@@ -25,7 +25,7 @@ mempty
 -- 9A7DC
 main :: IO ()
 main =
- do cmds <- [format|2 (@D*%n)*|]
+ do cmds <- [format|2016 2 (@D*%n)*|]
     putStrLn (computeCode keys1 cmds)
     putStrLn (computeCode keys2 cmds)
 

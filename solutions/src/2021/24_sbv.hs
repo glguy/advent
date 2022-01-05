@@ -13,7 +13,7 @@ Solve an arbitrary program using an SMT solver.
 -}
 module Main (main) where
 
-import Advent.Input ( getInputLines )
+import Advent.Input (getInputLines)
 import Advent.ReadS ( P(..), runP )
 import Control.Applicative ( Alternative((<|>), empty) )
 import Control.Monad ( foldM )
@@ -27,7 +27,7 @@ import Data.SBV
 -- 11911316711816
 main :: IO ()
 main =
- do pgm <- map (runP pOp) <$> getInputLines 24
+ do pgm <- map (runP pOp) <$> getInputLines 2021 24
     print =<< findAnswer maximize pgm
     print =<< findAnswer minimize pgm
 

@@ -18,7 +18,7 @@ import Data.Vector.Unboxed qualified as V
 
 main :: IO ()
 main =
-  do input <- [format|6 %u&%t%n|]
+  do input <- [format|2017 6 %u&%t%n|]
      print (solve (V.fromList input))
 
 -- | Compute both parts of Day 6

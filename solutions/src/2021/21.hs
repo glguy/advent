@@ -30,7 +30,7 @@ import Data.Map.Strict qualified as Map
 -- 57328067654557
 main :: IO ()
 main =
- do (p1,p2) <- [format|21 Player 1 starting position: %u%nPlayer 2 starting position: %u%n|]
+ do (p1,p2) <- [format|2021 21 Player 1 starting position: %u%nPlayer 2 starting position: %u%n|]
     print (part1 0 p1 p2 0 0)
     print (part2 p1 p2)
 

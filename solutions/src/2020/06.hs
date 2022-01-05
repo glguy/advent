@@ -20,6 +20,6 @@ import Data.List (intersect, union)
 -- 3254
 main :: IO ()
 main =
-  do inp <- [format|6 (%s%n)*&%n|]
+  do inp <- [format|2020 6 (%s%n)*&%n|]
      print (length (foldr union []   =<< inp))
      print (length (foldr1 intersect =<< inp))

@@ -28,7 +28,7 @@ main :: IO ()
 main =
  do let toLine (Left (y, xlo, xhi)) = [C y x | x <- [xlo..xhi]]
         toLine (Right (x, ylo, yhi)) = [C y x | y <- [ylo..yhi]]
-    input <- concatMap toLine <$> [format|17 (y=%d, x=%d..%d%n|x=%d, y=%d..%d%n)*|]
+    input <- concatMap toLine <$> [format|2018 17 (y=%d, x=%d..%d%n|x=%d, y=%d..%d%n)*|]
 
     let walls = toArray input
         frames = fillSteps walls

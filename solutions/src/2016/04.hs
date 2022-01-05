@@ -23,7 +23,7 @@ type Entry = ([String], Int, String)
 -- [993]
 main :: IO ()
 main =
- do input <- [format|4 ((%a+-)*%d[%a*]%n)*|]
+ do input <- [format|2016 4 ((%a+-)*%d[%a*]%n)*|]
     let valid = [e | e <- input, isGoodEntry e]
     print (sum [sid | (_, sid, _) <- valid])
     print [sid | e@(_, sid, _) <- valid, decryptEntry e == "northpole object storage"]

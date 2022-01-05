@@ -21,7 +21,7 @@ import Data.Ord (Down(Down), comparing)
 -- cevsgyvd
 main :: IO ()
 main =
- do input <- getInputLines 6
+ do input <- getInputLines 2016 6
     putStrLn (decode id   input)
     putStrLn (decode Down input)
 

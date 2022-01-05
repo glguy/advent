@@ -16,7 +16,7 @@ edge x y
 
 main :: IO ()
 main =
- do input <- [format|9 (%s to %s = %u%n)*|]
+ do input <- [format|2015 9 (%s to %s = %u%n)*|]
     let graph = Map.fromList [(edge x y, d) | (x,y,d) <- input]    
         places = uniques [z | (x,y,_) <- input, z <- [x,y]]
         costs  = tripLength graph <$> permutations places

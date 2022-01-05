@@ -34,7 +34,7 @@ import Linear.Matrix as LM (transpose)
 -- arguments.
 main :: IO ()
 main =
- do input <- [format|20 (p=<%d,%d,%d>, v=<%d,%d,%d>, a=<%d,%d,%d>%n)*|]
+ do input <- [format|2017 20 (p=<%d,%d,%d>, v=<%d,%d,%d>, a=<%d,%d,%d>%n)*|]
     let particles = [fmap fromIntegral <$> V3 (V3 p1 p2 p3) (V3 v1 v2 v3) (V3 a1 a2 a3) | (p1,p2,p3,v1,v2,v3,a1,a2,a3) <- input]
     print (part1 particles)
     print (part2 particles)

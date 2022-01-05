@@ -17,7 +17,7 @@ import Data.List (sort, nub)
 
 main :: IO ()
 main =
-  do input <- [format|4 (%s& %n)*|]
+  do input <- [format|2017 4 (%s& %n)*|]
      print (countBy allUnique input)
      print (countBy allUniqueModuloAnagrams input)
 

@@ -25,7 +25,7 @@ import Control.Applicative (Alternative((<|>)))
 -- 68466
 main :: IO ()
 main =
- do [input] <- getInputLines 12
+ do [input] <- getInputLines 2015 12
     let value = runP pValue input 
     print (numbers       value)
     print (nonredNumbers value)

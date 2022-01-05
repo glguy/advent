@@ -25,7 +25,7 @@ import Data.Map qualified as Map
 -- 983030
 main :: IO ()
 main =
- do inp <- [format|8 (%s&  %| %s& %n)*|]
+ do inp <- [format|2021 8 (%s&  %| %s& %n)*|]
     let outs = map solve inp
     print (countBy (`elem` [1,4,7,8]) (concat outs))
     print (sum (map (fromDigits 10) outs))

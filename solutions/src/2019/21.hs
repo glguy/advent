@@ -20,7 +20,7 @@ import Intcode (intcodeToList)
 -- 1142530574
 main :: IO ()
 main =
-  do inp <- [format|21 %d&,%n|]
+  do inp <- [format|2019 21 %d&,%n|]
      let letsGo = print . last . intcodeToList inp . map ord
      letsGo part1
      letsGo part2

@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 @
 >>> :set -XQuasiQuotes
 >>> :{
-let cmds = [format|0 ((mask = @M*|mem[%u] = %u)%n)*|]
+let cmds = [format|2020 0 ((mask = @M*|mem[%u] = %u)%n)*|]
       "mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X\n\
       \mem[8] = 11\n\
       \mem[7] = 101\n\
@@ -21,7 +21,7 @@ in run1 [] IntMap.empty cmds
 165
 
 >>> :{
-let cmds = [format|0 ((mask = @M*|mem[%u] = %u)%n)*|]
+let cmds = [format|2020 0 ((mask = @M*|mem[%u] = %u)%n)*|]
       "mask = 000000000000000000000000000000X1001X\n\
       \mem[42] = 100\n\
       \mask = 00000000000000000000000000000000X0XX\n\
@@ -52,7 +52,7 @@ pure[]
 -- 3440662844064
 main :: IO ()
 main =
-  do inp <- [format|14 ((mask = @M*|mem[%u] = %u)%n)*|]
+  do inp <- [format|2020 14 ((mask = @M*|mem[%u] = %u)%n)*|]
      print (run1 [] IntMap.empty inp)
      print (run2 [] IntMap.empty inp)
 

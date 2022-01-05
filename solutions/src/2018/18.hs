@@ -26,7 +26,7 @@ type Area = A.UArray Coord Char
 -- 189168
 main :: IO ()
 main =
-  do input <- getInputArray 18
+  do input <- getInputArray 2018 18
      print (part1 input)
      print (part2 input)
 

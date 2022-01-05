@@ -26,7 +26,7 @@ import Data.Maybe (fromJust)
 -- 382
 main :: IO ()
 main =
- do inp <- fmap digitToInt <$> getInputMap 11
+ do inp <- fmap digitToInt <$> getInputMap 2021 11
     let flashes = simulate inp
     print (sum (take 100 flashes))
     print (1 + fromJust (elemIndex (Map.size inp) flashes))

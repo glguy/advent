@@ -47,7 +47,7 @@ mempty
 -- 1542
 main :: IO ()
 main =
-  do input <- [format|11 @D&,%n|]
+  do input <- [format|2017 11 @D&,%n|]
      let distances = map distance (partialSums (map translate input))
      print (last    distances)
      print (maximum distances)

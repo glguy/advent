@@ -33,7 +33,7 @@ mempty -- template haskell staging
 -- █  █ █     ██  █  █ █    ███  ████ █  █
 main :: IO ()
 main =
- do (points, folds) <- [format|13 (%u,%u%n)*%n(fold along @A=%u%n)*|]
+ do (points, folds) <- [format|2021 2021 13 (%u,%u%n)*%n(fold along @A=%u%n)*|]
     let pointSet = Set.fromList [C y x | (x, y) <- points]
         states   = scanl (flip foldPoints) pointSet folds
         p1       = states !! 1 -- points after first fold

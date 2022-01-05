@@ -38,7 +38,7 @@ import GHC.TypeLits (KnownNat)
 -- file can be overridden via command-line arguments.
 main :: IO ()
 main =
- do input <- [format|16 (s%d|x%d/%d|p%c/%c)&,%n|]
+ do input <- [format|2017 16 (s%d|x%d/%d|p%c/%c)&,%n|]
 
     let toDance (Left (Left n)) = spinDance n
         toDance (Left (Right (x,y))) = swapDance x y

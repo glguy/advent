@@ -50,7 +50,7 @@ part2 = "fbgdceah"
 -- aghfcdeb
 main :: IO ()
 main =
-  do inp <- map (fst . head . readP_to_S parseScramble) <$> getInputLines 21
+  do inp <- map (fst . head . readP_to_S parseScramble) <$> getInputLines 2016 21
      putStrLn $ foldl (flip forward) part1 inp
      putStrLn $ foldr backward part2 inp
 

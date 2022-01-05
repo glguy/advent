@@ -23,7 +23,7 @@ pure[]
 -- 653
 main :: IO ()
 main =
-  do inp <- [format|5 (@H*%n)*|]
+  do inp <- [format|2020 5 (@H*%n)*|]
      let seatIds = map seatId inp
      print (maximum seatIds)
      print (gap (sort seatIds))

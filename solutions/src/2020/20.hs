@@ -59,7 +59,7 @@ edgeMap xs =
 -- 2031
 main :: IO ()
 main =
-  do inp <- map (fmap toPicture) <$> [format|20 (Tile %u:%n(%s%n)*%n)*|]
+  do inp <- map (fmap toPicture) <$> [format|2020 20 (Tile %u:%n(%s%n)*%n)*|]
 
      -- group available pictures by their left-edge code
      let em = edgeMap inp

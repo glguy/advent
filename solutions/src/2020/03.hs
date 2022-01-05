@@ -23,7 +23,7 @@ import Data.Array.Unboxed qualified as A
 -- 2832009600
 main :: IO ()
 main =
-  do inp <- getInputArray 3
+  do inp <- getInputArray 2020 3
      print $ solve 3 1 inp
      print $ solve 1 1 inp
            * solve 3 1 inp

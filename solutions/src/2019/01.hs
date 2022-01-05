@@ -20,7 +20,7 @@ import Advent.Format (format)
 -- 4779847
 main :: IO ()
 main =
-  do inp <- [format|1 (%lu%n)*|]
+  do inp <- [format|2019 1 (%lu%n)*|]
      print (sum (map fuelCost          inp))
      print (sum (map recursiveFuelCost inp))
 

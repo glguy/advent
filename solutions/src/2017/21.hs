@@ -49,7 +49,7 @@ import Data.Map qualified as Map
 -- The input file can be overridden via command-line arguments.
 main :: IO ()
 main =
-  do input <- parseInput <$> getInputLines 21
+  do input <- parseInput <$> getInputLines 2017 21
 
      let rules      = makeRules input
          iterations = iterate (mapSubSquares rules) start

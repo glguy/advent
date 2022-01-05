@@ -35,7 +35,7 @@ mempty
 -- | Print the answers to day 19
 main :: IO ()
 main =
- do (ip, pgm) <- [format|19 #ip %u%n(@C %u %u %u%n)*|]
+ do (ip, pgm) <- [format|2018 19 #ip %u%n(@C %u %u %u%n)*|]
     let regs = IntMap.fromList [(0,0),(1,0),(2,0),(3,0),(4,0),(5,0)]
     print (run ip (Vector.fromList pgm) regs IntMap.! 0)
 

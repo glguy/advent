@@ -13,7 +13,7 @@ Apply light on/off/toggle commands to a grid.
 -}
 module Main where
 
-import Advent (format, getInputLines, countBy)
+import Advent (format, countBy)
 import Advent.Coord ( Coord(..) )
 import Control.Monad.ST ( ST, runST )
 import Data.Array.ST
@@ -29,7 +29,7 @@ mempty
 -- 14110788
 main :: IO ()
 main =
- do input <- [format|6 ((turn |)@C %d,%d through %d,%d%n)*|]
+ do input <- [format|2015 6 ((turn |)@C %d,%d through %d,%d%n)*|]
     let cmds = [Command c (C y1 x1) (C y2 x2) | (c,x1,y1,x2,y2) <- input]
     print (runST (part1 cmds))
     print (runST (part2 cmds))

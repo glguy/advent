@@ -39,7 +39,7 @@ dim = 300
 -- 166,75,12
 main :: IO ()
 main =
-  do serial <- [format|11 %u%n|]
+  do serial <- [format|2018 11 %u%n|]
      let table = summedAreaTable (powerLevel serial)
      putStrLn (part1 table)
      putStrLn (part2 table)

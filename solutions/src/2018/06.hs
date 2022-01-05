@@ -29,7 +29,7 @@ import Data.Map qualified as Map
 main :: IO ()
 main =
  do let toCoord (x,y) = C y x
-    input <- map toCoord <$> [format|6 (%u, %u%n)*|]
+    input <- map toCoord <$> [format|2018 6 (%u, %u%n)*|]
     print (part1 input)
     print (part2 input)
 

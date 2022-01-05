@@ -22,7 +22,7 @@ import Data.Map qualified as Map
 -- 343
 main :: IO ()
 main =
-  do inp <- [format|6 (%s%)%s%n)*|]
+  do inp <- [format|2019 6 (%s%)%s%n)*|]
 
      let orbits = Map.fromList [ (y,x) | (x,y) <- inp]
 

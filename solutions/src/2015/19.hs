@@ -33,7 +33,7 @@ newtype Atom = Atom String
 
 main :: IO ()
 main =
-  do (rules_, input_) <- [format|19 (%s => %s%n)*%n%s%n|]
+  do (rules_, input_) <- [format|2015 19 (%s => %s%n)*%n%s%n|]
      let rules = Map.fromListWith (++) [(Atom a, [parseMolecule b]) | (a,b) <- rules_]
      let input = parseMolecule input_
      print (length (counts (oneStep rules input)))

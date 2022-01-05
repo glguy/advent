@@ -21,7 +21,7 @@ import Data.Bits ((.&.))
 -- command-line arguments.
 main :: IO ()
 main =
-  do (startA, startB) <- [format|15 Generator A starts with %u%nGenerator B starts with %u%n|]
+  do (startA, startB) <- [format|2017 15 Generator A starts with %u%nGenerator B starts with %u%n|]
 
      print $ countBy (uncurry match) $ take 40e6
        $ zip (iterate nextA startA)

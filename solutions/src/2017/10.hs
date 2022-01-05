@@ -34,7 +34,7 @@ import KnotHash (knotHash, tieKnots)
 -- e1a65bfb5a5ce396025fab5528c25a87
 main :: IO ()
 main =
-  do [inputLine] <- getInputLines 10
+  do [inputLine] <- getInputLines 2017 10
      putStrLn (part1 inputLine)
      putStrLn (part2 inputLine)
 

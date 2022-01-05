@@ -21,7 +21,7 @@ import Data.List (sort)
 -- 91638945
 main :: IO ()
 main =
- do inp <- [format|7 %u&,%n|]
+ do inp <- [format|2021 7 %u&,%n|]
 
     let median = sort inp !! (length inp `div` 2)
     print (sum [abs (x - median) | x <- inp])

@@ -18,7 +18,7 @@ type Lights = UArray Coord Bool
 
 main :: IO ()
 main =
-  do input <- amap ('#'==) <$> getInputArray 18
+  do input <- amap ('#'==) <$> getInputArray 2015 18
      print $ countLights $ times 100 (applyRule life) input
      print $ countLights $ times 100 (applyRule (addCorners life)) input
 

@@ -19,7 +19,7 @@ import Data.List (group)
 -- 1306
 main :: IO ()
 main =
-  do [(lo,hi)] <- [format|4 (%u-%u%n)*|]
+  do [(lo,hi)] <- [format|2019 4 (%u-%u%n)*|]
      let nums = map runs $ filter nondecreasing $ map show [lo..hi]
      print (countBy (any (> 1)) nums)
      print (countBy (elem 2   ) nums)

@@ -21,7 +21,7 @@ import Intcode
 -- 23981
 main :: IO ()
 main =
-  do mach <- new <$> [format|13 %d&,%n|]
+  do mach <- new <$> [format|2019 13 %d&,%n|]
 
      print (part1 mach)
      print (robot Nothing Nothing 0 (run (set 0 2 mach)))

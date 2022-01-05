@@ -26,7 +26,7 @@ import Data.Map qualified as Map
 -- 980
 main :: IO ()
 main =
-  do input <- [format|7 (Step %c must be finished before step %c can begin.%n)*|]
+  do input <- [format|2018 7 (Step %c must be finished before step %c can begin.%n)*|]
      let queue = newWorkQueue [Dep x y | (x,y) <- input]
      putStrLn (part1 queue)
      print (part2 queue)

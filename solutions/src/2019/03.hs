@@ -20,7 +20,7 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 
 -- $setup
--- >>> let parse = [format|0 ((@D%u)&,%n)*|] . unlines
+-- >>> let parse = [format|2019 0 ((@D%u)&,%n)*|] . unlines
 
 -- | Directions up, down, left, and right.
 data D = DU | DD | DL | DR
@@ -44,7 +44,7 @@ toUnitVector DR = west
 -- 134662
 main :: IO ()
 main =
-  do (p1,p2) <- answers <$> [format|3 ((@D%u)&,%n)*|]
+  do (p1,p2) <- answers <$> [format|2019 3 ((@D%u)&,%n)*|]
      print p1
      print p2
 

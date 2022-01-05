@@ -27,7 +27,7 @@ mempty
 -- arguments.
 main :: IO ()
 main =
-  do input <- [format|8 (%s @C %d if %s %s %d%n)*|]
+  do input <- [format|2017 8 (%s @C %d if %s %s %d%n)*|]
      let regmaps = scanl interpret mempty input
      print (maximum (last regmaps))
      print (maximumOf (folded . folded) regmaps)

@@ -28,7 +28,7 @@ import Intcode (intcodeToList)
 -- 66113
 main :: IO ()
 main =
-  do inp <- [format|9 %d&,%n|]
+  do inp <- [format|2019 9 %d&,%n|]
      let go i = print (head (intcodeToList inp [i]))
      go 1
      go 2

@@ -20,7 +20,7 @@ import Data.Map qualified as Map
 -- 582
 main :: IO ()
 main =
- do inp <- getInputMap 25
+ do inp <- getInputMap 2021 25
     let C ny nx = 1 + maximum (Map.keys inp)
     let inp' = Map.filter (`elem` ">v") inp
     let steps = iterate (step ny nx) inp'

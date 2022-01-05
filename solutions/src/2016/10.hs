@@ -25,7 +25,7 @@ mempty
 -- 55637
 main :: IO ()
 main =
- do inp <- [format|10 ((value %u goes to @T %u|bot %u gives low to @T %u and high to @T %u)%n)*|]
+ do inp <- [format|2016 2016 10 ((value %u goes to @T %u|bot %u gives low to @T %u and high to @T %u)%n)*|]
     let solution = followInstructions (toInstr <$> inp)
 
     print (head [who | (Bot who, sort -> [17,61]) <- Map.toList solution])

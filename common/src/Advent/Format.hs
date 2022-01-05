@@ -1,4 +1,4 @@
-{-# Language BlockArguments, TemplateHaskell #-}
+{-# Language BlockArguments, TemplateHaskell, ViewPatterns #-}
 {-|
 Module      : Advent.Format
 Description : Input file format quasiquoter
@@ -21,11 +21,11 @@ are discarded (use @%n@ for matching newlines)
 The following are identical:
 
 @
-example1 = [format|1
+example1 = [format|2021 1
     %s%n
     %s%n|]
 
-example2 = [format|1 %s%n%s%n|]
+example2 = [format|2021 1 %s%n%s%n|]
 @
 
 Patterns:
@@ -90,31 +90,34 @@ format = QuasiQuoter
   , quoteDec  = \_ -> fail "format: declarations not supported"
   }
 
-prepare :: String -> Q (Int,String)
+prepare :: String -> Q (Maybe (Int, Int), String)
 prepare str =
   case lines str of
     []   -> fail "Empty input format"
-    [x]  -> case reads x of
-              [(n,rest)] -> pure (n, dropWhile (' '==) rest)
-              _ -> fail "Failed to parse single-line input pattern"
-    x:xs ->
-      do n <- case readMaybe x of
-                Nothing -> fail "Failed to parse format day number"
-                Just n  -> pure n
-         pure (n, concatMap (drop indent) xs1)
+    [x]
+      | Just (yd, str) <- splitLeader x -> pure (yd, str)
+      | otherwise -> fail "Failed to parse single-line input pattern"
+    x:xs
+      | Just (yd, "") <- splitLeader x ->
+        pure (yd, concatMap (drop indent) xs1)
       where
         xs1    = filter (any (' ' /=)) xs
         indent = minimum (map (length . takeWhile (' '==)) xs1)
+    _ -> fail "Failed to parse multi-line input pattern"
 
-makeParser :: Int -> String -> ExpQ
-makeParser n str =
+splitLeader :: String -> Maybe (Maybe (Int, Int), String)
+splitLeader (reads -> [(y,reads -> [(d, rest)])]) = Just (Just (y, d), dropWhile (' '==) rest)
+splitLeader (lex   -> [("-", rest)]) = Just (Nothing, dropWhile (' '==) rest)
+splitLeader _ = Nothing
+
+makeParser :: Maybe (Int, Int) -> String -> ExpQ
+makeParser mb str =
   do fmt <- parse str
      let formats = [| readP_to_S ($(toReadP fmt) <* eof) |]
      let qf = [| maybe (error "bad input parse") fst . listToMaybe . $formats |]
-     if n == 0 then
-       qf
-     else
-       [| $qf <$> getRawInput n |]
+     case mb of
+       Nothing    -> qf
+       Just (y,d) -> [| $qf <$> getRawInput y d |]
 
 toReadP :: Format -> ExpQ
 toReadP s =

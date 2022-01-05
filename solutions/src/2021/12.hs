@@ -34,7 +34,7 @@ import Data.Map qualified as Map
 -- 99138
 main :: IO ()
 main =
- do inp <- compress . toAdj . label <$> [format|12 (%s-%s%n)*|]
+ do inp <- compress . toAdj . label <$> [format|2021 12 (%s-%s%n)*|]
     print (start inp False)
     print (start inp True)
 

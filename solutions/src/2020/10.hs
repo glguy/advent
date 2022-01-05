@@ -21,7 +21,7 @@ import Data.List (sort)
 -- 347250213298688
 main :: IO ()
 main =
-  do adapters <- [format|10 (%u%n)*|]
+  do adapters <- [format|2020 2020 10 (%u%n)*|]
      let socket = 0
      let device = maximum adapters + 3
 

@@ -28,7 +28,7 @@ import qualified Data.Vector as Vector
 
 main :: IO ()
 main =
-  do [key] <- getInputLines 4
+  do [key] <- getInputLines 2015 4
      print (solve key 5)
      print (solve key 6)
 

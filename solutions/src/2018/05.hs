@@ -22,7 +22,7 @@ import Data.List (nub)
 -- 6390
 main :: IO ()
 main =
-  do inp <- [format|5 %s%n|]
+  do inp <- [format|2018 5 %s%n|]
      print (part1 inp)
      print (part2 inp)
 

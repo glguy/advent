@@ -36,7 +36,7 @@ import Data.Word (Word8)
 -- 3022
 main :: IO ()
 main =
- do inp <- amap (fromIntegral . digitToInt) <$> getInputArray 15
+ do inp <- amap (fromIntegral . digitToInt) <$> getInputArray 2021 15
     let end = snd (bounds inp)
     print (solve end (arrIx inp))
     let (end2, inp2) = extendCave inp

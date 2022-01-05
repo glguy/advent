@@ -18,7 +18,7 @@ import Data.Vector.Unboxed.Mutable qualified as M
 
 main :: IO ()
 main =
-  do input <- [format|5 (%d%n)*|]
+  do input <- [format|2017 5 (%d%n)*|]
      print (solve part1 input)
      print (solve part2 input)
 

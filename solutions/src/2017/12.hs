@@ -18,7 +18,7 @@ import Data.Graph.Inductive (UGr, reachable, noComponents, mkUGraph)
 
 main :: IO ()
 main =
-  do input <- [format|12 (%u <-> %u&(, )%n)*|]
+  do input <- [format|2017 12 (%u <-> %u&(, )%n)*|]
      let g = toGraph input
      print (length (reachable 0 g))
      print (noComponents g)

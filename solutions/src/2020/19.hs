@@ -34,7 +34,7 @@ type Rule = Either Char [[Int]]
 -- 323
 main :: IO ()
 main =
- do (rs,ws) <- [format|19 (%u: ("%c"|%u& &( %| ))%n)*%n(%s%n)*|]
+ do (rs,ws) <- [format|2020 19 (%u: ("%c"|%u& &( %| ))%n)*%n(%s%n)*|]
     let rules1 = IntMap.fromList rs
         rules2 = IntMap.insert  8 (Right [[42   ],[42, 8   ]])
                $ IntMap.insert 11 (Right [[42,31],[42,11,31]])

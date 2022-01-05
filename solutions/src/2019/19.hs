@@ -20,7 +20,7 @@ import Intcode (intcodeToList)
 -- 8071006
 main :: IO ()
 main =
-  do inp <- [format|19 %d&,%n|]
+  do inp <- [format|2019 19 %d&,%n|]
      let f x y = 1 == head (intcodeToList inp [x,y])
      print $ length [ () | x <- [0..49], y <- [0..49], f x y]
      print $ part2 f 0 100

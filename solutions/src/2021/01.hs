@@ -20,7 +20,7 @@ import Advent (countBy, format)
 -- 1704
 main :: IO ()
 main =
- do input <- [format|1 (%u%n)*|]
+ do input <- [format|2021 1 (%u%n)*|]
     print (solve 1 input)
     print (solve 3 input)
 

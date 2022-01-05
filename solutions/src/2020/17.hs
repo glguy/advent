@@ -56,7 +56,7 @@ parse input = [(x,y) | (y,line) <- zip [0..] input, (x,'#') <- zip [0..] line]
 -- 2532
 main :: IO ()
 main =
-  do inp <- parse <$> getInputLines 17
+  do inp <- parse <$> getInputLines 2020 17
      print (run neighborCount3 (map toC3 inp))
      print (run neighborCount4 (map toC4 inp))
 

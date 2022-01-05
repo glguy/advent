@@ -19,7 +19,7 @@ import GHC.Num.Integer (integerPowMod#)
 -- 8997277
 main :: IO ()
 main =
- do (row,col) <- [format|25 To continue, please consult the code grid in the manual.  Enter the code at row %lu, column %lu.%n|]
+ do (row,col) <- [format|2015 25 To continue, please consult the code grid in the manual.  Enter the code at row %lu, column %lu.%n|]
     print (code row col)
 
 -- | Compute the value at a location on Santa's infinite sheet of paper. 

@@ -22,7 +22,7 @@ import Data.List (transpose, scanl')
 -- 2631
 main :: IO ()
 main =
- do input <- [format|3 (^|v|<|>)*!|]
+ do input <- [format|2015 3 (^|v|<|>)*!|]
     let directions = map parseChar input
     print (countHouses 1 directions)
     print (countHouses 2 directions)

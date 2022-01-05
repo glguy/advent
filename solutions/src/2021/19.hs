@@ -34,7 +34,7 @@ import Data.Either (partitionEithers)
 -- 13243
 main :: IO ()
 main =
- do inp <- [format|19 (--- scanner %u ---%n(%d,%d,%d%n)*)&%n|]
+ do inp <- [format|2021 19 (--- scanner %u ---%n(%d,%d,%d%n)*)&%n|]
     let coord (x,y,z) = C3 x y z
     let scanners = [map coord ps | (_,ps) <- inp]
 

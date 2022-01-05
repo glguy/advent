@@ -29,7 +29,7 @@ type Component = (Int, String)
 -- 2074843
 main :: IO ()
 main =
-  do inp <- [format|14 ((%u %s)&(, ) => %u %s%n)*|]
+  do inp <- [format|2019 14 ((%u %s)&(, ) => %u %s%n)*|]
      let recipes = mkRecipes inp
 
      print (oreNeeded recipes 1)

@@ -25,7 +25,7 @@ import Data.Time (LocalTime, readSTime, defaultTimeLocale, todMin, localTimeOfDa
 -- 39940
 main :: IO ()
 main =
-  do input <- toSleepMinutes . parseFile <$> getInputLines 4
+  do input <- toSleepMinutes . parseFile <$> getInputLines 2018 4
      print (part1 input)
      print (part2 input)
 

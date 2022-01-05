@@ -25,7 +25,7 @@ mempty
 -- Just 116
 main :: IO ()
 main =
- do cmds <- [format|1 (@D%d)&(, )%n|]
+ do cmds <- [format|2016 1 (@D%d)&(, )%n|]
     let path = computePath cmds
     print (part1 path)
     print (part2 path)

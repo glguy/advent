@@ -29,7 +29,7 @@ params = DH 7 20201227
 -- 181800
 main :: IO ()
 main =
-  do (pub1,pub2) <- [format|25 %lu%n%lu%n|]
+  do (pub1,pub2) <- [format|2020 25 %lu%n%lu%n|]
      traverse_ print (hack params pub1 pub2)
 
 hack :: DHParams -> Integer -> Integer -> Maybe Integer

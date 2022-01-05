@@ -29,7 +29,7 @@ mempty
 -- command-line arguments.
 main :: IO ()
 main =
- do (start, iter, rules) <- [format|25
+ do (start, iter, rules) <- [format|2017 25
       Begin in state %c.%n
       Perform a diagnostic checksum after %d steps.%n
       (%n

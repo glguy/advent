@@ -29,7 +29,7 @@ data Entry = Entry {-# UNPACK #-} !Coord !SmallSet
 -- 804
 main :: IO ()
 main =
-  do maze <- getInputArray 24
+  do maze <- getInputArray 2016 24
 
      let targets = SBS.fromList
                  $ mapMaybe digitToInt'

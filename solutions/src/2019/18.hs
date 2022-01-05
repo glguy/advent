@@ -44,7 +44,7 @@ import Data.Set qualified as Set
 -- 1886
 main :: IO ()
 main =
-  do world1 <- getInputArray 18
+  do world1 <- getInputArray 2019 18
      let start = head [k | (k,'@') <- assocs world1]
 
      -- part 1

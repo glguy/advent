@@ -20,7 +20,7 @@ import Data.List (isInfixOf, tails)
 -- 260
 main :: IO ()
 main =
- do xs <- [format|7 ((%a*)&(]|[)%n)*|]
+ do xs <- [format|2016 7 ((%a*)&(]|[)%n)*|]
     print (length (filter supportsTLS xs))
     print (length (filter supportsSSL xs))
 

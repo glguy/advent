@@ -12,7 +12,7 @@ data Reindeer = Reindeer
 
 main :: IO ()
 main =
- do input <- [format|14 (%s can fly %u km/s for %u seconds, but then must rest for %u seconds.%n)*|]
+ do input <- [format|2015 14 (%s can fly %u km/s for %u seconds, but then must rest for %u seconds.%n)*|]
     let rs = [Reindeer{..} | (_, speed, stamina, breaktime) <- input]    
     let race = map (take 2503 . positions) rs
     print (maximum (map last race))

@@ -23,7 +23,7 @@ type Board = [[Int]]
 -- 26878
 main :: IO ()
 main =
- do (calls, boards) <- [format|4 %u&,%n(%n(( *%u)+%n)+)*|]
+ do (calls, boards) <- [format|2021 4 %u&,%n(%n(( *%u)+%n)+)*|]
     let outcomes = play calls boards
     print (head outcomes)
     print (last outcomes)

@@ -15,7 +15,7 @@ import Advent (counts, format)
 
 main :: IO ()
 main =
-  do input <- [format|17 (%u%n)*|]
+  do input <- [format|2015 17 (%u%n)*|]
      let combos = combinations 0 input 150 []
      print (length combos)
      print (foldr const undefined (counts combos))

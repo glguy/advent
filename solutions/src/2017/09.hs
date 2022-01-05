@@ -26,7 +26,7 @@ import Text.ParserCombinators.ReadP (ReadP, readP_to_S, char, get, satisfy, betw
 -- argument.
 main :: IO ()
 main =
- do [line] <- getInputLines 9
+ do [line] <- getInputLines 2017 9
     let [(x,_)] = readP_to_S (parseGroup 1) line
     traverse_ print x
 

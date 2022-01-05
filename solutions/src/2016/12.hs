@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent ( getInputLines )
+import Advent (getInputLines)
 import Advent.ReadS
 import AsmProg
 import Control.Applicative (Alternative((<|>), empty))
@@ -25,7 +25,7 @@ import Data.Vector qualified as Vector
 -- 9227731
 main :: IO ()
 main =
-  do program <- Vector.fromList . map (runP pInst) <$> getInputLines 12
+  do program <- Vector.fromList . map (runP pInst) <$> getInputLines 2016 12
      print (execute program 0)
      print (execute program 1)
 

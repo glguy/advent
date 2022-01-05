@@ -22,7 +22,7 @@ import Data.Array.Unboxed (UArray, (!), assocs)
 -- overridden via the command-line arguments.
 main :: IO ()
 main =
- do input <- getInputArray 19
+ do input <- getInputArray 2017 19
 
     let start:_ = [c | (c@(C 0 _), '|') <- assocs input]
         path = toPath input south start

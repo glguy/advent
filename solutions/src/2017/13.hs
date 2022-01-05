@@ -25,7 +25,7 @@ type Scanners = [(Int,Int)]
 -- command-line arguments.
 main :: IO ()
 main =
-  do input <- [format|13 (%u: %u%n)*|]
+  do input <- [format|2017 13 (%u: %u%n)*|]
      print (part1 input)
      print (part2 input)
 

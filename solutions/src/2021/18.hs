@@ -26,7 +26,7 @@ import Data.List (tails)
 -- 4555
 main :: IO ()
 main =
- do inp <- map (runP (pTree (P reads))) <$> getInputLines 18
+ do inp <- map (runP (pTree (P reads))) <$> getInputLines 2021 18
     print (magnitude (foldl1 add inp))
     print (maximum [magnitude (add x y) `max` magnitude (add y x)
                    | x:ys <- tails inp, y <- ys])

@@ -19,7 +19,7 @@ import Data.List (transpose)
 
 main :: IO ()
 main =
- do input <- [format|15 (%s: (%s %ld)&(, )%n)*|]
+ do input <- [format|2015 15 (%s: (%s %ld)&(, )%n)*|]
     let stats = map (map snd . snd) input
         n = fromIntegral (length input)
         possibilities = computeStats stats <$> divisions n 100

@@ -30,7 +30,7 @@ import Data.Set qualified as Set
 -- 604
 main :: IO ()
 main =
- do inp <- getInputLines 10
+ do inp <- getInputLines 2019 10
     let locs = Set.fromList [c | (c,'#') <- coordLines inp]
     let (vis, base) = findBase locs
     print vis

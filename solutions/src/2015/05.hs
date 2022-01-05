@@ -18,7 +18,7 @@ import Data.List (isInfixOf, tails)
 
 main :: IO ()
 main =
-  do strs <- getInputLines 5
+  do strs <- getInputLines 2015 5
      print (countBy part1 strs)
      print (countBy part2 strs)
 

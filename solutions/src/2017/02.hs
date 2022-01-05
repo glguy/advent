@@ -16,7 +16,7 @@ import Data.List (delete)
 
 main :: IO ()
 main =
-  do xs <- [format|2 (%u&%t%n)*|]
+  do xs <- [format|2017 2 (%u&%t%n)*|]
      print (sum (map checksum1 xs))
      print (sum (map checksum2 xs))
 

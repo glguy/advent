@@ -19,7 +19,7 @@ import Intcode (Effect(..), run, new)
 
 main :: IO ()
 main =
-  do inp <- [format|11 %d&,%n|]
+  do inp <- [format|2019 11 %d&,%n|]
 
      let start  = robot origin north (run (new inp))
          run1   = start Map.empty

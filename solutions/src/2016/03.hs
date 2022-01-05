@@ -21,7 +21,7 @@ import Data.List (sort, transpose)
 -- 1921
 main :: IO ()
 main =
- do input <- [format|3 (( *%d)*%n)*|]
+ do input <- [format|2016 3 (( *%d)*%n)*|]
     print (countBy goodTriangle input)
     print (countBy goodTriangle (rearrange input))
 

@@ -25,7 +25,7 @@ type Input = (Int, Int, Char, String)
 -- 245
 main :: IO ()
 main =
-  do inp <- [format|2 (%u-%u %c: %s%n)*|]
+  do inp <- [format|2020 2 (%u-%u %c: %s%n)*|]
      print (countBy p1 inp)
      print (countBy p2 inp)
 

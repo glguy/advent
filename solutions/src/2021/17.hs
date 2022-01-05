@@ -44,7 +44,7 @@ step (P x y vx vy) = P (x+vx) (y+vy) (vx-signum vx) (vy-1)
 -- 5247
 main :: IO ()
 main =
-  do (xlo,xhi,ylo,yhi) <- [format|17 target area: x=%d..%d, y=%d..%d%n|]
+  do (xlo,xhi,ylo,yhi) <- [format|2021 17 target area: x=%d..%d, y=%d..%d%n|]
      when (xlo < 0 || yhi > 0) (fail "I didn't do enough math for this case")
 
      let ys = [y | vx <- [0 .. xhi], vy <- [ylo .. -ylo], Just y <- [sim xlo xhi ylo yhi vx vy]]

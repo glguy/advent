@@ -31,7 +31,7 @@ import Intcode (intcodeToList)
 
 main :: IO ()
 main =
-  do inp <- [format|25 %d&,%n|]
+  do inp <- [format|2019 25 %d&,%n|]
      traverse_ putStrLn (asciiComputer inp search)
 
 asciiComputer :: [Int] -> [String] -> [String]

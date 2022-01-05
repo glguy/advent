@@ -23,7 +23,7 @@ import Intcode (Effect(..), run, new)
 -- 17001
 main :: IO ()
 main =
-  do events <- startup <$> [format|23 %d&,%n|]
+  do events <- startup <$> [format|2019 23 %d&,%n|]
      print (head     [y | SetY  y <- events])
      print (firstDup [y | SendY y <- events])
 

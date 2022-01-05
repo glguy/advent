@@ -26,7 +26,7 @@ import Data.Set qualified as Set
 -- 137041
 main :: IO ()
 main =
-  do inp <- [format|1 ((%+|)%ld%n)*|]
+  do inp <- [format|2018 1 ((%+|)%ld%n)*|]
      print (sum inp)
      print (part2 inp)
 

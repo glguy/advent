@@ -20,7 +20,7 @@ import Data.Map qualified as Map
 
 main :: IO ()
 main =
-  do input <- getInputMap 22
+  do input <- getInputMap 2017 22
      let grid = Map.mapMaybe (\x -> if x == '#' then Just Infected else Nothing) input
      let C my mx = last (Map.keys input)
      let start = C (my `div` 2) (mx `div` 2)

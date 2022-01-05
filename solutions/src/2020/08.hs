@@ -36,7 +36,7 @@ pure[]
 -- 1023
 main :: IO ()
 main =
-  do inp <- [format|8 (@O (|%+)%d%n)*|]
+  do inp <- [format|2020 8 (@O (|%+)%d%n)*|]
      let pgm = IntMap.fromList (zip [0..] inp)
      print (snd (part1 pgm 0 0))
      print (part2 pgm 0 0)

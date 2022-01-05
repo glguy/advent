@@ -21,7 +21,7 @@ import Data.List (findIndex, scanl')
 -- 1771
 main :: IO ()
 main =
- do [inp] <- getInputLines 1
+ do [inp] <- getInputLines 2015 1
     let xs = map interpret inp
     print (sum xs)
     traverse_ print (part2 xs)

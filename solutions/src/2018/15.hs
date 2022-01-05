@@ -36,7 +36,7 @@ type Dungeon = UArray Coord Bool
 -- 60864
 main :: IO ()
 main =
-  do input <- getInputArray 15
+  do input <- getInputArray 2018 15
      let dungeon = parseMap input
          units = parseUnits input
 

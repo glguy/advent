@@ -25,7 +25,7 @@ import Intcode (effectList, intcodeToList, run, new, set)
 -- 1045393
 main :: IO ()
 main =
-  do inp <- [format|17 %d&,%n|]
+  do inp <- [format|2019 17 %d&,%n|]
      let ascii = map (chr . fromIntegral) (intcodeToList inp [])
          world = Map.fromList (coordLines (lines ascii))
      print $ sum [ coordRow k * coordCol k

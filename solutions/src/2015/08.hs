@@ -4,7 +4,7 @@ import Advent.Input (getInputLines)
 
 main :: IO ()
 main =
-  do ws <- getInputLines 8
+  do ws <- getInputLines 2015 8
      print (sum (part1 <$> ws))
      print (sum (part2 <$> ws))
 

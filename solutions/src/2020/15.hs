@@ -25,7 +25,7 @@ type T = Int32
 -- 412
 main :: IO ()
 main =
-  do inp <- map fromIntegral <$> [format|15 %u&,%n|]
+  do inp <- map fromIntegral <$> [format|2020 15 %u&,%n|]
      print (game inp      2_020)
      print (game inp 30_000_000)
 

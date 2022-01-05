@@ -11,12 +11,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent.Format ( format )
+import Advent.Format (format)
 import Advent.Search (astar, AStep(..))
 
 main :: IO ()
 main =
- do (hp,dmg) <- [format|22 Hit Points: %u%nDamage: %u%n|]
+ do (hp,dmg) <- [format|2015 22 Hit Points: %u%nDamage: %u%n|]
     print (runSim (initialState hp dmg))
     print (runSim (initialState hp dmg) { difficulty = 1 })
 

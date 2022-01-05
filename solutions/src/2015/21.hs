@@ -25,7 +25,7 @@ data Item = Item { itemName :: String, itemCost, itemDamage, itemArmor :: Int }
 -- 148
 main :: IO ()
 main =
- do (hp,dmg,armor) <- [format|21 Hit Points: %u%nDamage: %u%nArmor: %u%n|]
+ do (hp,dmg,armor) <- [format|2015 21 Hit Points: %u%nDamage: %u%nArmor: %u%n|]
     let win = fight hp dmg armor
     print $ minimum $ map itemCost
           $ filter win

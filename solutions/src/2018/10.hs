@@ -24,7 +24,7 @@ import Data.Maybe (fromJust, isJust, isNothing)
 main :: IO ()
 main =
  do let toSim (px, py, dx, dy) = iterate (C dy dx +) (C py px)
-    input <- map toSim <$> [format|10 (position=< *%d, *%d> velocity=< *%d, *%d>%n)*|]
+    input <- map toSim <$> [format|2018 10 (position=< *%d, *%d> velocity=< *%d, *%d>%n)*|]
     putStr $ fromJust $ asum $ zipWith draw [0..] $ transpose input
 
 -- | Given a number of seconds and the current list of particles,

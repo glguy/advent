@@ -29,7 +29,7 @@ type Neighbors = A.Array Coord [Int]
 -- 1995
 main :: IO ()
 main =
-  do inp <- getInputArray 11
+  do inp <- getInputArray 2020 11
      let run f = print (count '#' (A.elems (stable f inp)))
      run (adv 4 (adjacent inp))
      run (adv 5 (lineOfSight inp))

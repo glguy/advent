@@ -19,7 +19,7 @@ import Data.Graph.Inductive.Query (noComponents)
 -- | Print the answers to day 25
 main :: IO ()
 main =
- do input <- [format|25 (%d&,%n)*|]
+ do input <- [format|2018 25 (%d&,%n)*|]
     print (noComponents (starGraph input))
 
 starGraph :: [[Int]] -> UGr

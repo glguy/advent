@@ -68,7 +68,7 @@ import Text.ParserCombinators.ReadP qualified as ReadP
 -- 5390807940351
 main :: IO ()
 main =
- do inp <- [format|16 %s%n|]
+ do inp <- [format|2021 16 %s%n|]
     let Just p = parse (decodeHex inp)
     print (vers p)
     print (eval p)

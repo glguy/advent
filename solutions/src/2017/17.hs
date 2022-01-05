@@ -30,9 +30,13 @@ import Data.Sequence qualified as Seq
 
 -- | Print the solutions to the puzzle. Input file can be overridden
 -- via command-line arguments.
+--
+-- >>> :main
+-- 866
+-- 11995607
 main :: IO ()
 main =
-  do input <- [format|17 %u%n|]
+  do input <- [format|2017 17 %u%n|]
      print (elemAfter 2017 (makeSequence input 2017))
      print (part2 input)
 

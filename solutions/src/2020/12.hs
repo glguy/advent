@@ -39,7 +39,7 @@ mapVect f s = s { vect = f (vect s) }
 -- 41212
 main :: IO ()
 main =
-  do inp <- [format|12 ((@D%u|@T@A)%n)*|]
+  do inp <- [format|2020 12 ((@D%u|@T@A)%n)*|]
      print (walk mapHere (Sim origin east                ) inp)
      print (walk mapVect (Sim origin (move 10 east north)) inp)
 

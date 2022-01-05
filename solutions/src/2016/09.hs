@@ -17,7 +17,7 @@ import Data.Char (isDigit)
 
 main :: IO ()
 main =
-  do xs <- getInputLines 9
+  do xs <- getInputLines 2016 9
      print (sum (map decode1 xs))
      print (sum (map decode2 xs))
 

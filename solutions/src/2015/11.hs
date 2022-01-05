@@ -5,7 +5,7 @@ import Data.List (tails)
 
 main :: IO ()
 main =
-  do [key] <- getInputLines 11
+  do [key] <- getInputLines 2015 11
      mapM_ putStrLn (take 2 (solutions key))
 
 -- | Compute the list of valid passwords starting from a given one.

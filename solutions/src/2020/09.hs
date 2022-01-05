@@ -21,7 +21,7 @@ import Data.Vector.Unboxed qualified as V
 -- 2186361
 main :: IO ()
 main =
-  do inp <- [format|9 (%d%n)*|]
+  do inp <- [format|2020 9 (%d%n)*|]
      let v = V.fromList inp
 
      let target = part1 v

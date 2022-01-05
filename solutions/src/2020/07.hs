@@ -33,7 +33,7 @@ type Rule = (String, Maybe [(Integer, String)])
 -- 7867
 main :: IO ()
 main =
-  do rules <- [format|7 ((%s %s)! bags contain (no other bags|(%lu (%s %s)! bag(|s))&(, )).%n)*|]
+  do rules <- [format|2020 7 ((%s %s)! bags contain (no other bags|(%lu (%s %s)! bag(|s))&(, )).%n)*|]
      let tc = transClosBags rules
          k = "shiny gold"
      print (countBy (Map.member k) tc)

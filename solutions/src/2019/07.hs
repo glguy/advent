@@ -32,7 +32,7 @@ type ListFn = [Int] -> [Int]
 -- 44282086
 main :: IO ()
 main =
-  do pgm <- intcodeToList <$> [format|7 %d&,%n|]
+  do pgm <- intcodeToList <$> [format|2019 7 %d&,%n|]
      print (part1 pgm)
      print (part2 pgm)
 

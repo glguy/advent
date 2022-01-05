@@ -21,7 +21,7 @@ data Face = Face Int Int
 
 main :: IO ()
 main =
- do input <- [format|2 (%ux%ux%u%n)*|]
+ do input <- [format|2015 2 (%ux%ux%u%n)*|]
     let packages = [Package x y z | (x,y,z) <- input]   
     print (sum (part1 <$> packages))
     print (sum (part2 <$> packages))

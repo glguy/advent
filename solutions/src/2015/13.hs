@@ -21,7 +21,7 @@ edge a b
 
 main :: IO ()
 main =
- do input <- [format|13 (%s would @E %u happiness units by sitting next to %s.%n)*|]
+ do input <- [format|2015 13 (%s would @E %u happiness units by sitting next to %s.%n)*|]
     let graph = Map.fromListWith (+) [(edge x y, case e of Egain -> v; Elose -> -v) | (x,e, v,y) <- input]
     let people1 = uniques [z | (x,_,_,y) <- input, z <- [x,y]]
     print (maximumHappiness graph people1)
