@@ -86,11 +86,10 @@ data Tree
 -- we know the subtree of.
 data Side = L | R deriving (Eq, Show)
 
--- | A hole in a binary tree. Rebuild the tree with 'fromZip'
+-- | A hole in a binary tree.
 type Zip = [(Side, Tree)]
 
--- | Apply the given function to the nearest parent
--- sibling on the given side.
+-- | Add a number to the nearest sibling on the given side.
 sendUp :: Side -> Int -> Zip -> Zip
 sendUp L x ((L,l):zs) = (L, sendR x l):zs
 sendUp R x ((R,r):zs) = (R, sendL x r):zs
