@@ -32,6 +32,7 @@ library
     Advent.Format
     Advent.Group
     Advent.Input
+    Advent.MaxClique
     Advent.Memo
     Advent.Nat
     Advent.Permutation

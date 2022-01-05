@@ -504,7 +504,6 @@ executable sln_2018_22
 executable sln_2018_23
   import:              day
   main-is:             2018/23.hs
-  build-depends:       containers
 
 executable sln_2018_24
   import:              day

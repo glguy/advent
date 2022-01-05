@@ -8,15 +8,21 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2018/day/23>
 
+This solution translates the bot octahedrons into 4D cuboids where each parallel set
+of faces of the octahedron translates to a pair of faces on a cube.
+
+Part 2 enumerates maxmimal cliques and checks them for optimality.
+
 -}
 module Main (main) where
 
 import Advent (countBy, format)
-import Advent.Box (Box(..), intersectBoxes, intersectBox, unionBoxes)
+import Advent.Box (Box(..), intersectBox, intersectBoxes)
 import Advent.Coord3 (manhattan, Coord3(..))
+import Advent.MaxClique (maxCliques)
 import Advent.Nat (Nat(S, Z))
-import Data.List (maximumBy, foldl1')
-import Data.Map qualified as Map
+import Data.List (maximumBy)
+import Data.Maybe (fromJust)
 import Data.Maybe (isJust)
 import Data.Ord (comparing)
 
@@ -38,7 +44,7 @@ main =
  do inp <- [format|2018 23 (pos=<%d,%d,%d>, r=%d%n)*|]
     let bots = [Bot (C3 x y z) r | (x,y,z,r) <- inp]
     print (part1 bots)
-    print (part2 bots)
+    print (part2 (map botBox bots))
 
 -- | Compute the number of nanobots (including self) that are in
 -- range of the nanobot with the largest radius.
@@ -50,19 +56,23 @@ part1 bots = countBy (botSees strongBot . botPos) bots
 -- | Compute the minimum distance to the point that is in range of the
 -- maximum number of nanobots.
 --
--- The region with the most intersections must contain one of the corners
--- of the nanobot regions, so take the intersection of all nanobots that
--- can see each of those corners, prioritize to only consider those intersections
--- comprised of the maximum number of nanobots, and then take the minimum
--- distance to the origin for any of those regions.
-part2 :: [Bot] -> Int
-part2 bots = distToOrigin maxRegion
+-- To find this region we enumerate the maximal cliques of the graph and compare
+-- each to find the ones with the largest clique size then with the minimal distance
+-- to the origin.
+--
+-- >>> part2 [Dim 0 6 Pt, Dim 5 8 Pt, Dim 6 8 Pt]
+-- 5
+--
+-- >>> part2 [Dim 0 6 Pt, Dim 5 8 Pt, Dim (-8) (-3) Pt, Dim (-7) (-2) Pt]
+-- 4
+part2 :: [Box n] -> Int
+part2 = snd . minimum . map characterize . maxCliques touching
   where
-    boxes          = map botBox bots
-    p              = searchBoxInMaxOverlap boxes
-    Just maxRegion = intersectBoxes [b | b <- boxes, isJust (intersectBox b p)]
+    touching x y = isJust (intersectBox x y)
+    characterize bs = (- length bs, distToOrigin (fromJust (intersectBoxes bs)))
 
--- | Compute the minimum distance of any point contained within a box to the origin.
+-- | Compute the minimum radius of a hypercube at the origin that intersects
+-- with the given box.
 distToOrigin :: Box n -> Int
 distToOrigin Pt = 0
 distToOrigin (Dim lo hi xs) = here `max` distToOrigin xs
@@ -83,33 +93,3 @@ botBox (Bot (C3 x y z) r) = dim cx (dim cy (dim cz (dim cw Pt)))
     cy = x + y - z
     cz = x - y - z
     cw = x - y + z
-
--- | Find a box that is completely contained within the maximally overlapping region.
-searchBoxInMaxOverlap :: [Box n] -> Box n
-searchBoxInMaxOverlap boxes = go [unionBoxes boxes]
-  where
-    -- If the only candidate is completely contained within the boxes
-    -- with which it overlaps, then the search is complete.
-    go [x] | all (maybe True (x==) . intersectBox x) boxes = x
-
-    go candidates = go $ Map.elems $ snd $ foldl1' merge
-      [ (length touches, Map.singleton touches s)
-        | s <- splitBox =<< candidates
-        , let touches = [b | b <- boxes, isJust (intersectBox b s) ]
-      ]
-      
-    merge (n1,m1) (n2,m2)
-      | n1 > n2 = (n1,m1)
-      | n1 < n2 = (n2,m2)
-      | otherwise = (n1, Map.union m1 m2)
-
--- | Split a box along each of its axes unless that axis is only one unit wide.
-splitBox :: Box n -> [Box n]
-splitBox Pt = [Pt]
-splitBox (Dim lo hi x) =
- do y <- splitBox x
-    if lo + 1 == hi then
-      [Dim lo hi y]
-    else
-     do let m = lo + (hi-lo)`div`2
-        [Dim lo m y, Dim m hi y]
