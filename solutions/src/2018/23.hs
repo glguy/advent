@@ -8,22 +8,15 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2018/day/23>
 
-This solution translates the bot octahedrons into 4D cuboids where each parallel set
-of faces of the octahedron translates to a pair of faces on a cube.
-
 Part 2 enumerates maxmimal cliques and checks them for optimality.
 
 -}
 module Main (main) where
 
 import Advent (countBy, format)
-import Advent.Box (Box(..), intersectBox, intersectBoxes)
-import Advent.Coord3 (manhattan, Coord3(..))
+import Advent.Coord3 (manhattan, Coord3(..), origin)
 import Advent.MaxClique (maxCliques)
-import Advent.Nat (Nat(S, Z))
 import Data.List (maximumBy)
-import Data.Maybe (fromJust)
-import Data.Maybe (isJust)
 import Data.Ord (comparing)
 
 data Bot = Bot { botPos :: !Coord3, botRadius :: !Int }
@@ -44,7 +37,7 @@ main =
  do inp <- [format|2018 23 (pos=<%d,%d,%d>, r=%d%n)*|]
     let bots = [Bot (C3 x y z) r | (x,y,z,r) <- inp]
     print (part1 bots)
-    print (part2 (map botBox bots))
+    print (part2 bots)
 
 -- | Compute the number of nanobots (including self) that are in
 -- range of the nanobot with the largest radius.
@@ -65,31 +58,15 @@ part1 bots = countBy (botSees strongBot . botPos) bots
 --
 -- >>> part2 [Dim 0 6 Pt, Dim 5 8 Pt, Dim (-8) (-3) Pt, Dim (-7) (-2) Pt]
 -- 4
-part2 :: [Box n] -> Int
-part2 = snd . minimum . map characterize . maxCliques touching
+part2 :: [Bot] -> Int
+part2 = snd . minimum . map characterize . maxCliques botOverlap
   where
-    touching x y = isJust (intersectBox x y)
-    characterize bs = (- length bs, distToOrigin (fromJust (intersectBoxes bs)))
+    characterize bs = (- length bs, maximum (map distToOrigin bs))
 
--- | Compute the minimum radius of a hypercube at the origin that intersects
--- with the given box.
-distToOrigin :: Box n -> Int
-distToOrigin Pt = 0
-distToOrigin (Dim lo hi xs) = here `max` distToOrigin xs
-  where
-    here
-      | hi <= 0 = 1-hi
-      | 0 <= lo = lo
-      | otherwise = 0
+-- | Check if two bots have sensor range overlap.
+botOverlap :: Bot -> Bot -> Bool
+botOverlap (Bot c1 r1) (Bot c2 r2) = manhattan c1 c2 < r1 + r2
 
--- | Translation of bot 3D center and radius into a 4D cube consisting of the four pairs
--- of two parallel planes that define an octahedron.
-botBox :: Bot -> Box ('S ('S ('S ('S 'Z))))
-botBox (Bot (C3 x y z) r) = dim cx (dim cy (dim cz (dim cw Pt)))
-  where
-    dim :: Int -> Box n -> Box ('S n)
-    dim c = Dim (c - r) (c + r + 1)
-    cx = x + y + z
-    cy = x + y - z
-    cz = x - y - z
-    cw = x - y + z
+-- | Minimum distance from edge of bot's range to the origin (or zero if overlapping).
+distToOrigin :: Bot -> Int
+distToOrigin (Bot c r) = max 0 (manhattan origin c - r)
