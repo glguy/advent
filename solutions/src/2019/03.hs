@@ -20,7 +20,7 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 
 -- $setup
--- >>> let parse = [format|2019 0 ((@D%u)&,%n)*|] . unlines
+-- >>> let parse = [format|2019 3 ((@D%u)&,%n)*|] . unlines
 
 -- | Directions up, down, left, and right.
 data D = DU | DD | DL | DR

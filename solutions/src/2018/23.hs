@@ -33,7 +33,7 @@ botSees (Bot c r) p = manhattan c p <= r
 -- 83779034
 main :: IO ()
 main =
- do inp <- [format|2018 2018 23 (pos=<%d,%d,%d>, r=%d%n)*|]
+ do inp <- [format|2018 23 (pos=<%d,%d,%d>, r=%d%n)*|]
     let bots = [Bot (C3 x y z) r | (x,y,z,r) <- inp]
     print (part1 bots)
     print (part2 bots)
