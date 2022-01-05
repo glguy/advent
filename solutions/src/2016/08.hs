@@ -45,7 +45,7 @@ toCommand (Right (x,n)) = RotateCol x n
 -- ████  ██  █  █ █  █  ███ █    █  █   █  █  █  ██
 main :: IO ()
 main =
- do input <- [format|2016 2016 8 ((rect %ux%u|rotate row y=%u by %u|rotate column x=%u by %u)%n)*|]
+ do input <- [format|2016 8 ((rect %ux%u|rotate row y=%u by %u|rotate column x=%u by %u)%n)*|]
     let cmds = map toCommand input
     a <- newArray (C 0 0,C (rows-1) (cols-1)) False
           :: IO (IOUArray Coord Bool)
