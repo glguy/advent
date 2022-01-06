@@ -1,4 +1,4 @@
-{-# Language TransformListComp #-}
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 13 solution
@@ -11,31 +11,32 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Data.Bits (Bits(popCount))
+import Advent (format)
 import Advent.Coord (Coord(..), cardinal)
 import Advent.Search (bfsOn)
-
-myInput :: Int
-myInput = 1350
+import Data.Bits (Bits(popCount))
 
 data Entry = Entry { entrySteps :: !Int, entryCoord :: Coord }
   deriving (Eq, Show)
 
+-- | >>> :main
+-- 92
+-- 124
 main :: IO ()
 main =
-  do let entries = bfsOn entryCoord nextEntries initialEntry
-     print [ steps | Entry steps (C 39 31) <- entries, then take 1 ]
-     print $ length [ () | Entry steps _ <- entries
-                         , then takeWhile by steps <= 50 ]
+ do input <- [format|2016 13 %u%n|]
+    let entries = bfsOn entryCoord (nextEntries input) initialEntry
+    print $ head [steps | Entry steps (C 39 31) <- entries]
+    print $ length $ takeWhile (<= 50) $ map entrySteps entries
 
 initialEntry :: Entry
 initialEntry = Entry 0 (C 1 1)
 
-isValidCoord :: Coord -> Bool
-isValidCoord (C y x) =
+isValidCoord :: Int -> Coord -> Bool
+isValidCoord input (C y x) =
   x >= 0 && y >= 0 &&
-  even (popCount (x*x + 3*x + 2*x*y + y + y*y + myInput))
+  even (popCount (x*x + 3*x + 2*x*y + y + y*y + input))
 
-nextEntries :: Entry -> [Entry]
-nextEntries (Entry steps coord)
-  = [ Entry (steps+1) c | c <- cardinal coord, isValidCoord c ]
+nextEntries :: Int -> Entry -> [Entry]
+nextEntries input (Entry steps coord) =
+  [Entry (steps+1) c | c <- cardinal coord, isValidCoord input c]

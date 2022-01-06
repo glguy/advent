@@ -19,14 +19,6 @@ import Advent.MaxClique (maxCliques)
 import Data.List (maximumBy)
 import Data.Ord (comparing)
 
-data Bot = Bot { botPos :: !Coord3, botRadius :: !Int }
-  deriving (Eq, Ord, Show)
-
--- | Predicate for points that a bot's signal is strong enough to reach.
--- These points form a regular octohedron centered at the bot's location.
-botSees :: Bot -> Coord3 -> Bool
-botSees (Bot c r) p = manhattan c p <= r
-
 -- | Print the answers to day 23
 --
 -- >>> :main
@@ -62,6 +54,16 @@ part2 :: [Bot] -> Int
 part2 = snd . minimum . map characterize . maxCliques botOverlap
   where
     characterize bs = (- length bs, maximum (map distToOrigin bs))
+
+-- * Bots
+
+data Bot = Bot { botPos :: !Coord3, botRadius :: !Int }
+  deriving (Eq, Ord, Show)
+
+-- | Predicate for points that a bot's signal is strong enough to reach.
+-- These points form a regular octohedron centered at the bot's location.
+botSees :: Bot -> Coord3 -> Bool
+botSees (Bot c r) p = manhattan c p <= r
 
 -- | Check if two bots have sensor range overlap.
 botOverlap :: Bot -> Bot -> Bool
