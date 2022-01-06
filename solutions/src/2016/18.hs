@@ -19,12 +19,15 @@ rule x y
   | otherwise = '^'
 
 next :: String -> String
-next xs = [ rule x y | x:_:y:_ <- tails ("." ++ xs ++ ".") ]
+next xs = [rule x y | x:_:y:_ <- tails ("." ++ xs ++ ".")]
 
 problem :: String -> Int -> Int
-problem input n =
-  count '.' $ concat $ take n $ iterate next input
+problem input n = count '.' $ concat $ take n $ iterate next input
 
+-- | >>> :main
+-- 2005
+-- 20008491
+main :: IO ()
 main =
   do input <- head <$> getInputLines 2016 18
      print (problem input     40)
