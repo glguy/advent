@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 19 solution
@@ -31,6 +31,9 @@ import Data.Set qualified as Set
 newtype Atom = Atom String
   deriving (Eq,Ord)
 
+-- | >>> :main
+-- 518
+-- Just 200
 main :: IO ()
 main =
   do (rules_, input_) <- [format|2015 19 (%s => %s%n)*%n%s%n|]
@@ -39,6 +42,8 @@ main =
      print (length (counts (oneStep rules input)))
      print (minRulesNeeded rules input (Atom "e"))
 
+-- | Returns all the ways a sequence can be expanded with a single application
+-- of one of the input rules.
 oneStep :: Ord a => Map a [[a]] -> [a] -> [[a]]
 oneStep rules input =
   [ xs ++ z ++ ys
@@ -49,10 +54,10 @@ oneStep rules input =
 -- | Add empty elements to the map so that every @a@ that occurs in
 -- the values of the map also occurs in the keys.
 extendRules :: Ord a => Map a [[a]] -> Map a [[a]]
-extendRules rules = Map.unionWith (++) extraRules rules
-  where
-  extraRules = Map.fromSet (const [])
-             $ Set.fromList (concat (concat (Map.elems rules)))
+extendRules rules
+  = Map.union rules
+  $ Map.fromSet (const [])
+  $ Set.fromList (concat (concat (Map.elems rules)))
 
 -- |
 -- > parseMolecule "AbCdEF"
@@ -74,10 +79,8 @@ minRulesNeeded rules input start = minRulesNeededInt ruleArr inputArr (toInt sta
   rules'  = extendRules rules
   toInt x = Map.findIndex x rules'
 
-  numRules = Map.size rules'
-  numInput = length input
-  inputArr = listArray (0,numInput-1) (map toInt input)
-  ruleArr  = listArray (0,numRules-1) (Map.elems (fmap (map (map toInt)) rules'))
+  inputArr = toArray (map toInt input)
+  ruleArr  = toArray (map (map (map toInt)) (Map.elems rules'))
 
 -- | Given an array of inputs determine how many rule applications
 -- are required to transform the start state into the input.
@@ -98,16 +101,16 @@ minRulesNeededInt rules input = cost inputLo inputHi
   costBounds        = ((inputLo,inputLo,rulesLo)
                       ,(inputHi,inputHi,rulesHi))
 
+  costArray =
+    generate costBounds \(start,end,ruleIx) ->
+      if start == end && input ! start == ruleIx
+        then Just 0
+        else fmap (1+)
+           $ minimumMaybe
+           $ mapMaybe (nonTerm start end)
+           $ rules ! ruleIx
+
   cost start end rule = costArray ! (start,end,rule)
-
-  costArray = generate costBounds cost'
-
-  cost' (start,end,ruleIx)
-    | start == end, input ! start == ruleIx = Just 0
-    | otherwise = fmap succ
-                $ minimumMaybe
-                $ mapMaybe (nonTerm start end)
-                $ rules ! ruleIx
 
   nonTerm start end rhs =
     case rhs of
@@ -117,9 +120,15 @@ minRulesNeededInt rules input = cost inputLo inputHi
                [ cost1 + cost2
                | mid   <- [start .. end - length xs]
                , cost1 <- maybeToList (cost start mid x)
-               , cost2 <- maybeToList (nonTerm (succ mid) end xs)
+               , cost2 <- maybeToList (nonTerm (1 + mid) end xs)
                ]
+
+-- * Array helpers
 
 -- | Generate an array given the bounds an a function from indexes to elements.
 generate :: Ix i => (i,i) -> (i -> e) -> Array i e
-generate bnd f = array bnd [ (i, f i) | i <- range bnd ]
+generate bnd f = listArray bnd (map f (range bnd))
+
+-- | Make a zero-indexed array from a list
+toArray :: [a] -> Array Int a
+toArray xs = listArray (0, length xs - 1) xs
