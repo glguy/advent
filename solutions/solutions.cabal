@@ -380,7 +380,7 @@ executable sln_2017_22
 executable sln_2017_23
   import:              day
   main-is:             2017/23.hs
-  build-depends:       containers, lens, vector
+  build-depends:       containers, vector
 
 executable sln_2017_24
   import:              day
