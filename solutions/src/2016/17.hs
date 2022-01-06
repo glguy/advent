@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost #-}
+{-# Language ImportQualifiedPost, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 17 solution
@@ -11,65 +11,50 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
+import Advent (format)
+import Advent.Coord (east, north, origin, south, west, Coord(..))
 import Advent.Search (bfs)
-import Control.Monad (guard)
 import Crypto.Hash.MD5 (hash)
-import Data.ByteString       qualified as BS
+import Data.Bits ((.&.), shiftR)
+import Data.ByteString qualified as BS
+import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as B8
-import Text.Printf (printf)
 
-input :: String
-input = "lpvhkcbi"
-
-
+-- | >>> :main
+-- DUDRLRRDDR
+-- 788
 main :: IO ()
 main =
-  do let paths = [ path | (3,3,path) <- bfs nextStates initialState ]
-         shortestPath = head paths
-         longestPath  = last paths
-     putStrLn shortestPath
-     print (length longestPath)
+ do input <- B8.pack <$> [format|2016 17 %s%n|]
+    let paths = [path | (C 3 3, path) <- bfs (nextStates input) initialState ]
+        shortestPath = head paths
+        longestPath  = last paths
+    putStrLn shortestPath
+    print (length longestPath)
 
+initialState :: (Coord, String)
+initialState = (origin, "")
 
-initialState :: (Int,Int,String)
-initialState = (0,0,"")
+isValidLocation :: Coord -> Bool
+isValidLocation (C y x) = 0 <= x && x < 4 && 0 <= y && y < 4
 
+nextStates :: ByteString -> (Coord, String) -> [(Coord, String)]
+nextStates _ (C 3 3,path) = []
+nextStates input (c, path) =
+  [ (c', path++[step])
+  | (step, delta) <- directions input path
+  , let c' = c + delta
+  , isValidLocation c'
+  ]
 
-isValidLocation :: Int -> Int -> Bool
-isValidLocation x y = 0 <= x && x < 4
-                   && 0 <= y && y < 4
-
-
-nextStates :: (Int,Int,String) -> [(Int,Int,String)]
-nextStates (3,3,path) = []
-nextStates (x,y,path) =
-  do step <- directions path
-     let (x',y') = move step x y
-     guard (isValidLocation x' y')
-     return (x',y',path++[step])
-
-hexRep :: BS.ByteString -> String
-hexRep bs = printf "%02x" =<< BS.unpack bs
-
-hashmd5 :: String -> String
-hashmd5 str = hexRep (hash (B8.pack str))
-
-
-directions :: String -> [Char]
-directions path = ways
+directions :: ByteString -> String -> [(Char, Coord)]
+directions input path = ways
   where
-    a:b:c:d:_ = hashmd5 (input ++ path)
+    h = hash (input <> B8.pack path)
 
-    isOpen x = x `elem` "bcdef"
+    isOpen x = 0xb <= x && x <= 0xf
 
-    ways = [ 'U' | isOpen a ] ++
-           [ 'D' | isOpen b ] ++
-           [ 'L' | isOpen c ] ++
-           [ 'R' | isOpen d ]
-
-
-move :: Char -> Int -> Int -> (Int,Int)
-move 'U' x y = (x,y-1)
-move 'D' x y = (x,y+1)
-move 'L' x y = (x-1,y)
-move 'R' x y = (x+1,y)
+    ways = [ ('U', north) | isOpen (BS.index h 0 `shiftR` 4) ] ++
+           [ ('D', south) | isOpen (BS.index h 0 .&. 0xf)    ] ++
+           [ ('L', west)  | isOpen (BS.index h 1 `shiftR` 4) ] ++
+           [ ('R', east)  | isOpen (BS.index h 1 .&. 0xf)    ]
