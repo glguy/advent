@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ImportQualifiedPost, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 16 solution
@@ -11,11 +11,9 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
+import Advent (format)
 import Data.Vector.Unboxed (Vector)
 import Data.Vector.Unboxed qualified as Vector
-
-myInput :: Vector.Vector Bool
-myInput = Vector.fromList (toBool <$> "01111001100111011")
 
 toBool :: Char -> Bool
 toBool x = x == '1'
@@ -34,6 +32,7 @@ expand n seed
               $ seed <> Vector.singleton False <>
                 Vector.map not (Vector.reverse seed)
 
+checksum :: Vector Bool -> [Char]
 checksum v
   | odd n     = fromBool <$> Vector.toList v
   | otherwise = checksum
@@ -42,7 +41,12 @@ checksum v
   where
     n = Vector.length v
 
+-- | >>> :main
+-- 11111000111110000
+-- 10111100110110100
 main :: IO ()
 main =
- do putStrLn (checksum (expand part1 myInput))
-    putStrLn (checksum (expand part2 myInput))
+ do input <- [format|2016 16 (0|1)*!%n|]
+    let v = Vector.fromList (toBool <$> input)
+    putStrLn (checksum (expand part1 v))
+    putStrLn (checksum (expand part2 v))
