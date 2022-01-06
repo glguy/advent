@@ -29,6 +29,6 @@ problem input n = count '.' $ concat $ take n $ iterate next input
 -- 20008491
 main :: IO ()
 main =
-  do input <- head <$> getInputLines 2016 18
-     print (problem input     40)
-     print (problem input 400000)
+ do input <- head <$> getInputLines 2016 18
+    print (problem input     40)
+    print (problem input 400000)
