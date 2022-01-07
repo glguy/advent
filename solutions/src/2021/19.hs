@@ -1,4 +1,4 @@
-{-# Language LambdaCase, BlockArguments, ImportQualifiedPost, QuasiQuotes #-}
+{-# Language GADTs, DataKinds, LambdaCase, BlockArguments, ImportQualifiedPost, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 19 solution
@@ -20,6 +20,8 @@ compared more than once.
 module Main (main) where
 
 import Advent (format, counts)
+import Advent.Box
+import Advent.Nat
 import Advent.Coord3 (Coord3(..), origin, manhattan, diff, add)
 import Control.Monad ((>=>))
 import Data.List (transpose)
@@ -40,7 +42,7 @@ main =
 
     let (offsets, locations) = unzip (start scanners)
     print (Set.size (Set.unions locations))
-    print (maximum (manhattan <$> offsets <*> offsets))
+    print (radius offsets)
 
 -- | Starts the scanner reading correlation algorithm.
 start ::
@@ -62,7 +64,11 @@ assemble remains (c@(_,reference):cs) = c : assemble remain' (new ++ cs)
         | remain <- remains
       ]
 
-match :: Set Coord3 -> [Coord3] -> Maybe (Coord3, Set Coord3)
+-- | Try to match the uncorrelated offsets to a set of absolute coordinates.
+match ::
+  Set Coord3 {- ^ reference coordinates -} ->
+  [Coord3]   {- ^ uncorrelated offsets -} ->
+  Maybe (Coord3, Set Coord3) {- ^ sensor offset and absolute beacons -}
 match xset ys = listToMaybe
  [(offset, yset')
    | yset <- Set.fromList <$> reorient ys
@@ -72,10 +78,13 @@ match xset ys = listToMaybe
  ]
 
 -- | Only bother checking offsets that occur enough times that it's possible
--- to have an overlap
+-- to have an overlap.
 prefilter :: [Coord3] -> [Coord3]
 prefilter = Map.keys . Map.filter (>= 12) . counts
 
+-- * Reorienting sensor readings
+
+-- | Return all 24 possibilities of rotating the given list of coordinates.
 reorient :: [Coord3] -> [[Coord3]]
 reorient = transpose . map (rotations >=> faces)
 
@@ -99,3 +108,23 @@ rotations (C3 x y z) =
     C3 x (-y) (-z),
     C3 x z (-y)
   ]
+
+-- * Determining sensor radius
+
+-- | Determines the maximum manhattan distance between any pair of points.
+-- this is achieved by finding the bounding octahedroid for this set of points.
+radius :: [Coord3] -> Int
+radius = minCube . unionBoxes . map to4
+
+-- | Find the side length of the smallest hypercube that can bound
+-- the given hyperrectangle.
+minCube :: Box n -> Int
+minCube (Dim a b x) = max (b-a) (minCube x)
+minCube Pt = 0
+
+-- | Convert a 3D point into an octahedron coordinate.
+to4 :: Coord3 -> Box ('S ('S ('S ('S 'Z))))
+to4 (C3 x y z) = (x + y + z) ./. (x + y - z) ./. (x - y + z) ./. (x - y - z) ./. Pt
+  where
+    i ./. x = Dim i i x
+    infixr 5 ./.
