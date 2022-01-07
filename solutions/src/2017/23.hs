@@ -10,7 +10,8 @@ Maintainer  : emertens@gmail.com
 
 Part 1 is just a copy/paste of day 18
 
-Part 2 was done with manual analysis
+Part 2 was done with manual analysis. My program counted the number of
+composite numbers in the range @[108100, 108117 .. 125100]@
 
 -}
 module Main where

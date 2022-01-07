@@ -13,11 +13,12 @@ module Main where
 
 import Advent.Coord (Coord(..), turnLeft, turnRight, turnAround, north)
 import Advent.Input (getInputMap)
-import Control.Lens
 import Data.Map (Map)
 import Data.Map qualified as Map
 
-
+-- | >>> :main
+-- 5399
+-- 2511776
 main :: IO ()
 main =
   do input <- getInputMap 2017 22
@@ -27,9 +28,7 @@ main =
      print (go rule1    10000 0 north start grid)
      print (go rule2 10000000 0 north start grid)
 
-
 data Status = Clean | Weakened | Infected | Flagged deriving Eq
-
 
 -- | Transition rule used in part 1
 rule1 :: Status -> Status
@@ -50,19 +49,6 @@ turnRule Weakened = id
 turnRule Infected = turnRight
 turnRule Flagged  = turnAround
 
-
--- | Compute the starting position and world map from the input file.
-parseInput :: String -> (Coord, Map Coord Status)
-parseInput str = (start, world)
-  where
-    rows = reverse (lines str)
-
-    start = C (length (head rows) `div` 2) (length rows `div` 2)
-    world = Map.fromList
-          $ map (\(y,x) -> (C x y, Infected))
-          $ toListOf ( (folded <.> folded) . only '#' . asIndex) rows
-
-
 -- | Run the world simulation for a specified number of iterations.
 -- Returns the number of infections caused by the virus carrier.
 go ::
@@ -73,20 +59,16 @@ go ::
   Coord              {- ^ current location                         -} ->
   Map Coord Status   {- ^ world map                                -} ->
   Int                {- ^ infections caused after given iterations -}
-go _    0 !acc !_   !_ !_     = acc
-go rule n !acc !dir !c !world = go rule n' acc' dir' c' world'
+go rule !n !acc !dir !c !world
+  | n == 0 = acc
+  | otherwise = go rule (n-1) acc' dir' c' world'
   where
-    n'     = n - 1
-
-    cell   = view loc world
+    cell   = Map.findWithDefault Clean c world
     cell'  = rule cell
-    world' = set loc cell' world
+    world' = Map.insert c cell' world
 
     acc' | cell' == Infected = 1 + acc
          | otherwise         = acc
 
     dir' = turnRule cell dir  -- new facing direction
     c'   = c + dir'           -- new world coordinate
-
-    loc :: Lens' (Map Coord Status) Status
-    loc = at c . non Clean
