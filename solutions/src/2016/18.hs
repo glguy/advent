@@ -1,3 +1,4 @@
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 18 solution
@@ -7,28 +8,40 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2016/day/18>
 
+Run Rule 90, a cellular automaton, for a few generations and count how many
+cells are turned on.
+
+<https://en.wikipedia.org/wiki/Rule_90>
+
 -}
 module Main where
 
-import Advent (count, getInputLines)
-import Data.List (tails)
-
-rule :: Char -> Char -> Char
-rule x y
-  | x == y    = '.'
-  | otherwise = '^'
-
-next :: String -> String
-next xs = [rule x y | x:_:y:_ <- tails ("." ++ xs ++ ".")]
-
-problem :: String -> Int -> Int
-problem input n = count '.' $ concat $ take n $ iterate next input
+import Advent (count, format, getInputLines)
 
 -- | >>> :main
 -- 2005
 -- 20008491
 main :: IO ()
 main =
- do input <- head <$> getInputLines 2016 18
-    print (problem input     40)
-    print (problem input 400000)
+ do input <- [format|2016 18 %s%n|]
+    print (solve input     40)
+    print (solve input 400000)
+
+-- | Given a seed and number of generations, count the safe tiles in the map.
+solve ::
+  String {- ^ seed -} ->
+  Int {- ^ generations -} ->
+  Int {- ^ total safe tiles -}
+solve input n = count '.' (concat (take n (iterate next input)))
+
+rule90 :: Char -> Char -> Char -> Char
+rule90 x _ y
+  | x /= y    = '^'
+  | otherwise = '.'
+
+-- | Compute the next generation.
+next :: String -> String
+next (x:xs) = go '.' x xs
+  where
+    go a _ [] = [rule a '.']
+    go a b (c:cs) = rule a b c : go b c cs
