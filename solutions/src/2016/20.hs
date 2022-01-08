@@ -16,29 +16,30 @@ import Data.List (sort)
 
 type Blacklist = [(Integer,Integer)]
 
+-- | >>> :main
+-- 23923783
+-- 125
 main :: IO ()
 main =
-  do blacklist <- processBlacklist <$> [format|2016 20 (%lu-%lu%n)*|]
+  do blacklist <- removeOverlap <$> [format|2016 20 (%lu-%lu%n)*|]
      print (lowest     blacklist)
      print (countValid blacklist)
 
--- | Remove overlaps and ensure that the blacklist surrounds
--- the whole address space.
-processBlacklist :: Blacklist -> Blacklist
-processBlacklist xs =
-  removeOverlap (sort ([(-1,-1),(2^32,2^32)] ++ xs))
-
-lowest :: Blacklist -> Integer
-lowest ((_,hi):_) = hi+1
-lowest _          = 0
-
+-- | Remove all redundancy from the blacklist and put it in sorted order.
 removeOverlap :: Blacklist -> Blacklist
-removeOverlap ((lo1,hi1):(lo2,hi2):rest)
-  | hi1 >= lo2-1 = removeOverlap ((lo1, max hi1 hi2) : rest)
-removeOverlap (x:xs) = x : removeOverlap xs
-removeOverlap [] = []
-
-countValid :: Blacklist -> Integer
-countValid xs = sum (zipWith gapSize xs (tail xs))
+removeOverlap = go . sort
   where
-    gapSize (_,hi1) (lo2,_) = lo2 - hi1 - 1
+    go ((lo1,hi1):(lo2,hi2):rest)
+      | hi1 >= lo2-1 = go ((lo1, max hi1 hi2) : rest)
+    go (x:xs) = x : go xs
+    go [] = []
+
+-- | Smallest address that isn't blacklisted
+lowest :: Blacklist -> Integer
+lowest ((0,hi):_) = hi+1
+lowest ((lo,_):_) = lo-1
+lowest _ = 0
+
+-- | Number of addresses not blacklisted
+countValid :: Blacklist -> Integer
+countValid xs = 2^(32::Int) - sum [1+b-a | (a,b) <- xs]
