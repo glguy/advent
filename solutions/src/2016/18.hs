@@ -16,7 +16,7 @@ cells are turned on.
 -}
 module Main (main) where
 
-import Advent (count, format, getInputLines)
+import Advent (count, format)
 
 -- | >>> :main
 -- 2005
@@ -34,7 +34,7 @@ solve ::
   Int {- ^ total safe tiles -}
 solve input n = count '.' (concat (take n (iterate next input)))
 
-rule90 :: Char -> Char -> Char -> Char
+rule90 :: Char {- ^ left -} -> Char {- ^ center -} -> Char {- ^ right -} -> Char
 rule90 x _ y
   | x /= y    = '^'
   | otherwise = '.'
