@@ -14,7 +14,7 @@ cells are turned on.
 <https://en.wikipedia.org/wiki/Rule_90>
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (count, format, getInputLines)
 
