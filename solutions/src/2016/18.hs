@@ -34,6 +34,7 @@ solve ::
   Int {- ^ total safe tiles -}
 solve input n = count '.' (concat (take n (iterate next input)))
 
+-- | Update logic for rule 90 based on previous cell values.
 rule90 :: Char {- ^ left -} -> Char {- ^ center -} -> Char {- ^ right -} -> Char
 rule90 x _ y
   | x /= y    = '^'
@@ -43,5 +44,5 @@ rule90 x _ y
 next :: String -> String
 next (x:xs) = go '.' x xs
   where
-    go a _ [] = [rule a '.']
-    go a b (c:cs) = rule a b c : go b c cs
+    go a b [] = [rule90 a b '.']
+    go a b (c:cs) = rule90 a b c : go b c cs
