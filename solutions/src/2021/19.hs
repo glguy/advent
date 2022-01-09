@@ -21,15 +21,15 @@ module Main (main) where
 
 import Advent (format, counts)
 import Advent.Box
+import Advent.Coord3 (Coord3(..), origin, diff, add)
 import Advent.Nat
-import Advent.Coord3 (Coord3(..), origin, manhattan, diff, add)
 import Control.Monad ((>=>))
+import Data.Either (partitionEithers)
 import Data.List (transpose)
+import Data.Map qualified as Map
 import Data.Maybe (listToMaybe)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Map qualified as Map
-import Data.Either (partitionEithers)
 
 -- | >>> :main
 -- 457
@@ -124,7 +124,7 @@ minCube Pt = 0
 
 -- | Convert a 3D point into an octahedron coordinate.
 to4 :: Coord3 -> Box ('S ('S ('S ('S 'Z))))
-to4 (C3 x y z) = (x + y + z) ./. (x + y - z) ./. (x - y + z) ./. (x - y - z) ./. Pt
+to4 (C3 x y z) = x+y+z # x+y-z # x-y+z # x-y-z # Pt
   where
-    i ./. x = Dim i i x
-    infixr 5 ./.
+    i # j = Dim i i j
+    infixr 5 #
