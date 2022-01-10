@@ -137,7 +137,7 @@ wrap x n = (x - 1) `mod` n + 1
 --
 -- * @[(a,Int)]@ - good for backtracking
 -- * @Map a Int@ - good for consolidation
-newtype Counter a = Counter { unCounter :: WriterT (Product Int) [] a }
+newtype Counter a = Counter (WriterT (Product Int) [] a)
   deriving (Functor, Applicative, Monad, Alternative)
 
 -- | Creates a 'Counter' computation that represents all the keys of a 'Map'
