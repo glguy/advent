@@ -24,7 +24,7 @@ import Control.Applicative (Alternative)
 import Control.Monad (replicateM)
 import Control.Monad.Trans.Writer.Strict (WriterT(..))
 import Data.Coerce (coerce)
-import Data.List (unfoldr)
+import Data.List (scanl', unfoldr)
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
 import Data.Monoid (Product(..))
@@ -69,8 +69,8 @@ p1step turns p1 p2 p1s p2s
 
 -- * Part 2
 
--- | Count the number of ways player 1 can win given that the game is played
--- rolling 3d3.
+-- | Count the maximum number of ways a player can win in the most given
+-- that the game is played rolling 3d3.
 --
 -- >>> part2 4 8
 -- 444356092776315
@@ -78,7 +78,12 @@ part2 ::
   Int {- ^ player 1's starting location -} ->
   Int {- ^ player 2's starting location -} ->
   Int {- ^ ways player 1 can win -}
-part2 p1 p2 = sum (zipWith (*) (wins p1) (loses p2))
+part2 p1 p2 = sum (zipWith (*) w1 l2) `max` sum (zipWith (*) w2 (tail l1))
+  where
+    w1 = wins p1
+    w2 = wins p2
+    l1 = toLoses w1
+    l2 = toLoses w2
 
 -- | Compute the ways a player can win in part 2 per turn given a starting position.
 --
@@ -89,10 +94,10 @@ wins x = unfoldr p2step (Map.singleton (x,0) 1)
 
 -- | Compute the ways a player can not win in part 2 per turn given a starting position.
 --
--- >>> loses 8
+-- >>> loses (wins 8)
 -- [1,27,729,17953,254050,1411009,3520415,2121762,219716,1206,0]
-loses :: Int -> [Int]
-loses =  scanl (\acc w -> acc * sum rolls - w) 1 . wins
+toLoses :: [Int] -> [Int]
+toLoses =  scanl' (\acc w -> acc * sum rolls - w) 1
 
 -- | Worker for 'part2'
 p2step ::
