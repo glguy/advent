@@ -24,7 +24,7 @@ import Control.Monad (replicateM)
 import Data.List (unfoldr)
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
-import Debug.Trace
+
 -- | >>> :main
 -- 428736
 -- 57328067654557
