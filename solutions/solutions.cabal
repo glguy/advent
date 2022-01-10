@@ -849,7 +849,7 @@ executable sln_2021_20
 executable sln_2021_21
   import:              day
   main-is:             2021/21.hs
-  build-depends:       containers
+  build-depends:       containers, transformers
 
 executable sln_2021_22
   import:              day
