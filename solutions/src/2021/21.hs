@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, QuasiQuotes, GeneralisedNewtypeDeriving #-}
+{-# Language ImportQualifiedPost, QuasiQuotes, MonadComprehensions, GeneralisedNewtypeDeriving #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -20,10 +20,14 @@ their play separately.
 module Main (main) where
 
 import Advent (counts, format)
+import Control.Applicative (Alternative)
 import Control.Monad (replicateM)
+import Control.Monad.Trans.Writer.Strict (WriterT(..))
+import Data.Coerce (coerce)
 import Data.List (unfoldr)
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
+import Data.Monoid (Product(..))
 
 -- | >>> :main
 -- 428736
@@ -92,18 +96,18 @@ loses =  scanl (\acc w -> acc * sum rolls - w) 1 . wins
 
 -- | Worker for 'part2'
 p2step ::
-  Map.Map (Int, Int) Int {- ^ live games ((location, score), ways) -} ->
-  Maybe (Int, Map.Map (Int, Int) Int) {- ^ wins and next turn's live games -}
+  Map (Int, Int) Int {- ^ live games ((location, score), ways) -} ->
+  Maybe (Int, Map (Int, Int) Int) {- ^ wins and next turn's live games -}
 p2step games
   | Map.null games = Nothing
-  | otherwise      = Just (sum wins, live)
+  | otherwise      = Just (sum winStates, games')
   where
-    (wins, live) =
+    (winStates, games') =
       Map.partitionWithKey (\(_,score) _ -> score >= 21) $
-      Map.fromListWith (+)
-        [ ((loc', score + loc'), n1*n2)
-          | ((loc, score),n1) <- Map.toList games
-          , (roll        ,n2) <- Map.toList rolls
+      fromCounter
+        [ (loc', score + loc')
+          | (loc, score) <- toCounter games
+          , roll         <- toCounter rolls
           , let loc' = wrap (loc+roll) 10
           ]
 
@@ -119,3 +123,25 @@ rolls  = counts (sum <$> replicateM 3 [1..3])
 -- | Wrap number between @1@ and an inclusive upper bound
 wrap :: Int {- ^ value -} -> Int {- ^ bound -} -> Int
 wrap x n = (x - 1) `mod` n + 1
+
+-- * Tracking counts
+
+-- | Type for backtracking computations that can keep track of how many
+-- ways a state is reachable. This allows us to alternate between two
+-- useful representations:
+--
+-- * @[(a,Int)]@ - good for backtracking
+-- * @Map a Int@ - good for consolidation
+newtype Counter a = Counter { unCounter :: WriterT (Product Int) [] a }
+  deriving (Functor, Applicative, Monad, Alternative)
+
+-- | Creates a 'Counter' computation that represents all the keys of a 'Map'
+-- occurring as many times as indicated by that key's value.
+--
+-- @toCounter (Map.singleton k 1) === pure k@
+toCounter :: Map a Int -> Counter a
+toCounter = coerce . Map.assocs
+
+-- | Run a 'Counter' accumulating all the path counts into a single 'Map'
+fromCounter :: Ord a => Counter a -> Map a Int
+fromCounter = Map.fromListWith (+) . coerce
