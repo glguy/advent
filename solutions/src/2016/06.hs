@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent (getInputLines)
+import Advent (counts, getInputLines)
 import Data.List (transpose, maximumBy)
 import Data.Map qualified as Map
 import Data.Ord (Down(Down), comparing)
@@ -29,7 +29,4 @@ decode :: Ord a => (Int -> a) -> [String] -> String
 decode f xs = mostCommon f <$> transpose xs
 
 mostCommon :: (Ord a, Ord b) => (Int -> b) -> [a] -> a
-mostCommon f = fst . maximumBy (comparing (f . snd)) . tally
-
-tally :: Ord a => [a] -> [(a,Int)]
-tally xs = Map.toList (Map.fromListWith (+) [(x,1) | x <- xs])
+mostCommon f = fst . maximumBy (comparing (f . snd)) . Map.assocs . counts
