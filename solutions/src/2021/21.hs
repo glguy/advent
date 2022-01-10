@@ -49,23 +49,15 @@ part1 ::
   Int {- ^ player 1 location -} ->
   Int {- ^ player 2 location -} ->
   Int {- ^ player 2 score * roll count -}
-part1 p1 p2 = p1step 0 p1 p2 0 0
-
--- | Worker for 'part1'
-p1step ::
-  Int {- ^ turn counter -} ->
-  Int {- ^ player 1 location -} ->
-  Int {- ^ player 2 location -} ->
-  Int {- ^ player 1 score    -} ->
-  Int {- ^ player 2 score    -} ->
-  Int {- ^ player 2 score * roll count -}
-p1step turns p1 p2 p1s p2s
-  | p1s' >= 1000 = 3 * turns' * p2s
-  | otherwise    = p1step turns' p2 p1' p2s p1s'
+part1 = go 0 0 0
   where
-    turns' = turns + 1
-    p1'    = wrap (p1 + 6 - turns) 10
-    p1s'   = p1s + p1'
+    go turns s1 s2 p1 p2
+      | s1' >= 1000 = 3 * turns' * s2
+      | otherwise   = go turns' s2 s1' p2 p1'
+      where
+        turns' = turns + 1
+        p1'    = wrap (p1 + 6 - turns) 10
+        s1'    = s1 + p1'
 
 -- * Part 2
 
@@ -78,28 +70,30 @@ part2 ::
   Int {- ^ player 1's starting location -} ->
   Int {- ^ player 2's starting location -} ->
   Int {- ^ ways player 1 can win -}
-part2 p1 p2 = sum (zipWith (*) w1 l2) `max` sum (zipWith (*) w2 (tail l1))
+part2 p1 p2 = max u1 u2
   where
-    w1 = wins p1
-    w2 = wins p2
-    l1 = toLoses w1
-    l2 = toLoses w2
+    w1 = wins p1                        -- ways player 1 wins by turn
+    w2 = wins p2                        -- ways player 2 wins by turn
+    l1 = toLoses w1                     -- ways player 1 hasn't won by turn
+    l2 = toLoses w2                     -- ways player 2 hasn't won by turn
+    u1 = sum (zipWith (*) w1 l2)        -- universes in which player 1 wins
+    u2 = sum (zipWith (*) w2 (tail l1)) -- universes in which player 2 wins
 
 -- | Compute the ways a player can win in part 2 per turn given a starting position.
 --
 -- >>> wins 4
 -- [0,0,4608,249542,3219454,24905476,77993473,62172638,8678745,53217]
 wins :: Int -> [Int]
-wins x = unfoldr p2step (Map.singleton (x,0) 1)
+wins x = unfoldr p2step (Map.singleton (x, 0) 1)
 
 -- | Compute the ways a player can not win in part 2 per turn given a starting position.
 --
--- >>> loses (wins 8)
+-- >>> toLoses (wins 8)
 -- [1,27,729,17953,254050,1411009,3520415,2121762,219716,1206,0]
 toLoses :: [Int] -> [Int]
-toLoses =  scanl' (\acc w -> acc * sum rolls - w) 1
+toLoses = scanl' (\acc w -> acc * sum rolls - w) 1
 
--- | Worker for 'part2'
+-- | Advance the counts of states by playing one turn of the game.
 p2step ::
   Map (Int, Int) Int {- ^ live games ((location, score), ways) -} ->
   Maybe (Int, Map (Int, Int) Int) {- ^ wins and next turn's live games -}
@@ -125,7 +119,10 @@ rolls  = counts (sum <$> replicateM 3 [1..3])
 
 -- * Modular arithmetic
 
--- | Wrap number between @1@ and an inclusive upper bound
+-- | Wrap number between @1@ and an inclusive upper bound.
+--
+-- >>> [wrap i 4 | i <- [-2..6]]
+-- [2,3,4,1,2,3,4,1,2]
 wrap :: Int {- ^ value -} -> Int {- ^ bound -} -> Int
 wrap x n = (x - 1) `mod` n + 1
 
