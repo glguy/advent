@@ -138,7 +138,9 @@ newtype Counter a = Counter { unCounter :: WriterT (Product Int) [] a }
 -- | Creates a 'Counter' computation that represents all the keys of a 'Map'
 -- occurring as many times as indicated by that key's value.
 --
--- @toCounter (Map.singleton k 1) === pure k@
+-- @
+-- toCounter (Map.singleton k 1) === pure k
+-- @
 toCounter :: Map a Int -> Counter a
 toCounter = coerce . Map.assocs
 
