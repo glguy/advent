@@ -42,9 +42,9 @@ main =
 -- >>> part1 4 8
 -- 739785
 part1 ::
-  Int ->
-  Int ->
-  Int
+  Int {- ^ player 1 location -} ->
+  Int {- ^ player 2 location -} ->
+  Int {- ^ player 2 score * roll count -}
 part1 p1 p2 = p1step 0 p1 p2 0 0
 
 -- | Worker for 'part1'
@@ -54,7 +54,7 @@ p1step ::
   Int {- ^ player 2 location -} ->
   Int {- ^ player 1 score    -} ->
   Int {- ^ player 2 score    -} ->
-  Int {- ^ player 2 score * 3 * turns -}
+  Int {- ^ player 2 score * roll count -}
 p1step turns p1 p2 p1s p2s
   | p1s' >= 1000 = 3 * turns' * p2s
   | otherwise    = p1step turns' p2 p1' p2s p1s'
