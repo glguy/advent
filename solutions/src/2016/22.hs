@@ -67,7 +67,7 @@ next :: Array Coord Node -> SearchState -> [AStep SearchState]
 next grid SearchState{..} =
   [ AStep (SearchState newGoal newHole) 1 h
      | newHole <- cardinal searchHole
-     , Just node <- [arrIx grid newHole]
+     , node <- arrIx grid newHole
      , nodeSize node < cutoff
      , let newGoal
              | searchGoal == newHole = searchHole

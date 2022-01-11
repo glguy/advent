@@ -62,7 +62,7 @@ toBasinIds heights = basinIds
     
     basinId _ 9 = Nothing -- problem defines height 9 not to be in a basin
     basinId c h =
-     do xs <- sequence [basinIds!x | x <- cardinal c, Just xh <- [arrIx heights x], xh<h]
+     do xs <- sequence [basinIds!x | x <- cardinal c, xh <- arrIx heights x, xh<h]
         case xs of
           []                  -> Just c -- this is the lowest point in the basin
           y:ys | all (y==) ys -> Just y -- all flows go to a unique basin

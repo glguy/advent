@@ -13,6 +13,7 @@ Advent of Code problems.
 module Advent.Prelude where
 
 import Control.Monad.Trans.State (StateT(StateT, runStateT))
+import Control.Applicative (Alternative(empty))
 import Data.Array.Unboxed qualified as A
 import Data.Coerce (coerce)
 import Data.Foldable (toList)
@@ -135,10 +136,11 @@ möb :: (((a -> b) -> b) -> c -> a) -> c -> a
 möb f = \x -> let go = f ($ go) x in go
 
 -- | Index an array returning 'Nothing' if the index is out of bounds.
-arrIx :: (A.IArray a e, A.Ix i) => a i e -> i -> Maybe e
+arrIx :: (A.IArray a e, A.Ix i, Alternative f) => a i e -> i -> f e
 arrIx a i
-  | A.inRange (A.bounds a) i = Just $! a A.! i
-  | otherwise = Nothing
+  | A.inRange (A.bounds a) i = pure $! a A.! i
+  | otherwise = empty
+{-# Inline arrIx #-}
 
 -- | Apply a function @n@ times strictly.
 times :: Int -> (a -> a) -> a -> a
