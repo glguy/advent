@@ -10,17 +10,17 @@ Maintainer  : emertens@gmail.com
 Find the basins on the height map.
 
 >>> :{
-let exampleGrid =
-      Data.Array.Unboxed.listArray
-        (C 0 0, C 4 9)
-        [2,1,9,9,9,4,3,2,1,0,
-         3,9,8,7,8,9,4,9,2,1,
-         9,8,5,6,7,8,9,8,9,2,
-         8,7,6,7,8,9,6,7,8,9,
-         9,8,9,9,9,6,5,6,7,8]
+exampleGrid =
+  Data.Array.Unboxed.listArray
+    (C 0 0, C 4 9)
+    [2,1,9,9,9,4,3,2,1,0,
+     3,9,8,7,8,9,4,9,2,1,
+     9,8,5,6,7,8,9,8,9,2,
+     8,7,6,7,8,9,6,7,8,9,
+     9,8,9,9,9,6,5,6,7,8]
 :}
 
->>> let exampleBasins = toBasinIds exampleGrid
+>>> exampleBasins = toBasinIds exampleGrid
 
 >>> basinRiskSum exampleGrid exampleBasins
 15
