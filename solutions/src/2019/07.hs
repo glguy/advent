@@ -20,7 +20,6 @@ as its own input!
 module Main (main) where
 
 import Advent (format)
-import Data.Function (fix)
 import Data.List (permutations)
 import Intcode (intcodeToList)
 
@@ -68,7 +67,8 @@ part2 ::
   Int    {- ^ maximum final thruster output -}
 part2 = optimize last [5..9]
 
-
+-- | Try all the permutations of the phases listed and return the
+-- maximum value of the characterizing function.
 optimize ::
   Ord a =>
   ([Int] -> a) {- ^ output characterization    -} ->
@@ -91,30 +91,6 @@ optimize f phases pgm = maximum [f (thrustController pgm p) | p <- permutations 
 thrustController ::
   ListFn {- ^ amplifier controller software -} ->
   ListFn {- ^ thrust controller             -}
-thrustController ctrl phases = tieknot [ctrl << p | p <- phases]
-
--- | Create a feedback loop given the initialized controllers
--- and return the thruster outputs. Feed an initial @0@ value
--- into the loop.
---
--- >>> tieknot [map (2*), map (1+), take 5]
--- [1,3,7,15,31]
-tieknot ::
-  [ListFn] {- ^ initialized amplifier controllers -} ->
-  [Int]    {- ^ thruster outputs                  -}
-tieknot fs = fix (composeLR fs << 0)
-
--- | Compose list functions from left-to-right. Inputs go into
--- first function and outputs come from last function.
---
--- >>> composeLR [(2*),(1+)] 3
--- 7
-composeLR :: [a -> a] -> (a -> a)
-composeLR = foldl (flip (.)) id
-
--- | Feed a single input into a list function.
---
--- >>> (map (*2) << 10) [5,6,7]
--- [20,10,12,14]
-(<<) :: ListFn -> Int -> ListFn
-(f << x) xs = f (x:xs)
+thrustController pgm phases = outs
+  where
+    outs = foldl (\prev p -> pgm (p:prev)) (0:outs) phases
