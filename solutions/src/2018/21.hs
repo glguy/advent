@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost #-}
+{-# Language ScopedTypeVariables, QuasiQuotes, TemplateHaskell, ImportQualifiedPost, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -8,54 +8,7 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2018/day/21>
 
-I copied my Day 19 solution and then modified it to check the state
-of the running program.
-
-Manually decompiling my input I find this C program:
-
-@
-#include \<inttypes.h\>
-#include \<stdint.h\>
-#include \<stdio.h\>
-#include \<stdlib.h\>
-
-// Set a bit in the seen array at the given index; return previous bit value
-static int mark(uint64_t *seen, uint32_t x) {
-    const size_t i = x / 64;
-    const uint64_t j = UINT64_C(1) << (x % 64);
-    const int prev = (seen[i] & j) == j;
-    seen[i] |= j;
-    return prev;
-}
-
-static void program(uint32_t *part1, uint32_t *part2) {
-    uint64_t seen[0x1000000 / 64] = {0};
-    int started = 0;
-    uint32_t r5 = 0;
-
-    for(;;) {
-        r5 = 0xed43a1
-           + 0x04dc53 * (0xff & r5)
-           + 0xd802b9 * (0xff & (r5 >> 8))
-           + 0x01016b * (1 | 0xff & (r5 >> 16));
-        r5 &= 0xffffff;
-
-        if (!started) {
-            started = 1;
-            *part1 = r5;
-        }
-
-        if (mark(seen, r5)) return;
-        *part2 = r5;
-    }
-}
-
-int main(int argc, char **argv) {
-    uint32_t part1, part2;
-    program(&part1, &part2);
-    printf("part1: %" PRIu32 "\\npart2: %" PRIu32 "\\n", part1, part2);
-}
-@
+I manually decompiled my input to find the embedded program.
 
 This program generates a stream of 24-bit numbers and tests those
 against register zero. This stream of numbers eventually repeats
@@ -66,100 +19,53 @@ find the last number generated.
 -}
 module Main (main) where
 
-import Advent (format)
-import Data.Bits ((.&.), (.|.))
-import Data.Char (chr, ord)
-import Data.IntMap (IntMap)
-import Data.IntMap.Strict qualified as IntMap
-import Data.IntSet qualified as IntSet
-import Data.Vector (Vector)
-import Data.Vector.Generic qualified as Vector
-import Data.Vector.Generic.Mutable qualified as M
-import Data.Vector.Unboxed qualified as U
-import Numeric (showHex)
+import Foreign.C (CInt)
+import Foreign.Marshal.Alloc (alloca)
+import Foreign.Ptr (Ptr)
+import Foreign.Storable (Storable(peek))
+import Language.C.Inline qualified as C
 
-
-type Registers = U.Vector Int
-
-data Instruction = I C !Int !Int !Int
-
-data C = Caddi | Caddr | Cmuli | Cmulr | Cseti | Csetr
-       | Cbani | Cbanr | Cbori | Cborr
-       | Cgtir | Cgtri | Cgtrr
-       | Ceqir | Ceqri | Ceqrr
-  deriving (Eq, Ord, Show)
-
-mempty
+C.include "<inttypes.h>"
+C.include "<stdint.h>"
+C.include "<stdlib.h>"
 
 -- | Print the answers to day 21
 --
--- >>> :main
+-- @
 -- 15615244
 -- 12963935
+-- @
 main :: IO ()
 main =
- do (ip, pgm') <- [format|2018 19 #ip %u%n(@C %u %u %u%n)*|]
-    let pgm = Vector.fromList [I o a b c | (o,a,b,c) <- pgm']
-    let regs = Vector.replicate 6 0
-    let xs = run ip (fmap semantics pgm) regs
-    print (head xs)      -- part 1
-    print (findCycle xs) -- part 2
+  alloca \(part1 :: Ptr CInt) ->
+  alloca \(part2 :: Ptr CInt) ->
+   do [C.block| void {
+      uint64_t seen[0x1000000 / 64] = {0};
+      int started = 0;
+      uint32_t r5 = 0;
 
--- | Find the last integer in the list that occurs before a repeated integer.
---
--- >>> findCycle [1,2,3,4,2]
--- 4
-findCycle :: [Int] -> Int
-findCycle = go 0 IntSet.empty
-  where
-    go answer seen (x:xs)
-      | IntSet.member x seen = answer
-      | otherwise = go x (IntSet.insert x seen) xs
+      for(;;) {
+        r5 = 0xed43a1
+          + 0x04dc53 * (0xff & r5)
+          + 0xd802b9 * (0xff & (r5 >> 8))
+          + 0x01016b * (1 | 0xff & (r5 >> 16));
+        r5 &= 0xffffff;
 
--- | Given a program counter register and a program, run the program
--- until the instruction pointer points outside of the program.
--- The list of values of register 5 during program counter 29 is returned.
-run :: Int -> Vector (Registers -> Registers) -> Registers -> [Int]
-run ip pgm regs =
-  case pgm Vector.!? pc of
-    Nothing -> []
-    Just f
-      | pc == 29 -> regs Vector.! 5 : run ip pgm (nextIP (f regs))
-      | otherwise -> run ip pgm (nextIP (f regs))
-  where
-    pc = Vector.unsafeIndex regs ip
-    nextIP regs = chg regs ip (1+)
+        if (!started) {
+          started = 1;
+          *$(int *part1) = r5;
+        }
 
-chg vec i f = U.modify (\v -> M.unsafeModify v f i) vec
-set vec i e = U.modify (\v -> M.unsafeWrite v i e) vec
+        {
+          const size_t i = r5 / 64;
+          const uint64_t j = UINT64_C(1) << (r5 % 64);
+          if ((seen[i] & j) == j) return;
+          seen[i] |= j;
+        }
 
--- | Map from opcode names to opcode semantics. The functions expect
--- the operands A, B, and C as well as the current registers.
-semantics :: Instruction -> Registers -> Registers
-semantics (I op a b c) = sem $ \reg ->
-  case op of
-    Caddr -> reg a + reg b
-    Caddi -> reg a + val b
+        *$(int *part2) = r5;
+      }
+      } |]
 
-    Cmulr -> reg a * reg b
-    Cmuli -> reg a * val b
-
-    Cbanr -> reg a .&. reg b
-    Cbani -> reg a .&. val b
-
-    Cborr -> reg a .|. reg b
-    Cbori -> reg a .|. val b
-
-    Csetr -> reg a
-    Cseti -> val a
-
-    Cgtir -> if val a > reg b then 1 else 0
-    Cgtri -> if reg a > val b then 1 else 0
-    Cgtrr -> if reg a > reg b then 1 else 0
-
-    Ceqir -> if val a == reg b then 1 else 0
-    Ceqri -> if reg a == val b then 1 else 0
-    Ceqrr -> if reg a == reg b then 1 else 0
-  where
-    sem f regs = set regs c $! f (Vector.unsafeIndex regs)
-    val = id
+      print =<< peek part1
+      print =<< peek part2
