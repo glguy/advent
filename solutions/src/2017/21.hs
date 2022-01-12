@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 Day 21 defines a system of rewrite rules on a grid of points that are
 applied to 2x2 or 3x3 subtiles of the whole grid.
 
->>> let inputFile = unlines ["../.# => ##./#../...",".#./..#/### => #..#/..../..../#..#"]
+>>> let inputFile = ["../.# => ##./#../...",".#./..#/### => #..#/..../..../#..#"]
 >>> let rules = makeRules (parseInput inputFile)
 >>> let iterations = iterate (mapSubSquares rules) start
 
@@ -81,7 +81,7 @@ countCells = count '#' . concat
 
 -- | Generate all of the rotated and flipped versions of a grid.
 --
--- >>> printGrid (intercalate "  " <$> transpose (similarSquares start))
+-- >>> printGrid (Data.List.intercalate "  " <$> transpose (similarSquares start))
 -- .#.  .##  ###  #..  ###  ##.  .#.  ..#
 -- ..#  #.#  #..  #.#  ..#  #.#  #..  #.#
 -- ###  ..#  .#.  ##.  .#.  #..  ###  .##

@@ -74,9 +74,9 @@ main =
 -- | Compute the last send command that precedes a non-zero receive command.
 --
 -- >>> :{
--- let Right pgm = Advent.parseLines instruction
---                     "set a 1\nadd a 2\nmul a a\nmod a 5\nsnd a\nset a 0\n\
---                     \rcv a\njgz a -1\nset a 1\njgz a -2\n"
+-- let pgm = map (runP instruction) $ lines
+--           "set a 1\nadd a 2\nmul a a\nmod a 5\nsnd a\nset a 0\n\
+--           \rcv a\njgz a -1\nset a 1\njgz a -2\n"
 --   in part1 (interpreter pgm)
 -- :}
 -- Just 4
@@ -96,8 +96,8 @@ part1 start = go Nothing (start 0)
 -- executes once both programs are blocked.
 --
 -- >>> :{
--- let Right pgm = Advent.parseLines instruction
---                      "snd 1\nsnd 2\nsnd p\nrcv a\nrcv b\nrcv c\nrcv d\n"
+-- let pgm = map (runP instruction) $ lines
+--           "snd 1\nsnd 2\nsnd p\nrcv a\nrcv b\nrcv c\nrcv d\n"
 --   in part2 (interpreter pgm)
 -- :}
 -- 3
