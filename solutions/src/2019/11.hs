@@ -12,23 +12,28 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent.Format (format)
-import Advent.Coord
+import Advent.Coord (Coord, turnLeft, turnRight, origin, north, drawPicture)
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Intcode (Effect(..), run, new)
 
+-- | >>> :main
+-- 1876
+-- ░░██░░░██░░███░░░░██░░██░░░██░░░██░░█░░░░░
+--  █░░█░█░░█░█░░█░░░░█░█░░█░█░░█░█░░█░█░░░░░░
+--  █░░░░█░░░░█░░█░░░░█░█░░░░█░░░░█░░░░█░░░░░░
+-- ░█░░░░█░██░███░░░░░█░█░░░░█░██░█░░░░█░░░░░
+-- ░█░░█░█░░█░█░░░░█░░█░█░░█░█░░█░█░░█░█░░░░
+--  ░██░░░███░█░░░░░██░░░██░░░███░░██░░████░
 main :: IO ()
 main =
-  do inp <- [format|2019 11 %d&,%n|]
-
-     let start  = robot origin north (run (new inp))
-         run1   = start Map.empty
-         run2   = start (Map.singleton origin 1)
-         render = putStrLn . drawPicture . fmap paintChar
-
-     render run1
-     print (length run1)
-     render run2
+ do inp <- [format|2019 11 %d&,%n|]
+    let start  = robot origin north (run (new inp))
+        run1   = start Map.empty
+        run2   = start (Map.singleton origin 1)
+        render = putStr . drawPicture . fmap paintChar
+    print (length run1)
+    render run2
 
 -- | Run a painter robot to see what it paints.
 robot ::
@@ -39,7 +44,6 @@ robot ::
   Map Coord Int {- ^ final painted coordinates    -}
 robot here dir effect paint =
   case effect of
-
     Halt -> paint
 
     Input f -> robot here dir effect' paint
