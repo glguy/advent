@@ -12,43 +12,86 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent.Format (format)
-import Advent.Coord (Coord, above, below, left, right, origin)
+import Advent.Coord (Coord, north, south, east, west, origin, drawCoords)
 import Advent.Search (bfsOn)
 import Intcode (Effect(..), run, new)
 import Data.Tree (Tree(Node, rootLabel, subForest))
 
 -- | >>> :main
+-- █████████████ ███████████ ███████ █████
+-- █     █     █ █         █ █   █   █   █
+-- █████ █ ███ █ █ ███ ███ █ ███ █████ ███
+--     █ █ █ █   █ █ █   █ █   █       █
+-- █ ███ ███ ███ ███ █████ ███ ███████ ███
+-- █ █         █   █       █ █           █
+-- █ █ ███████ ███ █ █████ █ █████████ ███
+-- █ █     █ █ █   █ █   █     █     █ █ █
+-- █ ███████ █ █████ ███ █████ █████ █ █ █
+-- █         █         █     █     █ █ █
+-- █████████ █████ █████ █ ███ ███ █ █ ███
+-- █       █   █   █     █ █   █ █   █ █ █
+-- █ █████████ █ ███ █████ █ ███ █████ █ █
+-- █ █   █     █ █   █   █ █ █           █
+-- █ ███ █ █████ █ █████ █ █ ███ ███ █████
+--     █ █ █     █ █   █   █   █ █ █ █ █
+-- █████ █ █ █ ███ ███ ███ █████ █ █ █ ███
+-- █     █ █ █ █   █     █       █ █     █
+-- █ █ ███ ███ █ ███ ███ █████ ███ ███████
+-- █ █ █     █ █   █ █ █ █     █ █ █     █
+-- █ ███████ █ ███ █ █ █ █████ █ █ █ ███ █
+-- █         █   █ █ █       █ █ █   █ █ █
+-- ███ █████████ █ █ █████ ███ █ █████ █ █
+-- █ █ █         █ █     █ █   █       █ █
+-- █ █████ ███ ███ █ ███ █ ███████ █████ █
+-- █       █ █ █   █   █ █ █       █     █
+-- ███ █████ ███ ███████ █ ███ ███ ███ █ █
+--   █ █         █     █ █ █   █ █ █ █ █ █
+-- █ █ █ █████ █ █ ███ █ █ █ ███ █ █ █ ███
+-- █ █ █ █   █ █ █ █ █   █   █   █ █ █ █
+-- ███ ███ █ █ ███ █ █████ ███ █ █ █ █ ███
+-- █       █ █   █ █       █   █ █   █
+-- ███ █████ ███ █ █ ███████ ███ ███ █ ███
+--   █ █   █   █   █ █   █   █ █   █ █ █ █
+-- █ █ █ ███ █ █████ █ ███ ███ █ ███ ███ █
+-- █ █ █ █   █         █     █   █       █
+-- █ █ █ █ █████████ ███ █████ ███ ███ ███
+-- █ █ █ █     █   █ █   █     █   █ █ █ █
+-- █████ ███████ █████ █████████████ ███ █
 -- 242
 -- 276
 main :: IO ()
 main =
-  do intcode <- [format|2019 15 %d&,%n|]
-     let part1:_ = filter (onOxygen . rootLabel)
-                 $ explore (searchTree (run (new intcode)))
-     let d1 = distance (rootLabel part1)
-     print d1
-     let d2 = distance (rootLabel (last (explore part1)))
-     print (d2 - d1)
+ do intcode <- [format|2019 15 %d&,%n|]
+    let part1:_ = filter (onOxygen . rootLabel)
+                    (explore (searchTree (run (new intcode))))
+        d1   = distance (rootLabel part1)
+        maze = map rootLabel (explore part1)
+        d2   = distance (last maze)
+    putStr (drawCoords (map location maze))
+    print d1
+    print (d2 - d1)
 
 data SearchState = SearchState
-  { onOxygen :: !Bool  -- ^ Is the robot currently on the oxygen
+  { onOxygen :: !Bool  -- ^ Is the robot currently on the oxygen?
   , distance :: !Int   -- ^ Commands issued so far
   , location :: !Coord -- ^ robot's current location
   }
 
+-- | Breadth-first search of the program execution space.
 explore :: Tree SearchState -> [Tree SearchState]
 explore = bfsOn (location . rootLabel) subForest
 
+-- | Produce the tree of all possible executions of the program.
+-- Each tree child will be the result of one of the possible
+-- movements at that point in the program.
 searchTree :: Effect -> Tree SearchState
-searchTree = search False 0 origin
+searchTree = search (SearchState False 0 origin)
 
-search :: Bool -> Int -> Coord -> Effect -> Tree SearchState
-search !oxy !dist !loc e =
-  Node (SearchState oxy dist loc)
-       [ search (o == 2) (dist + 1) (move loc) e'
-       | (i,move) <- [(1,above),(2,below),(3,left),(4,right)]
-       , Output o e' <- [e << i], o > 0 ]
-
-(<<) :: Effect -> Int -> Effect
-Input f << i = f i
-Output o e << i = Output o (e << i)
+-- | Worker loop for 'searchTree'
+search :: SearchState -> Effect -> Tree SearchState
+search s@(SearchState oxy dist loc) (Input f) =
+  Node s
+    [ search (SearchState (o == 2) (dist + 1) (loc + dir)) e'
+    | (i, dir) <- [(1,north),(2,south),(3,west),(4,east)]
+    , let Output o e' = f i
+    , o > 0]
