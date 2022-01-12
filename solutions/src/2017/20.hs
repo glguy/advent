@@ -27,9 +27,6 @@ import Data.Map qualified as Map
 import Linear (V2(V2), V3(V3), quadrance)
 import Linear.Matrix as LM (transpose)
 
--- $setup
--- >>> import Text.Megaparsec (parseMaybe)
-
 -- | Print the solutions. Input file can be overridden via command-line
 -- arguments.
 main :: IO ()
@@ -65,7 +62,6 @@ stepParticle (V3 a v s) = V3 a v' s'
 -- 2
 minimumIndexOn :: Ord b => (a -> b) {- ^ projection -} -> [a] -> Int
 minimumIndexOn f xs = snd (minimum (map f xs `zip` [0..]))
-
 
 collide :: V3 (V3 Double) -> V3 (V3 Double) -> Maybe Double
 collide p1 p2

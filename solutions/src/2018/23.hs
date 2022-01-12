@@ -44,12 +44,6 @@ part1 bots = countBy (botSees strongBot . botPos) bots
 -- To find this region we enumerate the maximal cliques of the graph and compare
 -- each to find the ones with the largest clique size then with the minimal distance
 -- to the origin.
---
--- >>> part2 [Dim 0 6 Pt, Dim 5 8 Pt, Dim 6 8 Pt]
--- 5
---
--- >>> part2 [Dim 0 6 Pt, Dim 5 8 Pt, Dim (-8) (-3) Pt, Dim (-7) (-2) Pt]
--- 4
 part2 :: [Bot] -> Int
 part2 = snd . minimum . map characterize . maxCliques botOverlap
   where

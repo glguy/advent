@@ -19,9 +19,6 @@ import Data.Foldable (traverse_)
 import Linear (V2(V2))
 import Text.ParserCombinators.ReadP (ReadP, readP_to_S, char, get, satisfy, between, sepBy)
 
--- $setup
--- >>> import Text.Megaparsec (parseMaybe)
-
 -- | Print solution for Day 9. Puzzle input can be overriden by command-line
 -- argument.
 main :: IO ()

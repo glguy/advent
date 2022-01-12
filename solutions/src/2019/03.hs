@@ -20,6 +20,7 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 
 -- $setup
+-- >>> :set -XQuasiQuotes
 -- >>> let parse = [format|- ((@D%u)&,%n)*|] . unlines
 
 -- | Directions up, down, left, and right.
@@ -34,8 +35,8 @@ mempty
 toUnitVector :: D -> Coord
 toUnitVector DU = north
 toUnitVector DD = south
-toUnitVector DL = east
-toUnitVector DR = west
+toUnitVector DL = west
+toUnitVector DR = east
 
 ------------------------------------------------------------------------
 
@@ -74,22 +75,22 @@ nearestDistanceToOrigin = minimum . map (manhattan origin) . Map.keys
 --
 -- >>> let check = pathIntersections . parse
 -- >>> check ["R8,U5,L5,D3","U7,R6,D4,L4"]
--- fromList [((3,-3),40),((6,-5),30)]
+-- fromList [(C (-5) 6,30),(C (-3) 3,40)]
 pathIntersections :: [[(D,Int)]] -> Map Coord Int
 pathIntersections = foldl1' (Map.intersectionWith (+)) . map distances
 
 -- | Generate a map of the coordinates a path visits. Each coordinate is
 -- indexed by the number of steps it took to get to that location.
 --
--- >>> distances [Motion D 2, Motion R 1]
--- fromList [((0,1),1),((0,2),2),((1,2),3)]
+-- >>> distances [(DD,2), (DR,1)]
+-- fromList [(C 1 0,1),(C 2 0,2),(C 2 1,3)]
 distances :: [(D,Int)] -> Map Coord Int
 distances steps = Map.fromListWith min (zip (generatePath steps) [1..])
 
 -- | Generate the list of coordinates visited by a list of steps.
 --
--- >>> generatePath [Motion D 2, Motion R 1]
--- [(0,1),(0,2),(1,2)]
+-- >>> generatePath [(DD,2), (DR,1)]
+-- [C 1 0,C 2 0,C 2 1]
 generatePath :: [(D,Int)] -> [Coord]
 generatePath
   = scanl1 (+)
