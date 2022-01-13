@@ -35,7 +35,7 @@ main =
     print (head     [y | SetY  y <- events])
     print (firstDup [y | SendY y <- events])
 
--- * Packet processing
+-- * Machine effect processing
 
 -- | A bundle of destination and payload data send on the network.
 data Packet = Packet !Int !Int !Int -- ^ destination, x, y
