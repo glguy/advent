@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language ViewPatterns, QuasiQuotes, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 23 solution
@@ -23,21 +23,58 @@ import Intcode (Effect(..), run, new)
 -- 17001
 main :: IO ()
 main =
-  do events <- startup <$> [format|2019 23 %d&,%n|]
+  do events <- startup . newSystem <$> [format|2019 23 %d&,%n|]
      print (head     [y | SetY  y <- events])
      print (firstDup [y | SendY y <- events])
 
+-- * Packet processing
+
+-- | A bundle of destination and payload data send on the network.
 data Packet = Packet !Int !Int !Int -- ^ destination, x, y
 
--- | Map of VM identities to current execution state.
-type Network = IntMap (Stream Int Packet)
+-- | Deliver the list of inputs to a machine expecting them, then collect all
+-- emitted packets returning a machine once-again waiting for inputs.
+resume :: [Int] -> Effect -> ([Packet], Effect)
+resume [] (Output d (Output x (Output y (resume [] -> (ps,e))))) = (Packet d x y : ps, e)
+resume [] e = ([], e)
+resume (x:xs) (Input f) = resume xs (f x)
+resume _ _ = error "resume: machine out of sync"
+
+-- * System state
 
 -- | State of network simulation including most recent NAT packet.
 data System = System
-  { network :: Network         -- ^ VMs indexed by identity
+  { network :: IntMap Effect   -- ^ VMs indexed by identity
   , nat     :: Maybe (Int,Int) -- ^ last NAT packet registered
   , sendq   :: Queue Packet    -- ^ Sent packet queue
   }
+
+-- | Construct a new 50-machine system given an input program with no
+-- NAT packet and an empty delivery queue.
+newSystem :: [Int] -> System
+newSystem inp = System{
+  network = IntMap.fromList [(i, run (new inp)) | i <- [0..49]],
+  sendq   = Queue.Empty,
+  nat     = Nothing}
+
+-- | Add the given packets to the back of the packet queue.
+enqueuePackets :: [Packet] -> System -> System
+enqueuePackets ps sys = sys{sendq = Queue.appendList ps (sendq sys)}
+
+-- | Pop the next packet off the send queue.
+popPacket :: System -> Maybe (Packet, System)
+popPacket sys =
+  case sendq sys of
+    Queue.Empty -> Nothing
+    p :<| ps    -> Just (p, sys{sendq = ps})
+
+-- * Event loop
+
+-- $doc
+-- The event loop is implemented as a state machine where the states are
+-- 'startup', 'tryToSend', 'stalled', and 'deliver'.  As the state machine
+-- progresses it produces a list of 'Event' values indicating important
+-- events that happened in the course of simulating the network.
 
 -- | Network events needed to answer part 1 and 2.
 data Event
@@ -45,65 +82,51 @@ data Event
   | SendY !Int -- ^ NAT packet sent after a system stall
   deriving Show
 
-data Stream a b
-  = Emit b (Stream a b)
-  | Block (a -> Stream a b)
+-- | Tell each machine its identity and start event loop. This is the entry-point
+-- into the event loop.
+startup :: System -> [Event]
+startup = wakeNetwork (IntMap.traverseWithKey (resume . pure))
 
-getPacket :: Effect -> Stream Int Packet
-getPacket = get (\x -> get (\y -> get (\z -> Emit (Packet x y z) . getPacket)))
-  where
-    get f e =
-      case e of
-        Output x m -> f x m
-        Input g    -> Block (get f . g)
-        _          -> error "bad intcode input"
-
-(<<) :: Stream a b -> a -> Stream a b
-Block f  << i = f i
-Emit p e << i = Emit p (e << i)
-
--- | Run a VM gathering packets until it blocks waiting for input.
-gather :: Stream a b -> ([b], Stream a b)
-gather (Emit p e) = case gather e of (ps, e') -> (p:ps, e')
-gather e          = ([], e)
-
-stepNetwork :: (Network -> ([Packet], Network)) -> System -> [Event]
-stepNetwork f sys =
-  case f (network sys) of
-    (ps, net) -> tryToSend sys{ network = net, sendq = Queue.appendList ps (sendq sys) }
-
-
--- gather up any packets ready to send at the outset
-startup :: [Int] -> [Event]
-startup pgm = stepNetwork (traverse gather) sys
-  where
-    eff = getPacket (run (new pgm))
-    sys = System { network = IntMap.fromList [ (i, eff << i) | i <- [0..49]]
-                 , sendq   = Queue.Empty
-                 , nat     = Nothing }
-
+-- | Deliver a packet if one is ready, otherwise switch to 'stalled' state.
 tryToSend :: System -> [Event]
 tryToSend sys =
-  case sendq sys of
-    p :<| ps    -> deliver p sys{ sendq = ps }
-    Queue.Empty -> stalled sys
+  case popPacket sys of
+    Just (p, sys') -> deliver p sys'
+    Nothing        -> stalled sys
 
+-- | Deliver a NAT packet if ready, otherwise send @-1@ inputs to all machines.
 stalled :: System -> [Event]
 stalled sys =
   case nat sys of
     Just (x,y) -> SendY y : deliver (Packet 0 x y) sys
-    Nothing    -> stepNetwork (traverse (gather . (<< negate 1))) sys
+    Nothing    -> wakeNetwork (traverse (resume [-1])) sys
 
+-- | Deliver a packet to the correct destination on the network either waking up
+-- the target machine or returning to the packet queue.
 deliver :: Packet -> System -> [Event]
 deliver (Packet dst x y) sys
   | dst == 255 = SetY y : tryToSend sys{ nat = Just (x,y) }
-  | otherwise  = stepNetwork (updateF (gather . (<<y) . (<<x)) dst) sys
+  | otherwise  = wakeNetwork (updateF dst (resume [x,y])) sys
 
+-- | Update the network gathering packets, then try to start delivering again.
+-- This can be called to updated individual or multiple machines with a couple
+-- different resume actions used in multiple states.
+wakeNetwork :: (IntMap Effect -> ([Packet], IntMap Effect)) -> System -> [Event]
+wakeNetwork f (networkLens f -> (ps, sys)) = tryToSend (enqueuePackets ps sys)
 
+-- * Utilities
 
+-- | Lens for 'network' field of 'System'
+networkLens :: Functor f => (IntMap Effect -> f (IntMap Effect)) -> System -> f System
+networkLens f sys = (\net -> sys{network = net}) <$> f (network sys)
 
-updateF :: Applicative f => (a -> f a) -> Int -> IntMap a -> f (IntMap a)
-updateF = IntMap.alterF . traverse
+-- | Traversal for an element in an 'IntMap'.
+updateF :: Applicative f => Int -> (a -> f a) -> IntMap a -> f (IntMap a)
+updateF i f = IntMap.alterF (traverse f) i
 
+-- | Find the first value that occurs twice in a row in a list.
+--
+-- >>> firstDup [1,2,3,2,1,2,5,5,3,2,1]
+-- 5
 firstDup :: Eq a => [a] -> a
 firstDup ys = head [ a | (a,b) <- zip ys (tail ys), a==b ]
