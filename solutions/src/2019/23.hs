@@ -37,8 +37,9 @@ main =
 
 -- * Machine effect processing
 
--- | A bundle of destination and payload data send on the network.
+-- | A bundle of destination and payload data sent on the network.
 data Packet = Packet !Int !Int !Int -- ^ destination, x, y
+  deriving Show
 
 -- | Deliver the list of inputs to a machine expecting them, then collect all
 -- emitted packets returning a machine once-again waiting for inputs.
@@ -48,14 +49,15 @@ resume [] e = ([], e)
 resume (x:xs) (Input f) = resume xs (f x)
 resume _ _ = error "resume: machine out of sync"
 
--- * System state
+-- * System state and basic operations
 
--- | State of network simulation including most recent NAT packet.
+-- | State of network simulation
 data System = System
-  { network :: IntMap Effect   -- ^ VMs indexed by identity
-  , nat     :: Maybe (Int,Int) -- ^ last NAT packet registered
+  { network :: IntMap Effect   -- ^ Machines indexed by identity
+  , nat     :: Maybe (Int,Int) -- ^ last NAT payload registered
   , sendq   :: Queue Packet    -- ^ Sent packet queue
   }
+  deriving Show
 
 -- | Construct a new 50-machine system given an input program with no
 -- NAT packet and an empty delivery queue.
@@ -132,4 +134,4 @@ updateF i f = IntMap.alterF (traverse f) i
 -- >>> firstDup [1,2,3,2,1,2,5,5,3,2,1]
 -- 5
 firstDup :: Eq a => [a] -> a
-firstDup ys = head [ a | (a,b) <- zip ys (tail ys), a==b ]
+firstDup ys = head [a | (a,b) <- zip ys (tail ys), a==b]
