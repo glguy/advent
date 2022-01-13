@@ -72,7 +72,7 @@ pop sys =
 
 -- $doc
 -- The event loop is implemented as a state machine where the states are
--- 'startup', 'tryToSend', 'stalled', and 'deliver'.  As the state machine
+-- 'startup', 'idle', 'deliver'.  As the state machine
 -- progresses it produces a list of 'Event' values indicating important
 -- events that happened in the course of simulating the network.
 
