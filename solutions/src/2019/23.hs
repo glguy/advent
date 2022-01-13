@@ -52,10 +52,11 @@ data System = System
 -- | Construct a new 50-machine system given an input program with no
 -- NAT packet and an empty delivery queue.
 newSystem :: [Int] -> System
-newSystem inp = System{
-  network = IntMap.fromList [(i, run (new inp)) | i <- [0..49]],
-  sendq   = Queue.Empty,
-  nat     = Nothing}
+newSystem inp = System
+  { network = IntMap.fromList [(i, run (new inp)) | i <- [0..49]]
+  , sendq   = Queue.Empty
+  , nat     = Nothing
+  }
 
 -- | Add the given packets to the back of the packet queue.
 enq :: [Packet] -> System -> System
