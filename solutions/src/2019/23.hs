@@ -58,12 +58,12 @@ newSystem inp = System{
   nat     = Nothing}
 
 -- | Add the given packets to the back of the packet queue.
-enqueuePackets :: [Packet] -> System -> System
-enqueuePackets ps sys = sys{sendq = Queue.appendList ps (sendq sys)}
+enq :: [Packet] -> System -> System
+enq ps sys = sys{sendq = Queue.appendList ps (sendq sys)}
 
 -- | Pop the next packet off the send queue.
-popPacket :: System -> Maybe (Packet, System)
-popPacket sys =
+pop :: System -> Maybe (Packet, System)
+pop sys =
   case sendq sys of
     Queue.Empty -> Nothing
     p :<| ps    -> Just (p, sys{sendq = ps})
@@ -87,32 +87,26 @@ data Event
 startup :: System -> [Event]
 startup = wakeNetwork (IntMap.traverseWithKey (resume . pure))
 
--- | Deliver a packet if one is ready, otherwise switch to 'stalled' state.
-tryToSend :: System -> [Event]
-tryToSend sys =
-  case popPacket sys of
-    Just (p, sys') -> deliver p sys'
-    Nothing        -> stalled sys
-
--- | Deliver a NAT packet if ready, otherwise send @-1@ inputs to all machines.
-stalled :: System -> [Event]
-stalled sys =
-  case nat sys of
-    Just (x,y) -> SendY y : deliver (Packet 0 x y) sys
-    Nothing    -> wakeNetwork (traverse (resume [-1])) sys
+-- | All the machines are waiting for input. Deliver a packet if one is ready,
+-- send a NAT packet, or deliver empty inputs to all machines.
+idle :: System -> [Event]
+idle sys
+  | Just (p, sys') <- pop sys = deliver p sys'
+  | Just (x, y)    <- nat sys = SendY y : deliver (Packet 0 x y) sys
+  | otherwise                 = wakeNetwork (traverse (resume [-1])) sys
 
 -- | Deliver a packet to the correct destination on the network either waking up
 -- the target machine or returning to the packet queue.
 deliver :: Packet -> System -> [Event]
 deliver (Packet dst x y) sys
-  | dst == 255 = SetY y : tryToSend sys{ nat = Just (x,y) }
+  | dst == 255 = SetY y : idle sys{ nat = Just (x,y) }
   | otherwise  = wakeNetwork (updateF dst (resume [x,y])) sys
 
 -- | Update the network gathering packets, then try to start delivering again.
 -- This can be called to updated individual or multiple machines with a couple
 -- different resume actions used in multiple states.
 wakeNetwork :: (IntMap Effect -> ([Packet], IntMap Effect)) -> System -> [Event]
-wakeNetwork f (networkLens f -> (ps, sys)) = tryToSend (enqueuePackets ps sys)
+wakeNetwork f (networkLens f -> (ps, sys)) = idle (enq ps sys)
 
 -- * Utilities
 
