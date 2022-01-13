@@ -2,11 +2,18 @@
 {-|
 Module      : Main
 Description : Day 23 solution
-Copyright   : (c) Eric Mertens, 2019
+Copyright   : (c) Eric Mertens, 2021
 License     : ISC
 Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2019/day/23>
+
+This problem builds a packet network out of 50 concurrently executing
+intcode machines. It's implemented by keeping track of the individual
+machines, a packet delivery queue, and the most recent NAT packet.
+As the system is simulated a list of interesting simulation events is
+produced that can be processed to compute the answers to both parts of
+the problem.
 
 -}
 module Main (main) where
@@ -23,9 +30,10 @@ import Intcode (Effect(..), run, new)
 -- 17001
 main :: IO ()
 main =
-  do events <- startup . newSystem <$> [format|2019 23 %d&,%n|]
-     print (head     [y | SetY  y <- events])
-     print (firstDup [y | SendY y <- events])
+ do inp <- [format|2019 23 %d&,%n|]
+    let events = startup (newSystem inp)
+    print (head     [y | SetY  y <- events])
+    print (firstDup [y | SendY y <- events])
 
 -- * Packet processing
 
