@@ -83,9 +83,9 @@ pop sys =
 
 -- $doc
 -- The event loop is implemented as a state machine where the states are
--- 'startup', 'idle', 'deliver'.  As the state machine
--- progresses it produces a list of 'Event' values indicating important
--- events that happened in the course of simulating the network.
+-- 'startup', 'idle'.  As the state machine progresses it produces a list
+-- of 'Event' values indicating important events that happened in the course
+-- of simulating the network.
 
 -- | Network events needed to answer part 1 and 2.
 data Event
