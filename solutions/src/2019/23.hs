@@ -117,13 +117,13 @@ deliver (Packet dst x y) sys
 -- This can be called to updated individual or multiple machines with a couple
 -- different resume actions used in multiple states.
 wakeNetwork :: (IntMap Effect -> ([Packet], IntMap Effect)) -> System -> [Event]
-wakeNetwork f (networkLens f -> (ps, sys)) = idle (enq ps sys)
+wakeNetwork f (networkF f -> (ps, sys)) = idle (enq ps sys)
 
 -- * Utilities
 
 -- | Lens for 'network' field of 'System'
-networkLens :: Functor f => (IntMap Effect -> f (IntMap Effect)) -> System -> f System
-networkLens f sys = (\net -> sys{network = net}) <$> f (network sys)
+networkF :: Functor f => (IntMap Effect -> f (IntMap Effect)) -> System -> f System
+networkF f sys = (\net -> sys{network = net}) <$> f (network sys)
 
 -- | Traversal for an element in an 'IntMap'.
 updateF :: Applicative f => Int -> (a -> f a) -> IntMap a -> f (IntMap a)
