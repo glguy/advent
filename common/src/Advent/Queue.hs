@@ -93,10 +93,10 @@ fromList xs = Queue xs [] (length xs)
 -- | Append many items onto a queue. The items will pop from the queue
 -- in the same order as they are in the given list.
 --
--- >>> appendList "abc" (fromList "xyz")
+-- >>> appendList (fromList "xyz") "abc" 
 -- fromList "xyzabc"
-appendList :: [a] -> Queue a -> Queue a
-appendList xs q = foldl' (|>) q xs
+appendList :: Queue a -> [a] -> Queue a
+appendList = foldl' (|>)
 
 -- | Remove an element from the front of a queue and a new queue
 -- without that element.

@@ -94,7 +94,7 @@ bfsOnN rep next start = loop Set.empty (Queue.fromList start)
         where
           r     = rep x
           seen' = Set.insert r seen
-          q'    = Queue.appendList (next x) q
+          q'    = Queue.appendList q (next x)
 {-# INLINE [0] bfsOnN #-}
 
 {-# RULES "bfsOn/Int" bfsOn = bfsOnInt #-}
@@ -110,7 +110,7 @@ bfsOnInt rep next start = loop IntSet.empty (Queue.singleton start)
         where
           r     = rep x
           seen' = IntSet.insert r seen
-          q'    = Queue.appendList (next x) q
+          q'    = Queue.appendList q (next x)
 
 -- | Shortcut for @'astarOn' 'id'@
 astar :: Ord a => (a -> [AStep a]) -> a -> [(a,Int)]
