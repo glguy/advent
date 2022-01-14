@@ -62,25 +62,23 @@ data Event
 -- this network is then returned.
 startup :: Effect -> [Event]
 startup mach =
-  enq
+  enq Queue.Empty Nothing
     (sequence (IntMap.fromList [(i, resume [i] mach) | i <- [0..49]]))
-    Queue.Empty
-    Nothing
 
 -- | Simulation loop for a running network.
 sim ::
-  IntMap Effect    {- ^ machines on the network -} ->
   Queue Packet     {- ^ packet delivery queue   -} ->
   Maybe (Int, Int) {- ^ most recently stored NAT -} ->
+  IntMap Effect    {- ^ machines on the network -} ->
   [Event]          {- ^ simulation event stream -}
-sim net (Packet 255 x y :<| q) _   = SetY  y : sim net q (Just (x,y))
-sim net (Packet d   x y :<| q) nat =           enq (updateF d (resume [x,y]) net) q nat
-sim net q nat@(Just (x,y))         = SendY y : enq (updateF 0 (resume [x,y]) net) q nat
-sim net q nat                      =           enq (traverse  (resume [ -1]) net) q nat
+sim (Packet 255 x y :<| q) _   net = SetY  y : sim q (Just (x,y)) net
+sim (Packet d   x y :<| q) nat net =           enq q nat (updateF d (resume [x,y]) net)
+sim q nat@(Just (x,y))         net = SendY y : enq q nat (updateF 0 (resume [x,y]) net)
+sim q nat                      net =           enq q nat (traverse  (resume [ -1]) net)
 
 -- | Helper for 'sim' that enqueues the new packets and returns to 'sim' loop.
-enq :: ([Packet], IntMap Effect) -> Queue Packet -> Maybe (Int, Int) -> [Event]
-enq (ps, net) q = sim net (Queue.appendList ps q)
+enq :: Queue Packet -> Maybe (Int, Int) -> ([Packet], IntMap Effect) -> [Event]
+enq q nat (ps, net) = sim (Queue.appendList ps q) nat net
 
 -- * Utilities
 
