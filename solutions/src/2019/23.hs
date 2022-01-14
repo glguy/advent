@@ -102,20 +102,13 @@ startup = wakeNetwork (IntMap.traverseWithKey (resume . pure))
 -- send a NAT packet, or deliver empty inputs to all machines.
 idle :: System -> [Event]
 idle sys
-  | Just (p, sys') <- pop sys = deliver p sys'
-  | Just (x, y)    <- nat sys = SendY y : deliver (Packet 0 x y) sys
-  | otherwise                 = wakeNetwork (traverse (resume [-1])) sys
+  | Just (Packet 255 x y, sys') <- pop sys = SetY  y : idle sys'{ nat = Just (x,y) }
+  | Just (Packet d   x y, sys') <- pop sys =           wakeNetwork (updateF d (resume [x,y])) sys'
+  | Just (x, y)                 <- nat sys = SendY y : wakeNetwork (updateF 0 (resume [x,y])) sys
+  | otherwise                              =           wakeNetwork (traverse  (resume [ -1])) sys
 
--- | Deliver a packet to the correct destination on the network either waking up
--- the target machine or returning to the packet queue.
-deliver :: Packet -> System -> [Event]
-deliver (Packet dst x y) sys
-  | dst == 255 = SetY y : idle sys{ nat = Just (x,y) }
-  | otherwise  = wakeNetwork (updateF dst (resume [x,y])) sys
-
--- | Update the network gathering packets, then try to start delivering again.
--- This can be called to updated individual or multiple machines with a couple
--- different resume actions used in multiple states.
+-- | Update the network then return to the idle state. Any updated machines should
+-- be left stalled with all packets collected.
 wakeNetwork :: (IntMap Effect -> ([Packet], IntMap Effect)) -> System -> [Event]
 wakeNetwork f (networkF f -> (ps, sys)) = idle (enq ps sys)
 
