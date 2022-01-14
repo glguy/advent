@@ -1,4 +1,4 @@
-{-# Language ViewPatterns, QuasiQuotes, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 23 solution
@@ -31,7 +31,7 @@ import Intcode (Effect(..), run, new)
 main :: IO ()
 main =
  do inp <- [format|2019 23 %d&,%n|]
-    let events = startup (newSystem inp)
+    let events = startup (run (new inp))
     print (head     [y | SetY  y <- events])
     print (firstDup [y | SendY y <- events])
 
@@ -44,48 +44,12 @@ data Packet = Packet !Int !Int !Int -- ^ destination, x, y
 -- | Deliver the list of inputs to a machine expecting them, then collect all
 -- emitted packets returning a machine once-again waiting for inputs.
 resume :: [Int] -> Effect -> ([Packet], Effect)
-resume [] (Output d (Output x (Output y (resume [] -> (ps,e))))) = (Packet d x y : ps, e)
-resume [] e = ([], e)
+resume [] (Output d (Output x (Output y e))) = ([Packet d x y], ()) *> resume [] e
+resume [] e = pure e
 resume (x:xs) (Input f) = resume xs (f x)
 resume _ _ = error "resume: machine out of sync"
 
--- * System state and basic operations
-
--- | State of network simulation
-data System = System
-  { network :: IntMap Effect   -- ^ Machines indexed by identity
-  , nat     :: Maybe (Int,Int) -- ^ last NAT payload registered
-  , sendq   :: Queue Packet    -- ^ Sent packet queue
-  }
-  deriving Show
-
--- | Construct a new 50-machine system given an input program with no
--- NAT packet and an empty delivery queue.
-newSystem :: [Int] -> System
-newSystem inp = System
-  { network = IntMap.fromList [(i, run (new inp)) | i <- [0..49]]
-  , sendq   = Queue.Empty
-  , nat     = Nothing
-  }
-
--- | Add the given packets to the back of the packet queue.
-enq :: [Packet] -> System -> System
-enq ps sys = sys{sendq = Queue.appendList ps (sendq sys)}
-
--- | Pop the next packet off the send queue.
-pop :: System -> Maybe (Packet, System)
-pop sys =
-  case sendq sys of
-    Queue.Empty -> Nothing
-    p :<| ps    -> Just (p, sys{sendq = ps})
-
 -- * Event loop
-
--- $doc
--- The event loop is implemented as a state machine where the states are
--- 'startup', 'idle'.  As the state machine progresses it produces a list
--- of 'Event' values indicating important events that happened in the course
--- of simulating the network.
 
 -- | Network events needed to answer part 1 and 2.
 data Event
@@ -93,30 +57,32 @@ data Event
   | SendY !Int -- ^ NAT packet sent after a system stall
   deriving Show
 
--- | Tell each machine its identity and start event loop. This is the entry-point
--- into the event loop.
-startup :: System -> [Event]
-startup = wakeNetwork (IntMap.traverseWithKey (resume . pure))
+-- | Start a network of 50 machines given the machine template. Start running
+-- by waking all machines with their network IDs. The event stream from running
+-- this network is then returned.
+startup :: Effect -> [Event]
+startup mach =
+  enq
+    (sequence (IntMap.fromList [(i, resume [i] mach) | i <- [0..49]]))
+    Queue.Empty
+    Nothing
 
--- | All the machines are waiting for input. Deliver a packet if one is ready,
--- send a NAT packet, or deliver empty inputs to all machines.
-idle :: System -> [Event]
-idle sys
-  | Just (Packet 255 x y, sys') <- pop sys = SetY  y : idle sys'{ nat = Just (x,y) }
-  | Just (Packet d   x y, sys') <- pop sys =           wakeNetwork (updateF d (resume [x,y])) sys'
-  | Just (x, y)                 <- nat sys = SendY y : wakeNetwork (updateF 0 (resume [x,y])) sys
-  | otherwise                              =           wakeNetwork (traverse  (resume [ -1])) sys
+-- | Simulation loop for a running network.
+sim ::
+  IntMap Effect    {- ^ machines on the network -} ->
+  Queue Packet     {- ^ packet delivery queue   -} ->
+  Maybe (Int, Int) {- ^ most recently stored NAT -} ->
+  [Event]          {- ^ simulation event stream -}
+sim net (Packet 255 x y :<| q) _   = SetY  y : sim net q (Just (x,y))
+sim net (Packet d   x y :<| q) nat =           enq (updateF d (resume [x,y]) net) q nat
+sim net q nat@(Just (x,y))         = SendY y : enq (updateF 0 (resume [x,y]) net) q nat
+sim net q nat                      =           enq (traverse  (resume [ -1]) net) q nat
 
--- | Update the network then return to the idle state. Any updated machines should
--- be left stalled with all packets collected.
-wakeNetwork :: (IntMap Effect -> ([Packet], IntMap Effect)) -> System -> [Event]
-wakeNetwork f (networkF f -> (ps, sys)) = idle (enq ps sys)
+-- | Helper for 'sim' that enqueues the new packets and returns to 'sim' loop.
+enq :: ([Packet], IntMap Effect) -> Queue Packet -> Maybe (Int, Int) -> [Event]
+enq (ps, net) q = sim net (Queue.appendList ps q)
 
 -- * Utilities
-
--- | Lens for 'network' field of 'System'
-networkF :: Functor f => (IntMap Effect -> f (IntMap Effect)) -> System -> f System
-networkF f sys = (\net -> sys{network = net}) <$> f (network sys)
 
 -- | Traversal for an element in an 'IntMap'.
 updateF :: Applicative f => Int -> (a -> f a) -> IntMap a -> f (IntMap a)
