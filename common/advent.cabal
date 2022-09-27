@@ -51,13 +51,13 @@ library
   build-tool-depends: alex:alex, happy:happy
 
   build-depends:
-    base             ^>= 4.15 || ^>= 4.16,
+    base             ^>= 4.15 || ^>= 4.16 || ^>=4.17,
     array            ^>= 0.5.4,
     containers       ^>= 0.6,
-    template-haskell ^>= 2.17 || ^>= 2.18,
+    template-haskell ^>= 2.17 || ^>= 2.18 || ^>= 2.19,
     MemoTrie         ^>= 0.6,
     transformers     ^>= 0.5,
-    vector           ^>= 0.12,
+    vector           ^>= 0.13,
 
 test-suite doctests
   type:          exitcode-stdio-1.0

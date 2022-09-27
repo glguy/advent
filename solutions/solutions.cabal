@@ -494,7 +494,7 @@ executable sln_2018_20
 executable sln_2018_21
   import:              day
   main-is:             2018/21.hs
-  build-depends:       containers, vector
+  build-depends:       containers, vector, inline-c
 
 executable sln_2018_22
   import:              day
@@ -586,7 +586,6 @@ executable sln_2019_14
 executable sln_2019_15
   import:              intcode
   main-is:             2019/15.hs
-  build-depends:       containers
 
 executable sln_2019_16
   import:              day
