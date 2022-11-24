@@ -370,7 +370,7 @@ executable sln_2017_20
 executable sln_2017_21
   import:              day
   main-is:             2017/21.hs
-  build-depends:       containers, split
+  build-depends:       containers
 
 executable sln_2017_22
   import:              day

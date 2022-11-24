@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, ViewPatterns #-}
+{-# Language ImportQualifiedPost, ViewPatterns, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -11,8 +11,9 @@ Maintainer  : emertens@gmail.com
 Day 21 defines a system of rewrite rules on a grid of points that are
 applied to 2x2 or 3x3 subtiles of the whole grid.
 
->>> let inputFile = ["../.# => ##./#../...",".#./..#/### => #..#/..../..../#..#"]
->>> let rules = makeRules (parseInput inputFile)
+>>> :set -XQuasiQuotes
+>>> let inputFile = "../.# => ##./#../...\n.#./..#/### => #..#/..../..../#..#\n"
+>>> let rules = makeRules ([format|- ((.|#)+!&/ => (.|#)+!&/%n)*|] inputFile)
 >>> let iterations = iterate (mapSubSquares rules) start
 
 >>> printGrid (iterations !! 0)
@@ -37,9 +38,8 @@ applied to 2x2 or 3x3 subtiles of the whole grid.
 -}
 module Main where
 
-import Advent (chunks, count, getInputLines)
+import Advent (chunks, count, format)
 import Data.List (transpose)
-import Data.List.Split (splitOn)
 import Data.Map qualified as Map
 
 -- $setup
@@ -49,7 +49,7 @@ import Data.Map qualified as Map
 -- The input file can be overridden via command-line arguments.
 main :: IO ()
 main =
-  do input <- parseInput <$> getInputLines 2017 21
+  do input <- [format|2017 21 ((.|#)+!&/ => (.|#)+!&/%n)*|]
 
      let rules      = makeRules input
          iterations = iterate (mapSubSquares rules) start
@@ -116,17 +116,3 @@ makeRules :: [(Grid,Grid)] -> Grid -> Grid
 makeRules rs =
   let rulesMap = Map.fromList [ (k',v) | (k,v) <- rs , k' <- similarSquares k ]
   in (rulesMap Map.!)
-
-
--- | Parse a string a list of grid rules.
-parseInput :: [String] -> [(Grid,Grid)]
-parseInput = map parseRule
-
-
--- | Parse a string as a rule mapping one grid to another.
---
--- >>> parseRule "../.# => ##./#../..."
--- (["..",".#"],["##.","#..","..."])
-parseRule :: String -> (Grid,Grid)
-parseRule (words -> [a,"=>",b]) = (splitOn "/" a, splitOn "/" b)
-parseRule x = error ("bad input: " ++ x)
