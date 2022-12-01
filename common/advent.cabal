@@ -56,7 +56,7 @@ library
     containers       ^>= 0.6,
     template-haskell ^>= 2.17 || ^>= 2.18 || ^>= 2.19,
     MemoTrie         ^>= 0.6,
-    transformers     ^>= 0.5,
+    transformers     ^>= 0.6,
     vector           ^>= 0.13,
 
 test-suite doctests
