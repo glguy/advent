@@ -10,7 +10,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
 import Data.List (foldl', maximumBy, delete, sortOn)
@@ -38,7 +38,7 @@ type Element = D
 data D = Dbludgeoning | Dfire | Dslashing | Dradiation | Dcold
   deriving (Eq, Ord, Show)
 
-mempty
+stageTH
 
 -- | Print the answers to day 24
 --

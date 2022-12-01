@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
 
@@ -26,7 +26,8 @@ import Data.IntMap qualified as IntMap
 -- Edges are labeled with the /cost/ of taking that edge. It costs @1@ to
 -- take a control path generated from a toggled instruction.
 data O = Onop | Ojmp | Oacc
-pure[]
+
+stageTH
 
 ------------------------------------------------------------------------
 

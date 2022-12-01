@@ -12,14 +12,15 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent.Coord
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Data.List (foldl')
 
 type Command = Either (D, Int) (T, A)
 data D = DN | DS | DE | DW | DF
 data T = TL | TR
 data A = A90 | A180 | A270
-pure[]
+
+stageTH
 
 -- | The simulation tracks the current location and the vector used
 -- when moving /forward/.

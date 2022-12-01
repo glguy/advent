@@ -23,7 +23,7 @@ can be found in 'solveInEx'.
 module Main (main) where
 
 import Advent.Box
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
 import Data.Foldable (foldl')
@@ -31,7 +31,7 @@ import Data.Foldable (foldl')
 data C = Con {- ^ lights on -} | Coff {- ^ lights off -}
   deriving (Show, Eq)
 
-mempty -- template haskell staging
+stageTH
 
 -- | >>> :main
 -- 606484

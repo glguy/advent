@@ -13,7 +13,7 @@ Implement a Turing Machine.
 -}
 module Main where
 
-import Advent.Format ( format )
+import Advent (format, stageTH)
 import Advent.Fix (Fix(Fix), anaFromMap)
 import Control.Applicative (many, some, (<|>))
 import Data.IntSet (IntSet)
@@ -23,7 +23,7 @@ import Data.Map qualified as Map
 data D = Dleft | Dright
   deriving Show
 
-mempty
+stageTH
 
 -- | Print the solution to the task. Input file can be overridden via
 -- command-line arguments.

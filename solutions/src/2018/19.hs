@@ -13,7 +13,7 @@ I finished part 2 with manual inspection, this only implements part 1.
 -}
 module Main (main) where
 
-import           Advent               (format)
+import           Advent               (format, stageTH)
 import           Data.Bits            ((.&.), (.|.))
 import           Data.IntMap          (IntMap)
 import qualified Data.IntMap.Strict          as IntMap
@@ -30,7 +30,7 @@ data C = Caddi | Caddr | Cmuli | Cmulr | Cseti | Csetr
 
 type Registers = IntMap Int
 
-mempty
+stageTH
 
 -- | Print the answers to day 19
 main :: IO ()

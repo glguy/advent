@@ -13,7 +13,7 @@ Apply light on/off/toggle commands to a grid.
 -}
 module Main where
 
-import Advent (format, countBy)
+import Advent (format, countBy, stageTH)
 import Advent.Coord ( Coord(..) )
 import Control.Monad.ST ( ST, runST )
 import Data.Array.ST
@@ -22,7 +22,7 @@ import Data.Foldable ( for_, traverse_ )
 data C = Con | Coff | Ctoggle
 data Command = Command !C Coord Coord
 
-mempty
+stageTH
 
 -- | >>> :main
 -- 377891

@@ -11,11 +11,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Data.List (sort)
 
 data H = HL | HR | HF | HB
-pure[]
+
+stageTH
 
 -- |
 -- >>> :main

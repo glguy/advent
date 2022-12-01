@@ -11,14 +11,14 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Data.List (sort)
 import Data.Map (Map)
 import Data.Map qualified as Map
 
 data T = Tbot | Toutput deriving Show
 
-mempty
+stageTH
 
 -- | >>> :main
 -- 147

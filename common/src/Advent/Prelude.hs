@@ -25,6 +25,7 @@ import Data.Map.Strict qualified as SMap
 import Data.Ord (comparing)
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Language.Haskell.TH (DecsQ)
 
 -- | Count the number of elements in a foldable value that satisfy a predicate.
 count :: (Foldable f, Eq a) => a -> f a -> Int
@@ -226,3 +227,6 @@ power (#) one n
 
 scanlM :: (Traversable t, Monad m) => (b -> a -> m (c, a)) -> a -> t b -> m (t c, a)
 scanlM f z t = runStateT (traverse (coerce f) t) z
+
+stageTH :: DecsQ
+stageTH = pure []

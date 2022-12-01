@@ -16,7 +16,7 @@ composite numbers in the range @[108100, 108117 .. 125100]@
 -}
 module Main where
 
-import Advent        (format)
+import Advent        (format, stageTH)
 import Data.Map      (Map)
 import Text.Read     (readMaybe)
 import qualified Data.Map as Map
@@ -25,7 +25,7 @@ import qualified Data.Vector as V
 data C = Cset | Cjnz | Cmul | Csub
   deriving Show
 
-mempty
+stageTH
 
 -- | >>> :main
 -- 6241

@@ -13,14 +13,15 @@ Passport validation
 -}
 module Main (main) where
 
-import Advent (countBy)
+import Advent (countBy, stageTH)
 import Advent.Format (format)
 import Data.Char (isDigit, isHexDigit)
 import Data.List (delete, sort)
 
 type Passport = [(F, String)]
 data F = Fbyr | Fiyr | Feyr | Fhgt | Fhcl | Fecl | Fpid | Fcid deriving (Eq, Ord, Show)
-pure[]
+
+stageTH
 
 -- |
 -- >>> :main

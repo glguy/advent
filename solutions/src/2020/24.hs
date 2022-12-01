@@ -13,7 +13,7 @@ Cellular automaton on a hexagonal grid
 -}
 module Main (main) where
 
-import Advent (counts, times)
+import Advent (counts, stageTH, times)
 import Advent.Coord (Coord, north, east, south, west)
 import Advent.Format (format)
 import Data.Foldable (foldl')
@@ -23,7 +23,8 @@ import Data.Set (Set)
 import Data.Set qualified as Set
 
 data D = De | Dne | Dse | Dw | Dnw | Dsw
-pure []
+
+stageTH
 
 -- |
 -- >>> :main

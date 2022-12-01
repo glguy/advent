@@ -9,7 +9,7 @@ import qualified Data.Set as Set
 
 data E = Egain | Elose deriving Show
 
-mempty
+stageTH
 
 data Edge = Edge String String
   deriving (Eq, Ord)

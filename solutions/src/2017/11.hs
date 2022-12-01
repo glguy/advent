@@ -31,13 +31,13 @@ and compute distances on it.
 -}
 module Main where
 
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Advent.Coord (Coord(..), north, east, south, west)
 import Data.List (scanl')
 
 data D = Dn | Dne | Dnw | Dse | Dsw | Ds deriving Show
 
-mempty
+stageTH
 
 -- | Print the solutions to day 11. The input file can be overridden
 -- via the command-line.

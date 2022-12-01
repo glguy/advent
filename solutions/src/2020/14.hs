@@ -36,7 +36,7 @@ in run2 [] IntMap.empty cmds
 
 module Main where
 
-import Advent.Format(format)
+import Advent (format, stageTH)
 import Data.Bits (setBit, clearBit)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
@@ -44,7 +44,8 @@ import Data.List (foldl')
 
 type Cmd = Either [M] (Int,Int)
 data M = M1 | M0 | MX deriving (Show)
-pure[]
+
+stageTH
 
 -- |
 -- >>> :main

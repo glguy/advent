@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Advent.Coord
 import Control.Applicative (liftA2)
 import Data.Foldable (asum)
@@ -27,7 +27,7 @@ import Data.Map qualified as Map
 data D = DU | DD | DL | DR
   deriving Show
 
-mempty
+stageTH
 
 -- coordinates ---------------------------------------------------------
 

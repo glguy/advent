@@ -12,18 +12,29 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format)
-import Data.Char (ord)
+import Data.Char (chr, ord)
 import Intcode (intcodeToList)
+import Debug.Trace
 
 -- | >>> :main
 -- 19355364
 -- 1142530574
 main :: IO ()
 main =
-  do inp <- [format|2019 21 %d&,%n|]
-     let letsGo = print . last . intcodeToList inp . map ord
-     letsGo part1
-     letsGo part2
+ do inp <- [format|2019 21 %d&,%n|]
+    let letsGo = print . last . intcodeToList inp . map ord
+    letsGo part1
+    letsGo part2
+    print $ eval inp ["NOT A J", "WALK"]
+
+eval :: [Int] -> [String] -> Either String Int
+eval pgm input
+  | counter:_ <- filter ('#' `elem`) outLines = Left counter
+  | otherwise = Right (last outs)
+  where
+    outs = intcodeToList pgm (map ord (unlines input))
+    outLines = lines (traceId (map chr outs))
+
 
 -- !(A ∧ C) ∧ D   # test cases didn't need B to be checked
 part1 :: String

@@ -15,13 +15,13 @@ in variables during execution.
 -}
 module Main where
 
-import Advent       (format)
+import Advent       (format, stageTH)
 import Data.Map     (Map)
 import Control.Lens (Lens', at, folded, non, over, maximumOf, view)
 
 data C = Cinc | Cdec deriving Show
 
-mempty
+stageTH
 
 -- | Compute solution to Day 8. Input file can be overridden with command-line
 -- arguments.

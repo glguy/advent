@@ -11,14 +11,14 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent (arrIx, format)
+import Advent (arrIx, format, stageTH)
 import Advent.Coord (Coord(..), east, north, origin, south, west)
 import Data.Foldable (foldl')
 import Data.Array (Array, (!), listArray)
 
 data D = DL | DR | DU | DD
 
-mempty
+stageTH
 
 -- | >>> :main
 -- 97289

@@ -11,14 +11,14 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent (format)
+import Advent (format, stageTH)
 import Advent.Coord (Coord, manhattan, north, origin, turnLeft, turnRight)
 import Data.List (mapAccumL)
 import Data.Set qualified as Set
 
 data D = DL | DR
 
-mempty
+stageTH
 
 -- | >>> :main
 -- 241

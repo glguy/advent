@@ -13,13 +13,13 @@ Implement a simple submarine piloting/aiming command interpreter.
 -}
 module Main (main) where
 
-import Advent (format)
+import Advent (format, stageTH)
 import Data.Foldable (foldMap')
 
 -- | Three possible commands a submarine can receive.
 data C = Cforward | Cdown | Cup
 
-mempty -- puts C into view of format's reify below
+stageTH
 
 -- | >>> :main
 -- 1636725

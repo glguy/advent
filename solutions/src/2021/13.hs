@@ -15,13 +15,13 @@ we fold and fold and fold and find our secret code.
 module Main (main) where
 
 import Advent.Coord (Coord(C), drawCoords)
-import Advent.Format (format)
+import Advent (format, stageTH)
 import Data.Set (Set)
 import Data.Set qualified as Set
 
 data A = Ax | Ay deriving (Show)
 
-mempty -- template haskell staging
+stageTH -- template haskell staging
 
 -- | >>> :main
 -- 716
