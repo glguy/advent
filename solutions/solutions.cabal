@@ -884,3 +884,7 @@ executable sln_2022_01
 executable sln_2022_02
   import:              day
   main-is:             2022/02.hs
+
+executable sln_2022_03
+  import:              day
+  main-is:             2022/03.hs
