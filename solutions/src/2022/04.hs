@@ -1,5 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell, BlockArguments, LambdaCase, ImportQualifiedPost #-}
-{-# OPTIONS_GHC -w #-}
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 4 solution
@@ -12,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent
+import Advent ( format, countBy )
 
 -- |
 -- > :main
