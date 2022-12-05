@@ -22,17 +22,18 @@ import Advent (format)
 main :: IO ()
 main = do
     (toppart, commands) <- [format|2022 5 (%c+%n)*%n(move %u from %c to %c%n)*|]
-    let columns = parseColumns toppart
-    putStrLn $ map head $ Map.elems $ foldl (apply reverse) columns commands
-    putStrLn $ map head $ Map.elems $ foldl (apply id     ) columns commands
+    let stacks = parseStacks toppart
+    let solve f = map head (Map.elems (foldl (apply f) stacks commands))
+    putStrLn (solve reverse)
+    putStrLn (solve id     )
 
 apply :: Ord k => ([a] -> [a]) -> Map k [a] -> (Int, k, k) -> Map k [a]
-apply f columns (n, fr, to) =
-    let (a,b) = splitAt n (columns Map.! fr) in
-    Map.adjust (f a ++) to (Map.insert fr b columns)
+apply f stacks (n, fr, to) =
+    case Map.alterF (traverse (splitAt n)) fr stacks of
+        (a, m) -> Map.adjust (f a ++) to m
 
-parseColumns :: [String] -> Map Char String
-parseColumns strs =
+parseStacks :: [String] -> Map Char String
+parseStacks strs =
     Map.fromList
         [(n, dropWhile (' '==) (reverse row))
             | n:row <- map reverse (transpose strs)
