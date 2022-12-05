@@ -1,5 +1,4 @@
 {-# Language QuasiQuotes, ImportQualifiedPost #-}
-{-# OPTIONS_GHC -w #-}
 {-|
 Module      : Main
 Description : Day 5 solution
@@ -12,7 +11,6 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Data.Char (isDigit, digitToInt)
 import Data.List (transpose)
 import Data.Map (Map)
 import Data.Map qualified as Map
