@@ -15,7 +15,7 @@ import Advent (format, countBy)
 import Data.Ix (inRange)
 
 -- |
--- > :main
+-- >>> :main
 -- 584
 -- 933
 main :: IO ()
