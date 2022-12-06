@@ -11,7 +11,8 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent ( format, countBy )
+import Advent (format, countBy)
+import Data.Ix (inRange)
 
 -- |
 -- > :main
@@ -22,6 +23,3 @@ main =
  do input <- [format|2022 4 (%u-%u,%u-%u%n)*|]
     print $ countBy (\(a,b,c,d) -> inRange (a,b) c && inRange (a,b) d || inRange (c,d) a && inRange (c,d) b) input
     print $ countBy (\(a,b,c,d) -> inRange (a,b) c || inRange (a,b) d || inRange (c,d) a || inRange (c,d) b) input
-
-inRange :: Ord a => (a, a) -> a -> Bool
-inRange (a,b) x = a <= x && x <= b
