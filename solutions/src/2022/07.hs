@@ -28,14 +28,14 @@ main =
       |dir %s%n)*)*|]
 
     let allFiles = simulate [] input
-    let dirTree = Map.fromListWith (+) [(d',n) | (d,n) <- allFiles, d' <- inits d]
+    let dirSizes = Map.elems (Map.fromListWith (+) [(d',n) | (d,n) <- allFiles, d' <- inits d])
 
     -- part 1
-    print (sum [n | n <- Map.elems dirTree, n <= 100000])
+    print (sum [n | n <- dirSizes, n <= 100000])
 
     -- part 2
     let totalUsed = sum [n | (_,n) <- allFiles]
-    print $ minimum [freed | (_,freed) <- Map.assocs dirTree,
+    print $ minimum [freed | freed <- dirSizes,
                              70000000 - totalUsed + freed >= 30000000 ]
 
 -- | Given a list of cd commands and directory lists, generate a list
