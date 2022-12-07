@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, NumericUnderscores #-}
 {-|
 Module      : Main
 Description : Day 7 solution
@@ -31,12 +31,11 @@ main =
     let dirSizes = Map.elems (Map.fromListWith (+) [(d',n) | (d,n) <- allFiles, d' <- inits d])
 
     -- part 1
-    print (sum [n | n <- dirSizes, n <= 100000])
+    print (sum [n | n <- dirSizes, n <= 100_000])
 
     -- part 2
     let totalUsed = sum [n | (_,n) <- allFiles]
-    print $ minimum [freed | freed <- dirSizes,
-                             70000000 - totalUsed + freed >= 30000000 ]
+    print $ minimum [freed | freed <- dirSizes, 70_000_000 - totalUsed >= 30_000_000 - freed ]
 
 -- | Given a list of cd commands and directory lists, generate a list
 -- of files contained alongside the file sizes.
