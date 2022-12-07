@@ -8,16 +8,24 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/7>
 
+The immediate size of a directory is the list of the files
+contained in it directly, while the total size includes the
+files that are contained within subdirectories.
+
 -}
 module Main where
 
 import Data.Map qualified as Map
-import Data.List (inits)
+import Data.List (tails)
 
 import Advent (format)
 
 -- | File paths are represented as a list of directory components
+-- in reverse order to make it quicker to manipulate.
 type Path = [String]
+
+-- | The input is a list of directory change commands and directory listings.
+type Input = [Either String [Either (Int, String) String]]
 
 main :: IO ()
 main =
@@ -27,24 +35,29 @@ main =
       (%u %s%n
       |dir %s%n)*)*|]
 
-    let allFiles = simulate [] input
-    let dirSizes = Map.elems (Map.fromListWith (+) [(d',n) | (d,n) <- allFiles, d' <- inits d])
+    let dirs = summarizeLs [] input
+    let totalSizes = lsToTotalSizes dirs
 
     -- part 1
-    print (sum [n | n <- dirSizes, n <= 100_000])
+    print (sum [n | n <- totalSizes, n <= 100_000])
 
     -- part 2
-    let totalUsed = sum [n | (_,n) <- allFiles]
-    print $ minimum [freed | freed <- dirSizes, 70_000_000 - totalUsed >= 30_000_000 - freed ]
+    let totalUsed = sum [n | (_,n) <- dirs]
+    print $ minimum [freed | freed <- totalSizes, 70_000_000 - totalUsed >= 30_000_000 - freed ]
+
+-- | Generate all the total sizes that directories have given the list of
+-- just the immediate sizes.
+lsToTotalSizes :: [(Path, Int)] -> [Int]
+lsToTotalSizes dirs = Map.elems (Map.fromListWith (+) [(d',n) | (d,n) <- dirs, d' <- tails d])
 
 -- | Given a list of cd commands and directory lists, generate a list
 -- of directories and total size of immediate files.
-simulate ::
+summarizeLs ::
   Path {- ^ current working directory components -} ->
-  [Either String [Either (Int, String) String]] {- ^ list of either a cd or a directory listing -} ->
+  Input ->
   [(Path, Int)] {- ^ list of directories and their immediate sizes -}
-simulate _   [] = []
-simulate _   (Left "/"   : xs) = simulate [] xs
-simulate cwd (Left ".."  : xs) = simulate (init cwd) xs
-simulate cwd (Left dir   : xs) = simulate (cwd ++ [dir]) xs
-simulate cwd (Right list : xs) = (cwd, sum [n | Left (n,_) <- list]) : simulate cwd xs
+summarizeLs _   [] = []
+summarizeLs _   (Left "/"   : xs) = summarizeLs [] xs
+summarizeLs cwd (Left ".."  : xs) = summarizeLs (drop 1 cwd) xs
+summarizeLs cwd (Left dir   : xs) = summarizeLs (dir : cwd) xs
+summarizeLs cwd (Right list : xs) = (cwd, sum [n | Left (n,_) <- list]) : summarizeLs cwd xs
