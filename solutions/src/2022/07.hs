@@ -27,6 +27,10 @@ type Path = [String]
 -- | The input is a list of directory change commands and directory listings.
 type Input = [Either String [Either (Int, String) String]]
 
+-- |
+-- >>> :main
+-- 1477771
+-- 3579501
 main :: IO ()
 main =
  do input <- [format|2022 7
@@ -42,18 +46,18 @@ main =
     print (sum [n | n <- totalSizes, n <= 100_000])
 
     -- part 2
-    let totalUsed = sum [n | (_,n) <- dirs]
-    print $ minimum [freed | freed <- totalSizes, 70_000_000 - totalUsed >= 30_000_000 - freed ]
+    let minNeeded = sum [n | (_,n) <- dirs] + 30_000_000 - 70_000_000
+    print (minimum [n | n <- totalSizes, n >= minNeeded])
 
--- | Generate all the total sizes that directories have given the list of
--- just the immediate sizes.
+-- | Generate all the total sizes of directories given the list of
+-- immediate sizes of directories.
 lsToTotalSizes :: [(Path, Int)] -> [Int]
 lsToTotalSizes dirs = Map.elems (Map.fromListWith (+) [(d',n) | (d,n) <- dirs, d' <- tails d])
 
 -- | Given a list of cd commands and directory lists, generate a list
 -- of directories and total size of immediate files.
 summarizeLs ::
-  Path {- ^ current working directory components -} ->
+  Path {- ^ current working directory -} ->
   Input ->
   [(Path, Int)] {- ^ list of directories and their immediate sizes -}
 summarizeLs _   [] = []
