@@ -1,0 +1,43 @@
+{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-|
+Module      : Main
+Description : Day 7 solution
+Copyright   : (c) Eric Mertens, 2022
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2022/day/7>
+
+-}
+module Main where
+
+import Data.Map qualified as Map
+import Data.List (inits)
+
+import Advent (format)
+
+main :: IO ()
+main =
+ do input <- [format|2022 7
+      ($ cd %s%n
+      |$ ls%n
+      (%u %s%n
+      |dir %s%n)*)*|]
+    
+    let allFiles = simulate [] input
+    let dirTree = Map.fromListWith (+) [(d',n) | (d,n) <- allFiles, d' <- inits d]
+    
+    -- part 1
+    print (sum [n | n <- Map.elems dirTree, n <= 100000])
+
+    -- part 2
+    let totalUsed = sum [n | (_,n) <- allFiles]
+    print $ minimum [freed | (_,freed) <- Map.assocs dirTree,
+                             70000000 - totalUsed + freed >= 30000000 ]
+    
+simulate :: [String] -> [Either String [Either (Int, String) String]] -> [([String], Int)]
+simulate _   [] = []
+simulate _ (Left "/"  : xs) = simulate [] xs
+simulate cwd (Left ".." : xs) = simulate (init cwd) xs
+simulate cwd (Left dir  : xs) = simulate (cwd ++ [dir]) xs
+simulate cwd (Right list : xs) = (cwd, sum [n | Left (n,_) <- list]) : simulate cwd xs
