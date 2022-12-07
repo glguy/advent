@@ -38,11 +38,11 @@ main =
     print $ minimum [freed | freed <- dirSizes, 70_000_000 - totalUsed >= 30_000_000 - freed ]
 
 -- | Given a list of cd commands and directory lists, generate a list
--- of files contained alongside the file sizes.
+-- of directories and total size of immediate files.
 simulate ::
   Path {- ^ current working directory components -} ->
   [Either String [Either (Int, String) String]] {- ^ list of either a cd or a directory listing -} ->
-  [(Path, Int)] {- ^ list of files and their sizes -}
+  [(Path, Int)] {- ^ list of directories and their immediate sizes -}
 simulate _   [] = []
 simulate _   (Left "/"   : xs) = simulate [] xs
 simulate cwd (Left ".."  : xs) = simulate (init cwd) xs
