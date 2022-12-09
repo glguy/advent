@@ -78,6 +78,7 @@ stepRope ::
   C       {- ^ next step direction    -} ->
   [Coord] {- ^ updated knot locations -}
 stepRope (x:xs) c = updateTails (cToVec c + x) xs
+stepRope []     _ = []
 
 -- | Update all the tail knots in the rope given a new head position.
 updateTails ::
