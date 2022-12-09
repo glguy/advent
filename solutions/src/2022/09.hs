@@ -13,6 +13,7 @@ module Main where
 
 import Advent (format, stageTH)
 import Advent.Coord (Coord(..), origin, east, north, south, west)
+import Data.List (transpose)
 import Data.Set qualified as Set
 
 -- | Rope movement instructions
@@ -34,17 +35,18 @@ stageTH
 main :: IO ()
 main = do
     input <- [format|2022 9 (@C %u%n)*|]
-    let knots = infiniteRope (concatMap expand input)
-    print (length (Set.fromList (knots !! 1)))
-    print (length (Set.fromList (knots !! 9)))
+    let knots = uniqueLocations (concatMap expand input)
+    print (knots !! 1)
+    print (knots !! 9)
 
--- | Generate a stream of lists, one for each knot in the rope.
--- Each list contains the coordinates of that knot at each time step.
-infiniteRope :: [C] -> [[Coord]]
-infiniteRope
-  = iterate (scanl1 updateTail)  -- repeatedly apply tail update operation
-  . scanl (+) origin             -- compute partial sums of steps
-  . map cToVec                   -- convert input commands to step vectors
+-- | Generate the number of unique locations each knot in an infinitely long
+-- rope visits give a list of step commands
+uniqueLocations :: [C] -> [Int]
+uniqueLocations = map countUnique . transpose . scanl stepRope (repeat origin)
+
+-- | Return the number of unique elements in a list.
+countUnique :: Ord a => [a] -> Int
+countUnique = length . Set.fromList
 
 -- | Replicate the first element second element number of times.
 --
@@ -60,17 +62,6 @@ cToVec CD = south
 cToVec CR = east
 cToVec CL = west
 
--- | Compute the next tail position given an updated head position.
-updateTail ::
-  Coord {- ^ old tail -} ->
-  Coord {- ^ new head -} ->
-  Coord {- ^ new tail -} 
-updateTail tailKnot headKnot
-  | isNearOrigin delta = tailKnot
-  | otherwise          = tailKnot + signum delta
-  where
-    delta = headKnot - tailKnot
-
 -- | Predicate for coordinates at or adjacent to the origin.
 --
 -- >>> all isNearOrigin [C y x | y <- [-1..1], x <- [-1..1]]
@@ -80,3 +71,22 @@ updateTail tailKnot headKnot
 -- False
 isNearOrigin :: Coord -> Bool
 isNearOrigin (C y x) = abs x < 2 && abs y < 2
+
+-- | Update all the knot locations in a rope given a step direction for the head knot.
+stepRope ::
+  [Coord] {- ^ knot locations         -} ->
+  C       {- ^ next step direction    -} ->
+  [Coord] {- ^ updated knot locations -}
+stepRope (x:xs) c = updateTails (cToVec c + x) xs
+
+-- | Update all the tail knots in the rope given a new head position.
+updateTails ::
+  Coord   {- ^ head         -} ->
+  [Coord] {- ^ tails        -} ->
+  [Coord] {- ^ updated rope -}
+updateTails h [] = [h]
+updateTails h (t : ts)
+  | isNearOrigin delta = h : t : ts -- once a knot is stationary, the rest will be, too
+  | otherwise          = h : updateTails (t + signum delta) ts
+  where
+    delta = h - t
