@@ -228,5 +228,8 @@ power (#) one n
 scanlM :: (Traversable t, Monad m) => (b -> a -> m (c, a)) -> a -> t b -> m (t c, a)
 scanlM f z t = runStateT (traverse (coerce f) t) z
 
+-- | Helper for putting declarations into scope for future Template Haskell
+-- expressions. In particular this gets used so that the format quasiquoter
+-- can see data types that it might want to parse.
 stageTH :: DecsQ
 stageTH = pure []
