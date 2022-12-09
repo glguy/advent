@@ -38,12 +38,10 @@ expand :: (a, Int) -> [a]
 expand (x,n) = replicate n x
 
 drive :: Coord -> C -> Coord
-drive here move =
-    case move of
-        CD -> below here
-        CU -> above here
-        CL -> left  here
-        CR -> right here
+drive here CD = below here
+drive here CU = above here
+drive here CL = left  here
+drive here CR = right here
 
 updateTail ::
   Coord {- ^ tail -} ->
