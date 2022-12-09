@@ -27,7 +27,7 @@ main = do
     input <- [format|2022 9 (@C %u%n)*|]
     let fullInput = concatMap expand input
     let headPath = scanl drive origin fullInput
-    let tailPaths = iterate (scanl updateTail origin) headPath
+    let tailPaths = iterate (scanl1 updateTail) headPath
     print (length (ordNub (tailPaths !! 1)))
     print (length (ordNub (tailPaths !! 9)))
 
