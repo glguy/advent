@@ -61,7 +61,7 @@ summarizeLs ::
   Input ->
   [(Path, Int)] {- ^ list of directories and their immediate sizes -}
 summarizeLs _   [] = []
-summarizeLs _   (Left "/"   : xs) = summarizeLs [] xs
-summarizeLs cwd (Left ".."  : xs) = summarizeLs (drop 1 cwd) xs
-summarizeLs cwd (Left dir   : xs) = summarizeLs (dir : cwd) xs
-summarizeLs cwd (Right list : xs) = (cwd, sum [n | Left (n,_) <- list]) : summarizeLs cwd xs
+summarizeLs _   (Left "/"  : xs) = summarizeLs [] xs
+summarizeLs cwd (Left ".." : xs) = summarizeLs (drop 1 cwd) xs
+summarizeLs cwd (Left dir  : xs) = summarizeLs (dir : cwd) xs
+summarizeLs cwd (Right ls  : xs) = (cwd, sum [n | Left (n,_) <- ls]) : summarizeLs cwd xs

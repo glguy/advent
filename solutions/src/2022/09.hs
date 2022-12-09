@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell #-}
+{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 9 solution
@@ -13,6 +13,7 @@ module Main where
 
 import Advent ( format, ordNub, stageTH )
 import Advent.Coord ( above, below, left, origin, right, Coord(C) )
+import Data.Set qualified as Set
 
 data C = CD | CR | CU | CL deriving Show
 
@@ -25,11 +26,13 @@ stageTH
 main :: IO ()
 main = do
     input <- [format|2022 9 (@C %u%n)*|]
-    let fullInput = concatMap expand input
-    let headPath = scanl drive origin fullInput
-    let tailPaths = iterate (scanl1 updateTail) headPath
-    print (length (ordNub (tailPaths !! 1)))
-    print (length (ordNub (tailPaths !! 9)))
+    let knots = infiniteRope (concatMap expand input)
+    print (length (Set.fromList (knots !! 1)))
+    print (length (Set.fromList (knots !! 9)))
+
+-- | Generate a stream of lists, one for each knot in the rope.
+infiniteRope :: [C] -> [[Coord]]
+infiniteRope = iterate (scanl1 updateTail) . scanl drive origin
 
 expand :: (a, Int) -> [a]
 expand (x,n) = replicate n x
@@ -46,12 +49,9 @@ updateTail ::
   Coord {- ^ tail -} ->
   Coord {- ^ head -} ->
   Coord
-updateTail t@(C ty tx) (C hy hx)
+updateTail t@(C ty tx) h@(C hy hx)
   | touching ty hy, touching tx hx = t
-  | otherwise = C (closer ty hy) (closer tx hx)
+  | otherwise = t + signum (h-t)
 
 touching :: Int -> Int -> Bool
 touching x y = abs (x - y) < 2
-
-closer :: Int -> Int -> Int
-closer ty hy = signum (hy - ty) + ty
