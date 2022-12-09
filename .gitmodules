@@ -1,3 +1,3 @@
 [submodule "intcode"]
 	path = intcode
-	url = git@github.com:glguy/intcode
+	url = https://github.com:glguy/intcode
