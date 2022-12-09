@@ -16,6 +16,9 @@ files that are contained within subdirectories.
 module Main where
 
 import Data.Map qualified as Map
+import Data.Tree (Tree(..))
+import Data.Tree qualified as Tree
+import Data.List.NonEmpty (NonEmpty(..), (<|))
 import Data.List (tails)
 
 import Advent (format)
@@ -39,14 +42,14 @@ main =
       (%u %s%n
       |dir %s%n)*)*|]
 
-    let dirs = summarizeLs [] input
-    let totalSizes = lsToTotalSizes dirs
+    -- the root directory will always be the first entry
+    let totalSizes = lsToTotalSizes (summarizeLs [] input)
 
     -- part 1
     print (sum [n | n <- totalSizes, n <= 100_000])
 
     -- part 2
-    let minNeeded = sum [n | (_,n) <- dirs] + 30_000_000 - 70_000_000
+    let minNeeded = head totalSizes + 30_000_000 - 70_000_000
     print (minimum [n | n <- totalSizes, n >= minNeeded])
 
 -- | Generate all the total sizes of directories given the list of
