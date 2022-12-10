@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell, BlockArguments, LambdaCase, ImportQualifiedPost #-}
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 10 solution
