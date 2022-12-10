@@ -12,7 +12,17 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (chunks, format)
- 
+
+-- | Process input file to print day 10 solution
+--
+-- >>> :main
+-- 14360
+-- ███░░░██░░█░░█░░██░░████░███░░████░████░
+-- █░░█░█░░█░█░█░░█░░█░█░░░░█░░█░█░░░░░░░█░
+-- ███░░█░░░░██░░░█░░█░███░░█░░█░███░░░░█░░
+-- █░░█░█░██░█░█░░████░█░░░░███░░█░░░░░█░░░
+-- █░░█░█░░█░█░█░░█░░█░█░░░░█░█░░█░░░░█░░░░
+-- ███░░░███░█░░█░█░░█░████░█░░█░████░████░
 main :: IO ()
 main =
  do input <- [format|2022 10 ((noop|addx %d)%n)*|]
@@ -27,7 +37,7 @@ main =
 execute :: [Maybe Int] -> [Int]
 execute = go 1
   where
-    go _ []             = []
+    go x []             = [x]
     go x (Nothing : xs) = x :     go x xs
     go x (Just d  : xs) = x : x : go (d+x) xs
 
@@ -39,4 +49,4 @@ isNear x y = abs (x - y) <= 1
 -- 40 character lines.
 crt :: [Int] -> String
 crt xs = unlines [ [if near then '█' else '░' | near <- zipWith isNear [0..] row]
-                 | row <- chunks 40 xs]
+                 | row <- take 6 (chunks 40 xs)]
