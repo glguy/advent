@@ -18,6 +18,7 @@ import Data.Array.Unboxed qualified as A
 import Data.Map (Map)
 import Data.Map.Strict qualified as SMap
 import System.Environment (getArgs)
+import System.IO (hPutStrLn, stderr)
 import Text.Printf (printf)
 
 -- | Get the input for the given day.
@@ -33,7 +34,7 @@ getRawInput y d =
   do args <- getArgs
      case args of
        []    -> readFile (printf "inputs/%d/%02d.txt" y d)
-       "-":_ -> getContents
+       "-":_ -> hPutStrLn stderr "Ready!" >> getContents
        fn:_  -> readFile fn
 
 -- | Default input filename given a day number

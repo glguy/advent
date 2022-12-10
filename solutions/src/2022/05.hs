@@ -19,8 +19,8 @@ import Data.Map qualified as Map
 import Advent (format)
 
 main :: IO ()
-main = do
-    (toppart, labels, commands) <- [format|2022 5
+main =
+ do (toppart, labels, commands) <- [format|2022 5
         ((   |[%c])& %n)*
         ( %c )& %n
         %n

@@ -39,8 +39,8 @@ stageTH
 -- 5930
 -- 2443
 main :: IO ()
-main = do
-    input <- [format|2022 9 (@C %u%n)*|]
+main =
+ do input <- [format|2022 9 (@C %u%n)*|]
     let knots = uniqueLocations input
     print (knots !! 1)
     print (knots !! 9)
