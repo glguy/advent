@@ -44,7 +44,7 @@ data Packet = Packet !Int !Int !Int -- ^ destination, x, y
 -- | Deliver the inputs to a machine expecting them, then collect all
 -- emitted packets returning a machine once-again waiting for inputs.
 resume :: Int -> Int -> Effect -> ([Packet], Effect)
-resume x y (Input (($x) -> Input (($y) -> e))) = gather e
+resume x y (Input (($ x) -> Input (($ y) -> e))) = gather e
 resume _ _ _ = error "resume: machine out of sync"
 
 -- | Collect all packets the machine is ready to emit returning it to a blocked state.

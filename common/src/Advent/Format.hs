@@ -58,17 +58,14 @@ import Advent.Prelude (countBy)
 import Advent.Input (getRawInput)
 import Advent.Format.Lexer ( alexScanTokens, AlexPosn(..) )
 import Advent.Format.Parser (parseFormat, ParseError(..) )
-import Advent.Format.Types ( interesting, Format(..), acceptsEmpty, showFormat, showToken )
+import Advent.Format.Types
 import Control.Applicative ((<|>), some)
-import Control.Monad ( (<=<) )
+import Control.Monad ( (<=<))
 import Data.Char ( isDigit, isSpace, isUpper )
 import Data.Maybe ( listToMaybe )
-import Data.Traversable ( for )
-import Data.List (stripPrefix)
 import Language.Haskell.TH
 import Language.Haskell.TH.Quote ( QuasiQuoter(..) )
 import Text.ParserCombinators.ReadP
-import Text.Read (readMaybe)
 
 parse :: String -> Q Format
 parse txt =
@@ -95,7 +92,7 @@ prepare str =
   case lines str of
     []   -> fail "Empty input format"
     [x]
-      | Just (yd, str) <- splitLeader x -> pure (yd, str)
+      | Just (yd, str') <- splitLeader x -> pure (yd, str')
       | otherwise -> fail "Failed to parse single-line input pattern"
     x:xs
       | Just (yd, "") <- splitLeader x ->
@@ -139,20 +136,26 @@ toReadP s =
     Letter    -> [| satisfy (\x -> 'a' <= x && x <= 'z' || 'A' <= x && x <= 'Z') |]
     Word      -> [| some (satisfy (not . isSpace)) |]
 
-    Many x
-      | acceptsEmpty x -> fail ("Argument to * accepts ε: " ++ showFormat 0 s "")
-      | interesting x -> [|       many $(toReadP x) |]
-      | otherwise     -> [| () <$ many $(toReadP x) |]
+    Many x ->
+     do whenM (acceptsEmpty x) (fail ("Argument to * accepts ε: " ++ showFormat 0 s ""))
+        if interesting x then
+          [|       many $(toReadP x) |]
+        else
+          [| () <$ many $(toReadP x) |]
 
-    Some x
-      | acceptsEmpty x -> fail ("Argument to + accepts ε: " ++ showFormat 0 s "")
-      | interesting x -> [|       some $(toReadP x) |]
-      | otherwise     -> [| () <$ some $(toReadP x) |]
+    Some x ->
+     do whenM (acceptsEmpty x) (fail ("Argument to + accepts ε: " ++ showFormat 0 s ""))
+        if interesting x then
+          [|       some $(toReadP x) |]
+        else
+          [| () <$ some $(toReadP x) |]
 
-    SepBy x y
-      | acceptsEmpty x, acceptsEmpty y -> fail ("Both arguments to & accept ε: " ++ showFormat 0 s "")
-      | interesting x -> [|       sepBy $(toReadP x) $(toReadP y) |]
-      | otherwise     -> [| () <$ sepBy $(toReadP x) $(toReadP y) |]
+    SepBy x y ->
+     do whenM (andM (acceptsEmpty x) (acceptsEmpty y)) (fail ("Both arguments to & accept ε: " ++ showFormat 0 s ""))
+        if interesting x then
+          [|       sepBy $(toReadP x) $(toReadP y) |]
+        else
+          [| () <$ sepBy $(toReadP x) $(toReadP y) |]
 
     Alt x y
       | xi, yi    -> [| Left    <$> $xp <|> Right   <$> $yp |]
@@ -164,6 +167,8 @@ toReadP s =
         yi = interesting y
         xp = toReadP x
         yp = toReadP y
+    
+    Group x -> toReadP x
 
     _ ->
       case [(interesting x, toReadP x) | x <- follows s []] of
@@ -200,20 +205,26 @@ toType fmt =
     Letter    -> [t| Char |]
     Word      -> [t| String |]
 
-    Many x
-      | acceptsEmpty x -> fail ("Argument to * accepts ε: " ++ showFormat 0 fmt "")
-      | interesting x -> [t| [$(toType x)] |]
-      | otherwise     -> [t| () |]
+    Many x ->
+     do whenM (acceptsEmpty x) (fail ("Argument to * accepts ε: " ++ showFormat 0 fmt ""))
+        if interesting x then
+          [t| [$(toType x)] |]
+        else
+          [t| () |]
 
-    Some x
-      | acceptsEmpty x -> fail ("Argument to + accepts ε: " ++ showFormat 0 fmt "")
-      | interesting x -> [t| [$(toType x)] |]
-      | otherwise     -> [t| () |]
+    Some x ->
+     do whenM (acceptsEmpty x) (fail ("Argument to + accepts ε: " ++ showFormat 0 fmt ""))
+        if interesting x then
+          [t| [$(toType x)] |]
+        else
+          [t| () |]
 
-    SepBy x y
-      | acceptsEmpty x, acceptsEmpty y -> fail ("Both arguments to & accept ε: " ++ showFormat 0 fmt "")
-      | interesting x -> [t| [$(toType x)] |]
-      | otherwise     -> [t| () |]
+    SepBy x y ->
+     do whenM (andM (acceptsEmpty x) (acceptsEmpty y)) (fail ("Both arguments to & accept ε: " ++ showFormat 0 fmt ""))
+        if interesting x then
+          [t| [$(toType x)] |]
+        else
+          [t| () |]
 
     Alt x y
       | xi, yi    -> [t| Either $xt $yt |]
@@ -225,6 +236,8 @@ toType fmt =
         yi = interesting y
         xt = toType x
         yt = toType y
+    
+    Group x -> toType x
 
     _ ->
       case [toType x | x <- follows fmt [], interesting x] of
@@ -244,22 +257,7 @@ follows x            zs               = x : zs
 
 enumParser :: String -> ExpQ
 enumParser nameStr =
-  do tyName <- maybe (fail ("Failed to find type named " ++ show nameStr)) pure
-           =<< lookupTypeName nameStr
-
-     info <- reify tyName
-     cons <-
-       case info of
-         TyConI (DataD _ _ _ _ cons _) -> pure cons
-         _ -> fail ("Failed to find data declaration for " ++ show nameStr)
-
-     entries <-
-       for cons \con ->
-         case con of
-           NormalC name []
-             | Just str <- stripPrefix nameStr (nameBase name) ->
-                pure (name, str)
-           _ -> fail ("Unsupported constructor: " ++ show con)
+  do entries <- enumCases nameStr
 
      let parsers = [[| $(conE name) <$ string str |] | (name, str) <- entries]
 

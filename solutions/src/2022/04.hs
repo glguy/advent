@@ -21,5 +21,5 @@ import Data.Ix (inRange)
 main :: IO ()
 main =
  do input <- [format|2022 4 (%u-%u,%u-%u%n)*|]
-    print $ countBy (\(a,b,c,d) -> inRange (a,b) c && inRange (a,b) d || inRange (c,d) a && inRange (c,d) b) input
+    print $ countBy (\(a,b,c,d) -> a <= c && d <= b || c <= a && b <= d) input
     print $ countBy (\(a,b,c,d) -> inRange (a,b) c || inRange (a,b) d || inRange (c,d) a || inRange (c,d) b) input

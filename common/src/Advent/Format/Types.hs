@@ -1,4 +1,10 @@
+{-# Language BlockArguments #-}
 module Advent.Format.Types where
+
+import Language.Haskell.TH
+import Data.Traversable (for)
+import Data.List (stripPrefix)
+import Control.Monad (when)
 
 data Token
   = TOpenGroup
@@ -31,6 +37,8 @@ data Format
   -- return matched string
   | Gather Format
   | Named String
+  -- explicit grouping to allow subtuples
+  | Group Format
   -- primitives
   | Literal String
   | UnsignedInteger
@@ -48,6 +56,7 @@ interesting s =
     Many x              -> interesting x
     Some x              -> interesting x
     SepBy x _           -> interesting x
+    Group x             -> interesting x
     Alt x y             -> interesting x || interesting y
     Follow x y          -> interesting x || interesting y
     Empty               -> False
@@ -62,25 +71,36 @@ interesting s =
     Named{}             -> True
     Literal{}           -> False
 
-acceptsEmpty :: Format -> Bool
+acceptsEmpty :: Format -> Q Bool
 acceptsEmpty fmt =
   case fmt of
-    Many _              -> True
+    Many _              -> pure True
     Some x              -> acceptsEmpty x
-    SepBy _ _           -> True
-    Alt x y             -> acceptsEmpty x || acceptsEmpty y
-    Follow x y          -> acceptsEmpty x && acceptsEmpty y
-    Empty               -> True
-    UnsignedInteger     -> False
-    SignedInteger       -> False
-    UnsignedInt         -> False
-    SignedInt           -> False
-    Word                -> False
-    Char                -> False
-    Letter              -> False
+    SepBy _ _           -> pure True
+    Alt x y             -> orM  (acceptsEmpty x) (acceptsEmpty y)
+    Follow x y          -> andM (acceptsEmpty x) (acceptsEmpty y)
+    Empty               -> pure True
+    UnsignedInteger     -> pure False
+    SignedInteger       -> pure False
+    UnsignedInt         -> pure False
+    SignedInt           -> pure False
+    Word                -> pure False
+    Char                -> pure False
+    Letter              -> pure False
     Gather x            -> acceptsEmpty x
-    Named{}             -> False
-    Literal x           -> null x
+    Group x             -> acceptsEmpty x
+    Literal x           -> pure (null x)
+    Named name          -> do cases <- enumCases name
+                              pure (any (\(_, str) -> null str) cases)
+
+whenM :: Monad m => m Bool -> m () -> m ()
+whenM pm m = pm >>= \p -> when p m
+
+andM :: Monad m => m Bool -> m Bool -> m Bool
+andM x y = x >>= \b -> if b then y else pure False
+
+orM :: Monad m => m Bool -> m Bool -> m Bool
+orM  x y = x >>= \b -> if b then pure True else y
 
 -- | Render a parsed format string back to the input syntax.
 showFormat :: Int {- ^ surrounding precedence -} -> Format -> ShowS 
@@ -93,6 +113,7 @@ showFormat p fmt =
     Alt x y             -> showParen (p > 1) $ showFormat 1 x . showChar '|' . showFormat 2 y
     Follow x y          -> showParen (p > 2) $ showFormat 2 x . showFormat 3 y
     Empty               -> showParen (p > 2) id
+    Group x             -> showFormat 3 x
     UnsignedInteger     -> showString "%lu"
     SignedInteger       -> showString "%ld"
     UnsignedInt         -> showString "%u"
@@ -134,3 +155,21 @@ follow :: Format -> Format -> Format
 follow Empty x = x
 follow x Empty = x
 follow x y = Follow x y
+
+enumCases :: String -> Q [(Name,String)]
+enumCases nameStr =
+ do tyName <- maybe (fail ("Failed to find type named " ++ show nameStr)) pure
+           =<< lookupTypeName nameStr
+
+    info <- reify tyName
+    cons <-
+      case info of
+        TyConI (DataD _ _ _ _ cons _) -> pure cons
+        _ -> fail ("Failed to find data declaration for " ++ show nameStr)
+
+    for cons \con ->
+      case con of
+        NormalC name []
+          | Just str <- stripPrefix nameStr (nameBase name) ->
+            pure (name, str)
+        _ -> fail ("Unsupported constructor: " ++ show con)

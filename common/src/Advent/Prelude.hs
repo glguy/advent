@@ -1,4 +1,5 @@
 {-# Language ImportQualifiedPost, BlockArguments #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 {-|
 Module      : Advent.Prelude
 Description : Prelude extension for AoC solutions
@@ -29,7 +30,7 @@ import Language.Haskell.TH (DecsQ)
 
 -- | Count the number of elements in a foldable value that satisfy a predicate.
 count :: (Foldable f, Eq a) => a -> f a -> Int
-count x = countBy (x ==)
+count = countBy . (==)
 
 -- | Count the number of elements in a foldable value that satisfy a predicate.
 countBy :: Foldable f => (a -> Bool) -> f a -> Int

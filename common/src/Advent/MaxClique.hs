@@ -42,7 +42,7 @@ maxCliquesInt neighbors nodes = top IntSet.empty IntSet.empty nodes []
       | IntSet.null p, IntSet.null x = (r:)
       | otherwise = loop (IntSet.elems p') r x p 
       where
-        pivot:_ = IntSet.elems p
+        pivot = head (IntSet.elems p)
         p' = p IntSet.\\ neighbors pivot
 
     loop []     _ _ _ = id

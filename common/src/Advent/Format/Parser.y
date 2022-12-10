@@ -44,7 +44,7 @@ atoms
   | atoms atom                  { follow $1 $2          }
 
 atom
-  : '(' format ')'              { $2                    }
+  : '(' format ')'              { Group $2              }
   | '(' format error            {% Left (Unclosed $1)   }
   | '%u'                        { UnsignedInt           }
   | '%d'                        { SignedInt             }

@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ViewPatterns, LambdaCase, TypeFamilies #-}
+{-# Language BlockArguments, ViewPatterns, LambdaCase, TypeFamilies, TypeOperators #-}
 {-|
 Module      : Advent.ReadS
 Description : Newtype for parsing with ReadS
