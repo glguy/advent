@@ -18,7 +18,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (format, stageTH)
-import Advent.Coord (Coord(..), origin, east, north, south, west)
+import Advent.Coord (Coord(..), origin, east, north, south, west, normInf)
 import Data.List (transpose)
 import Data.Set qualified as Set
 
@@ -89,7 +89,7 @@ updateTails h (t : ts)
 -- >>> any isNearOrigin [C 2 0, C 0 2, C 2 1, C (-2) 0, C (-1) 2]
 -- False
 isNearOrigin :: Coord -> Bool
-isNearOrigin (C y x) = abs x < 2 && abs y < 2
+isNearOrigin c = normInf c < 2
 
 -- | Return the number of unique elements in a list.
 countUnique :: Ord a => [a] -> Int

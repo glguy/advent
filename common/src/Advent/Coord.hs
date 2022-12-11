@@ -111,7 +111,15 @@ turnAround (C y x) = C (-y) (-x)
 
 -- | Compute the Manhattan distance between two coordinates
 manhattan :: Coord -> Coord -> Int
-manhattan (C x y) (C u v) = abs (x-u) + abs (y-v)
+manhattan a b = norm1 (a - b)
+
+-- | Compute 1-norm between two coordinates (sum of magnitudes)
+norm1 :: Coord -> Int
+norm1 (C y x) = abs y + abs x
+
+-- | Compute infinity-norm between two coordinates (max of magnitudes)
+normInf :: Coord -> Int
+normInf (C y x) = max (abs y) (abs x)
 
 -- | Compute the 4 cardinal neighbors of a coordinate: north, south, east, west
 cardinal :: Coord -> [Coord]

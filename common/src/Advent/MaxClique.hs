@@ -12,7 +12,7 @@ The Bron–Kerbosch algorithm is an enumeration algorithm for finding all maxima
 
 A clique is a subset of verticies in a graph such that all the verticies are connected by an edge.
 
-A /maximal/ clique is a clique such that no more edges could be added to it while preserving the clique property.
+A /maximal/ clique is a clique such that no more verticies could be added to it while preserving the clique property.
 
 This example shows the expected output on a simple graph. The example uses an inefficient
 graph input representation to keep the example simple.
