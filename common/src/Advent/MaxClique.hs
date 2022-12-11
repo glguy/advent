@@ -6,16 +6,43 @@ Copyright   : (c) Eric Mertens, 2018-2021
 License     : ISC
 Maintainer  : emertens@gmail.com
 
-Implementation of <https://en.wikipedia.org/wiki/Bron%E2%80%93Kerbosch_algorithm>
+Implementation of <https://en.wikipedia.org/wiki/Bron–Kerbosch_algorithm>
+
+The Bron–Kerbosch algorithm is an enumeration algorithm for finding all maximal cliques in an undirected graph.
+
+A clique is a subset of verticies in a graph such that all the verticies are connected by an edge.
+
+A /maximal/ clique is a clique such that no more edges could be added to it while preserving the clique property.
+
+This example shows the expected output on a simple graph. The example uses an inefficient
+graph input representation to keep the example simple.
+
+@
+    ┌─┐   ┌─┐
+ ┌──│4│───│5│──┐
+ │  └─┘   └─┘  │
+┌─┐  │     │  ┌─┐
+│6│  │     │  │1│
+└─┘  │     │  └─┘
+    ┌─┐   ┌─┐  │
+    │3│───│2│──┘
+    └─┘   └─┘
+@
+
+>>> let adjList = [(1,2),(1,5),(2,3),(2,5),(3,4),(4,5),(4,6)]
+>>> maxCliques (\x y -> (min x y, max x y) `elem` adjList) [1..6]
+[[1,2,5],[2,3],[3,4],[4,5],[4,6]]
 
 -}
-module Advent.MaxClique where
+module Advent.MaxClique (maxCliques, maxCliquesInt) where
 
 import Data.IntMap qualified as IntMap
 import Data.IntSet (IntSet)
 import Data.IntSet qualified as IntSet
 
 -- | Find the maximal cliques of a graph.
+--
+-- Self-edges are allowed and are filtered out.
 maxCliques ::
   (a -> a -> Bool) {- ^ test for edge between nodes -} ->
   [a]              {- ^ all nodes -} ->
