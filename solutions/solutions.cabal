@@ -926,3 +926,4 @@ executable sln_2022_11
   import:              day
   main-is:             2022/11.hs
   build-depends:       containers
+  build-depends:       array
