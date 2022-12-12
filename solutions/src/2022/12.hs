@@ -14,7 +14,7 @@ module Main where
 import Advent (getInputArray, arrIx)
 import Advent.Coord (Coord, cardinal)
 import Advent.Search (bfsOnN)
-import Data.Array.Unboxed (UArray, (!), assocs)
+import Data.Array.Unboxed (UArray, (!), assocs, amap)
 
 -- |
 -- >>> :main
@@ -26,23 +26,25 @@ main =
     print (solve input 'S')
     print (solve input 'a')
 
+-- | Given an input map and a starting letter, return the length of the shortest
+-- path to the ending letter (@E@).
 solve :: UArray Coord Char -> Char -> Int
 solve input startLetter =
-    head [n | (e,n) <- bfsOnN fst (step input) startStates, input!e == 'E']
+    head [n | (e, n) <- bfsOnN fst step startStates, input ! e == 'E']
     where
-        startStates = [(k,0) | (k,v) <- assocs input, v==startLetter]
-
-step :: UArray Coord Char -> (Coord,Int) -> [(Coord,Int)]
-step a (here, n) =
-    [ (next,n+1)
-    | next      <- cardinal here
-    , Just dest <- [arrIx a next]
-    , succ (elevation (a!here)) >= elevation dest
-    ]
+        startStates = [(k, 0) | (k, v) <- assocs input, v == startLetter]
+        elevations  = amap elevation input
+        
+        step (here, n) =
+            [ (next, n+1)
+            | next <- cardinal here
+            , dest <- arrIx elevations next
+            , succ (elevations ! here) >= dest
+            ]
 
 -- | Compute the logical elevation by mapping start and end characters to
 -- their corresponding lowercase elevation values.
 elevation :: Char -> Char
-elevation 'E' = 'z'
 elevation 'S' = 'a'
-elevation x   = x
+elevation 'E' = 'z'
+elevation  x  =  x
