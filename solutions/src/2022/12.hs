@@ -16,6 +16,10 @@ import Advent.Coord (Coord, cardinal)
 import Advent.Search (bfsOnN)
 import Data.Array.Unboxed (UArray, (!), assocs)
 
+-- |
+-- >>> :main
+-- 528
+-- 522
 main :: IO ()
 main =
  do input <- getInputArray 2022 12
@@ -33,6 +37,12 @@ step a (here, n) =
     [ (next,n+1)
     | next      <- cardinal here
     , Just dest <- [arrIx a next]
-    , a!here == 'S' || dest == 'E' || succ (a!here) >= dest
+    , succ (elevation (a!here)) >= elevation dest
     ]
-    
+
+-- | Compute the logical elevation by mapping start and end characters to
+-- their corresponding lowercase elevation values.
+elevation :: Char -> Char
+elevation 'E' = 'z'
+elevation 'S' = 'a'
+elevation x   = x
