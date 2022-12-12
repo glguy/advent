@@ -24,7 +24,7 @@ main =
 
 solve :: UArray Coord Char -> Char -> Int
 solve input startLetter =
-    minimum [n | (e,n) <- bfsOnN fst (step input) startStates, input!e == 'E']
+    head [n | (e,n) <- bfsOnN fst (step input) startStates, input!e == 'E']
     where
         startStates = [(k,0) | (k,v) <- assocs input, v==startLetter]
 
