@@ -19,7 +19,7 @@ module Advent.Search (
 
   -- * A* search
   AStep(..),
-  astar, astarOn,
+  astar, astarOn, astarOnN
 
   ) where
 
@@ -117,6 +117,11 @@ astar :: Ord a => (a -> [AStep a]) -> a -> [(a,Int)]
 astar = astarOn id
 {-# INLINE astar #-}
 
+-- | Shortcut for @'astarOnN' 'id'@
+astarN :: Ord a => (a -> [AStep a]) -> [a] -> [(a,Int)]
+astarN = astarOnN id
+{-# INLINE astarN #-}
+
 -- | A* graph search producing a list of reached states and the
 -- minimum cost of reaching that state.
 --
@@ -131,7 +136,16 @@ astarOn ::
   (a -> [AStep a]) {- ^ step function (new state, step cost, distance heuristic) -} ->
   a                {- ^ starting state                                           -} ->
   [(a,Int)]        {- ^ list of states visited                                   -}
-astarOn rep nexts start = go Set.empty (PQueue.singleton 0 (WC 0 start))
+astarOn rep nexts start = astarOnN rep nexts [start]
+
+-- | Generalization of 'astarOn' that accepts multiple starting states.
+astarOnN ::
+  Ord b =>
+  (a -> b)         {- ^ state characterization                                   -} ->
+  (a -> [AStep a]) {- ^ step function (new state, step cost, distance heuristic) -} ->
+  [a]              {- ^ starting states                                          -} ->
+  [(a,Int)]        {- ^ list of states visited                                   -}
+astarOnN rep nexts starts = go Set.empty (PQueue.fromList [(0, WC 0 s) | s <- starts])
   where
     go !seen = \case
       PQueue.Empty -> []
