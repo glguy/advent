@@ -19,7 +19,7 @@ module Advent.Search (
 
   -- * A* search
   AStep(..),
-  astar, astarOn, astarOnN
+  astar, astarN, astarOn, astarOnN
 
   ) where
 
