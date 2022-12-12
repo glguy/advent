@@ -42,6 +42,7 @@ library
     Advent.ReadS
     Advent.Search
     Advent.SmallSet
+    Advent.Visualize
 
   other-modules:
     Advent.Format.Lexer
@@ -58,6 +59,7 @@ library
     MemoTrie         ^>= 0.6,
     transformers     ^>= 0.6,
     vector           ^>= 0.13,
+    JuicyPixels      ^>= 3.3.8,
 
 test-suite doctests
   type:          exitcode-stdio-1.0
