@@ -55,6 +55,4 @@ compareT (L xs) (N y ) = compareTs xs [N y]
 -- | Lexicographic ordering of lists of 'T' values.
 compareTs :: [T] -> [T] -> Ordering
 compareTs (x:xs) (y:ys) = compareT x y <> compareTs xs ys
-compareTs []     []     = EQ
-compareTs []     _      = LT
-compareTs _      _      = GT
+compareTs xs     ys     = compare (null ys) (null xs) -- intentionally flipped

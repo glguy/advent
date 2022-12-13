@@ -94,9 +94,9 @@ acceptsEmpty fmt =
     Named name
       | isUpper (head name) ->
          do cases <- enumCases name
-            pure (any (\(_, str) -> null str) cases)
+            pure (any (null . snd) cases)
       | otherwise -> pure False
-                        
+
 
 whenM :: Monad m => m Bool -> m () -> m ()
 whenM pm m = pm >>= \p -> when p m
@@ -108,7 +108,7 @@ orM :: Monad m => m Bool -> m Bool -> m Bool
 orM  x y = x >>= \b -> if b then pure True else y
 
 -- | Render a parsed format string back to the input syntax.
-showFormat :: Int {- ^ surrounding precedence -} -> Format -> ShowS 
+showFormat :: Int {- ^ surrounding precedence -} -> Format -> ShowS
 showFormat p fmt =
   case fmt of
     Many x              -> showFormat 3 x . showChar '*'
