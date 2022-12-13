@@ -5,6 +5,7 @@ import Language.Haskell.TH
 import Data.Traversable (for)
 import Data.List (stripPrefix)
 import Control.Monad (when)
+import Data.Char (isUpper)
 
 data Token
   = TOpenGroup
@@ -90,8 +91,12 @@ acceptsEmpty fmt =
     Gather x            -> acceptsEmpty x
     Group x             -> acceptsEmpty x
     Literal x           -> pure (null x)
-    Named name          -> do cases <- enumCases name
-                              pure (any (\(_, str) -> null str) cases)
+    Named name
+      | isUpper (head name) ->
+         do cases <- enumCases name
+            pure (any (\(_, str) -> null str) cases)
+      | otherwise -> pure False
+                        
 
 whenM :: Monad m => m Bool -> m () -> m ()
 whenM pm m = pm >>= \p -> when p m
