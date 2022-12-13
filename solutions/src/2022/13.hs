@@ -12,18 +12,19 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Control.Applicative (Alternative((<|>)))
-import Data.Char (isDigit)
-import Data.List (elemIndex, sortBy)
+import Data.List (findIndices, elemIndex, sortBy)
 import Data.Maybe (fromJust)
-import Text.ParserCombinators.ReadP (ReadP, sepBy, between, char, readS_to_P)
+import Text.ParserCombinators.ReadP (ReadP, sepBy, char, readS_to_P)
 
 import Advent (format, stageTH)
 
 -- | An arbitrarily nested list of lists of Int
 data T = N Int | L [T] deriving (Eq, Read, Show)
 
-p :: ReadP T
-p = L <$ char '[' <*> p `sepBy` char ',' <* char ']' <|>
+-- | Parse a single nested lists of integer value. This parser uses
+-- a single letter name to make it accessible from the format quasiquoter.
+t :: ReadP T
+t = L <$ char '[' <*> t `sepBy` char ',' <* char ']' <|>
     N <$> readS_to_P reads
 
 stageTH
@@ -34,17 +35,15 @@ stageTH
 -- 21276
 main :: IO ()
 main =
- do input <- [format|2022 13 (@p%n@p%n)&%n|]
+ do input <- [format|2022 13 (@t%n@t%n)&%n|]
 
     -- part 1
     print (sum [i | (i,(x,y)) <- zip [1::Int ..] input, compareT x y == LT])
 
     -- part 2
-    let extra1 = L[L[N 2]]
-        extra2 = L[L[N 6]]
-        sorted = sortBy compareT (extra1 : extra2 : [z | (x,y) <- input, z <- [x,y]])
-    print ((1 + fromJust (elemIndex extra1 sorted))
-          *(1 + fromJust (elemIndex extra2 sorted)))
+    let extra = [L[L[N 2]], L[L[N 6]]]
+        sorted = sortBy compareT (extra ++ [z | (x,y) <- input, z <- [x,y]])
+    print (product [i | (i,x) <- zip [1::Int ..] sorted, x `elem` extra])
 
 -- | Compare two 'T' values together using a lexicographic order on
 -- lists and promoting integer nodes to singleton list nodes as needed.
