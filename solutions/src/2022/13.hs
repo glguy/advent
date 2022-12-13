@@ -11,11 +11,11 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
+import Control.Applicative (Alternative((<|>)))
+import Data.Char (isDigit)
 import Data.List (elemIndex, sortBy)
 import Data.Maybe (fromJust)
-import Control.Applicative (Alternative((<|>)))
 import Text.ParserCombinators.ReadP (ReadP, sepBy, between, char, munch1)
-import Data.Char (isDigit)
 
 import Advent (format, stageTH)
 
