@@ -73,6 +73,10 @@ between p q x = p *> x <* q
 eof :: P ()
 eof = void (tok "")
 
+-- | Parse using a 'Read' instance.
+pread :: Read a => P a
+pread = P reads
+
 -- | Left-biased choice. Uses righthand-side if lefthand-side fails.
 (<++) :: P a -> P a -> P a
 P f <++ P g = P \s -> f s `orElse` g s
