@@ -14,6 +14,10 @@ module Main where
 import Advent.Format (format)
 import Advent.Search (astar, AStep(..))
 
+-- |
+-- >>> :main
+-- 900
+-- 1216
 main :: IO ()
 main =
  do (hp,dmg) <- [format|2015 22 Hit Points: %u%nDamage: %u%n|]
