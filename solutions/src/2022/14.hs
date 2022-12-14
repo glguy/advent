@@ -8,6 +8,34 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/14>
 
+>>> :set -XQuasiQuotes
+>>> let input = [format|- ((%u,%u)&( -> )%n)*|] "498,4 -> 498,6 -> 496,6\n503,4 -> 502,4 -> 502,9 -> 494,9\n"
+>>> let world = Set.fromList (concatMap segs input)
+>>> let Left world1 = fillFrom Left 10 world top
+>>> let picture = Data.Map.fromSet (const '█') world <> Data.Map.fromSet (const '◆') world1
+>>> putStr (Advent.Coord.drawPicture picture)
+      ◆
+     ◆◆◆
+    █◆◆◆██
+   ◆█◆◆◆█
+  ███◆◆◆█
+    ◆◆◆◆█
+ ◆ ◆◆◆◆◆█
+█████████
+
+>>> let Identity world2 = fillFrom Identity 10 world top
+>>> let picture = Data.Map.fromSet (const '█') world <> Data.Map.fromSet (const '◆') world2
+>>> putStr (Advent.Coord.drawPicture picture)
+         ◆
+        ◆◆◆
+       ◆◆◆◆◆
+      ◆◆◆◆◆◆◆
+     ◆◆█◆◆◆██◆
+    ◆◆◆█◆◆◆█◆◆◆
+   ◆◆███◆◆◆█◆◆◆◆
+  ◆◆◆◆ ◆◆◆◆█◆◆◆◆◆
+ ◆◆◆◆◆◆◆◆◆◆█◆◆◆◆◆◆
+◆◆◆█████████◆◆◆◆◆◆◆
 -}
 module Main where
 
