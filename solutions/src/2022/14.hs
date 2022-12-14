@@ -11,42 +11,48 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Data.List (find)
+import Control.Monad (foldM)
+import Data.List (find, foldl')
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Advent
-import Advent.Coord
+
+import Advent (format)
+import Advent.Coord (below, coordRow, left, right, Coord(..))
 
 -- |
 -- >>> :main
 -- 644
--- 27323
+-- 27324
 main :: IO ()
 main = do
     input <- [format|2022 14 ((%u,%u)&( -> )%n)*|]
     let world = Set.fromList [x | xs <- input, x <- segs (map toCoord xs)]
         limit = 1 + maximum [ y| C y _ <- Set.toList world]
-    print (part1 limit world)
-    print (part2 limit world)
 
+    case fillFrom1 limit world top of
+      Right {} -> fail "no solution"
+      Left world1 -> print (Set.size world1 - Set.size world)
+    
+    print (Set.size (fillFrom2 limit world top) - Set.size world)
+
+-- | The entry point of sand at @500,0@
 top :: Coord
 top = C 0 500
 
-part1 :: Int -> Set Coord -> Int
-part1 limit = go 0
-  where
-    go n w
-      | coordRow c == limit = n
-      | otherwise = go (n+1) (Set.insert c w)
-      where c = walk limit w top
+fillFrom1 :: Int -> Set Coord -> Coord -> Either (Set Coord) (Set Coord)
+fillFrom1 limit world here
+  | limit < coordRow here = Left world
+  | Set.member here world  = Right world
+  | otherwise = Set.insert here <$> foldM (fillFrom1 limit) world
+                  [below here, left (below here), right (below here)]
 
-part2 :: Int -> Set Coord -> Int
-part2 limit = go 0
-  where
-    go n w
-      | c == top = n+1
-      | otherwise = go (n+1) (Set.insert c w)
-      where c = walk limit w top
+fillFrom2 :: Int -> Set Coord -> Coord -> Set Coord
+fillFrom2 limit world here
+  | Set.member here world || limit < coordRow here = world
+  | otherwise = foldl' (fillFrom2 limit) (Set.insert here world)
+                  [below here, left (below here), right (below here)]
+
+-- Turning line segments into sets of coordinates
 
 toCoord :: (Int,Int) -> Coord
 toCoord (x,y) = C y x
@@ -61,10 +67,3 @@ seg (C a b) (C c d)
   | a == c    = [C a x | x <- [min b d .. max b d]]
   | b == d    = [C x d | x <- [min a c .. max a c]]
   | otherwise = error "unexpected input"
-
-walk :: Int -> Set Coord -> Coord -> Coord
-walk cutoff world here
-  | coordRow here == cutoff = here
-  | Just here' <- find (`Set.notMember` world) [below here, left (below here), right (below here)]
-    = walk cutoff world here'
-  | otherwise = here
