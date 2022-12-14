@@ -12,10 +12,10 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Control.Monad (foldM)
+import Data.Functor.Identity (Identity(Identity))
 import Data.List (find, foldl')
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Functor.Identity
 
 import Advent (format)
 import Advent.Coord (below, coordRow, left, right, Coord(..))
@@ -28,10 +28,10 @@ main :: IO ()
 main =
  do input <- [format|2022 14 ((%u,%u)&( -> )%n)*|]
     let world = Set.fromList (concatMap segs input)
-        limit = 1 + maximum [ y| C y _ <- Set.toList world]
+        limit = 2 + maximum [y | C y _ <- Set.toList world]
 
     case fillFrom Left limit world top of
-      Right {}    -> fail "no solution"
+      Right _     -> fail "no solution"
       Left world1 -> print (Set.size world1 - Set.size world)
 
     case fillFrom Identity limit world top of
@@ -41,9 +41,19 @@ main =
 top :: Coord
 top = C 0 500
 
-fillFrom :: Monad m => (Set Coord -> m (Set Coord)) -> Int -> Set Coord -> Coord -> m (Set Coord)
+-- | Fill the given world with sand from a fill coordinate returning the
+-- final state of the world. This is parameterized over a callback for how
+-- to handle when sand reaches the bottom of the level in order to allow
+-- early termination or not.
+fillFrom ::
+  Monad m =>
+  (Set Coord -> m (Set Coord)) {- ^ behavior when sand reaches limit -} ->
+  Int                          {- ^ lower limit -} ->
+  Set Coord                    {- ^ initial wall and sand locations -} ->
+  Coord                        {- ^ location to fill from -} ->
+  m (Set Coord)                {- ^ final wall and sand locations -}
 fillFrom onVoid limit world here
-  | limit < coordRow here = onVoid world
+  | limit == coordRow here = onVoid world
   | Set.member here world = pure world
   | otherwise = Set.insert here <$> foldM (fillFrom onVoid limit) world
                   [below here, left (below here), right (below here)]
