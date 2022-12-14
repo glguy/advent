@@ -936,3 +936,8 @@ executable sln_2022_12
 executable sln_2022_13
   import:              day
   main-is:             2022/13.hs
+
+executable sln_2022_14
+  import:              day
+  main-is:             2022/14.hs
+  build-depends:       containers
