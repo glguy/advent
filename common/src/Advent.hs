@@ -19,6 +19,7 @@ module Advent (
   module Advent.Format,
   ) where
 
-import Advent.Prelude
-import Advent.Input
 import Advent.Format
+import Advent.Input
+import Advent.Orphans ()
+import Advent.Prelude

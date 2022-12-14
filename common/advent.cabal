@@ -35,6 +35,7 @@ library
     Advent.MaxClique
     Advent.Memo
     Advent.Nat
+    Advent.Orphans
     Advent.Permutation
     Advent.PQueue
     Advent.Prelude

@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell #-}
+{-# Language QuasiQuotes, OverloadedStrings, TemplateHaskell #-}
 {-|
 Module      : Main
 Description : Day 13 solution
@@ -13,7 +13,7 @@ module Main where
 
 import Control.Applicative ((<|>))
 import Data.List (sortBy)
-import Text.ParserCombinators.ReadP (ReadP, sepBy, char, readS_to_P)
+import Text.ParserCombinators.ReadP (ReadP, sepBy, readS_to_P)
 
 import Advent (format, stageTH)
 
@@ -23,7 +23,7 @@ data T = N Int | L [T] deriving (Eq, Read, Show)
 -- | Parse a single nested lists of integer value. This parser uses
 -- a single letter name to make it accessible from the format quasiquoter.
 t :: ReadP T
-t = L <$ char '[' <*> t `sepBy` char ',' <* char ']' <|>
+t = L <$ "[" <*> t `sepBy` "," <* "]" <|>
     N <$> readS_to_P reads
 
 stageTH

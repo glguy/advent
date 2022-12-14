@@ -13,8 +13,8 @@ Advent of Code problems.
 -}
 module Advent.Prelude where
 
-import Control.Monad.Trans.State (StateT(StateT, runStateT))
 import Control.Applicative (Alternative(empty))
+import Control.Monad.Trans.State (StateT(StateT, runStateT))
 import Data.Array.Unboxed qualified as A
 import Data.Coerce (coerce)
 import Data.Foldable (toList)

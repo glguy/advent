@@ -1,4 +1,4 @@
-{-# Language OverloadedStrings, BlockArguments, ViewPatterns #-}
+{-# Language QuasiQuotes, OverloadedStrings, BlockArguments, ViewPatterns, TemplateHaskell #-}
 {-|
 Module      : Main
 Description : Day 18 solution
@@ -16,17 +16,35 @@ of elements of our tree.
 -}
 module Main (main) where
 
-import Advent.Input (getInputLines)
-import Advent.ReadS (P(..), runP)
+import Advent (format, stageTH)
 import Control.Applicative ((<|>))
 import Data.List (foldl1', tails)
+import Text.ParserCombinators.ReadP
+
+-- * Binary trees
+
+-- | A binary tree with integers at the leaves
+data Tree
+  = Tree :+: Tree -- ^ tuple
+  | Leaf !Int  -- ^ number
+  deriving Show
+
+-- * Parsing
+
+-- | Tree parser from a leaf parser
+t :: ReadP Tree
+t =
+  Leaf <$> readS_to_P reads <|>
+  (:+:) <$ "[" <*> t <* "," <*> t <* "]"
+
+stageTH
 
 -- | >>> :main
 -- 3551
 -- 4555
 main :: IO ()
 main =
- do inp <- map parse <$> getInputLines 2021 18
+ do inp <- [format|2021 18 (@t%n)*|]
     print (magnitude (foldl1' add inp))
     print (maximum [magnitude (add x y) `max` magnitude (add y x)
                    | x:ys <- tails inp, y <- ys])
@@ -43,13 +61,13 @@ reduce (explode -> x) = maybe x reduce (split x)
 
 -- | Explode /all/ the pairs at depth 4 from left to right.
 explode :: Tree -> Tree
-explode = down 0 []
+explode = down (0::Int) []
   where
     down 4 z (Leaf l :+: Leaf r) = up 4 (sendUp L l (sendUp R r z)) (Leaf 0)
     down d z (l :+: r) | d < 4   = down (d+1) ((R,r):z) l
-    down d z t                   = up d z t
+    down d z x                   = up d z x
 
-    up _ []        t = t
+    up _ []        x = x
     up d ((R,r):z) l = down d ((L,l):z) r
     up d ((L,l):z) r = up (d-1) z (l :+: r)
 
@@ -63,6 +81,8 @@ split (Leaf x)
 
 -- | Compute the /magnitude/ of an expression
 --
+-- >>> parse = fst . head . readP_to_S t
+--
 -- >>> magnitude (parse "[9,1]")
 -- 29
 --
@@ -71,14 +91,6 @@ split (Leaf x)
 magnitude :: Tree -> Int
 magnitude (Leaf x) = x
 magnitude (l :+: r) = 3 * magnitude l + 2 * magnitude r
-
--- * Binary trees
-
--- | A binary tree with integers at the leaves
-data Tree
-  = Tree :+: Tree -- ^ tuple
-  | Leaf !Int  -- ^ number
-  deriving Show
 
 -- * Tree zippers
 
@@ -105,15 +117,3 @@ sendL x (Leaf y)  = Leaf (x + y)
 sendR :: Int -> Tree -> Tree
 sendR x (l :+: r) = l :+: sendR x r
 sendR x (Leaf y)  = Leaf (x + y)
-
--- * Parsing
-
--- | Parse a snailfish expression
-parse :: String -> Tree
-parse = runP pTree
-
--- | Tree parser from a leaf parser
-pTree :: P Tree
-pTree =
-  Leaf <$> P reads <|>
-  (:+:) <$ "[" <*> pTree <* "," <*> pTree <* "]"

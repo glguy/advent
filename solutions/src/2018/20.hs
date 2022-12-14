@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost #-}
+{-# Language ImportQualifiedPost, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 20 solution
@@ -40,7 +40,7 @@ import Control.Applicative (Alternative((<|>), many))
 import Control.Monad (foldM)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Text.ParserCombinators.ReadP (ReadP, char, between, readP_to_S, sepBy1)
+import Text.ParserCombinators.ReadP (ReadP, between, readP_to_S, sepBy1)
 
 -- | Cardinal directions: north south east west
 data Dir = N | S | E | W
@@ -67,17 +67,17 @@ main =
 
 -- Regular expression parsing for each level of precedence
 parseRe0 :: ReadP (Regexp Dir)
-parseRe0 = between (char '^') (char '$') parseRe1
+parseRe0 = between "^" "$" parseRe1
 
 parseRe1 :: ReadP (Regexp Dir)
-parseRe1 = RE <$> many parseRe2 `sepBy1` char '|'
+parseRe1 = RE <$> many parseRe2 `sepBy1` "|"
 
 parseRe2 :: ReadP (Either Dir (Regexp Dir))
-parseRe2 = Right <$> between (char '(') (char ')') parseRe1 <|> Left <$> parseDir
+parseRe2 = Right <$> between "(" ")" parseRe1 <|> Left <$> parseDir
 
 -- | Parse a cardinal direction
 parseDir :: ReadP Dir
-parseDir = N <$ char 'N' <|> S <$ char 'S' <|> E <$ char 'E' <|> W <$ char 'W'
+parseDir = N <$ "N" <|> S <$ "S" <|> E <$ "E" <|> W <$ "W"
 
 -- | Move one space giving a direction and a starting coordinate
 move :: Dir -> Coord -> Coord
