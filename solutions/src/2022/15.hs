@@ -32,18 +32,24 @@ main = do
     print $ sum $ map size $
         removeallof (beaconsAtY input p1y) $
         boxUnion [y | x <- input, y <- ranges p1y x]
-    
+
     print [
       4_000_000 * y + x
-      | C y x <- 
+      | C y x <-
           map fromdiamond $
           removeallof (todiamonds input)
           [todiamond (C 2000000 2000000) 4000000 ]
       , 0 <= y, y <= 4000000, 0 <= x , x <= 4000000]
 
 fromdiamond :: Box ('S ('S 'Z)) -> Coord
-fromdiamond (Dim _ b (Dim _ d Pt)) = C ((b + d)`div`2) ((b-d)`div`2)
-  
+fromdiamond (Dim b _ (Dim d _ Pt)) = C ((b + d)`div`2) ((b-d)`div`2)
+
+todiamond :: Coord -> Int -> Box ('S ('S 'Z))
+todiamond (C y x) r =  Dim (a - r) (a + r + 1) (Dim (b - r) (b + r + 1) Pt)
+  where
+    a = x + y
+    b = x - y
+
 todiamonds :: Input -> [Box ('S ('S 'Z))]
 todiamonds input =
   [ todiamond (C y x) r
@@ -51,11 +57,6 @@ todiamonds input =
      , let r = manhattan (C y x) (C ny nx)
      ]
 
-todiamond :: Coord -> Int -> Box ('S ('S 'Z))
-todiamond (C y x) r =  Dim (a - r) (a + r + 1) (Dim (b - r) (b + r + 1) Pt)
-  where
-    a = x + y
-    b = x - y
       
 beaconsAtY :: Input -> Int -> [Box ('S 'Z)]
 beaconsAtY input ty = [Dim nx (nx+1) Pt | (_,_,nx,ny)<-input, ny == ty]
