@@ -9,9 +9,7 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2022/day/15>
 
 -}
-module Main where
-
-import Data.List (sort)
+module Main (main) where
 
 import Advent ( format )
 import Advent.Box
@@ -33,7 +31,7 @@ main = do
         removeallof (beaconsAtY input p1y) $
         boxUnion [y | x <- input, y <- ranges p1y x]
 
-    print [
+    print $ head [
       4_000_000 * y + x
       | C y x <-
           map fromdiamond $
@@ -42,7 +40,7 @@ main = do
       , 0 <= y, y <= 4000000, 0 <= x , x <= 4000000]
 
 fromdiamond :: Box ('S ('S 'Z)) -> Coord
-fromdiamond (Dim b _ (Dim d _ Pt)) = C ((b + d)`div`2) ((b-d)`div`2)
+fromdiamond (Dim xpy _ (Dim xmy _ Pt)) = C ((xpy + xmy) `div` 2) ((xpy - xmy) `div` 2)
 
 todiamond :: Coord -> Int -> Box ('S ('S 'Z))
 todiamond (C y x) r =  Dim (a - r) (a + r + 1) (Dim (b - r) (b + r + 1) Pt)
@@ -57,7 +55,7 @@ todiamonds input =
      , let r = manhattan (C y x) (C ny nx)
      ]
 
-      
+
 beaconsAtY :: Input -> Int -> [Box ('S 'Z)]
 beaconsAtY input ty = [Dim nx (nx+1) Pt | (_,_,nx,ny)<-input, ny == ty]
 
@@ -71,13 +69,6 @@ ranges yy (x,y,nx,ny)
         dist = manhattan (C y x) (C ny nx)
 
 -- Box helpers
-
-consolidate :: [Box ('S 'Z)] -> [Box ('S 'Z)]
-consolidate = aux . sort
-  where
-    aux (Dim a b Pt : Dim c d Pt : xs) | b == c = aux (Dim a d Pt : xs)
-    aux (x:xs) = x : aux xs
-    aux [] = []
 
 removeallof :: [Box n] -> [Box n] -> [Box n]
 removeallof xs ys = foldl remove1 ys xs
