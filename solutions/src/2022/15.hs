@@ -38,7 +38,7 @@ part1 input =
   makeDisjoint [y | x <- input, y <- ranges p1y x]
 
 beaconsAtY :: Input -> Int -> [Box ('S 'Z)]
-beaconsAtY input ty = [Dim nx (nx+1) Pt | (_,_,nx,ny)<-input, ny == ty]
+beaconsAtY input ty = [cover nx 0 Pt | (_,_,nx,ny)<-input, ny == ty]
 
 ranges :: Int -> (Int,Int,Int,Int) -> [Box ('S 'Z)]
 ranges yy (x,y,nx,ny)
@@ -53,7 +53,7 @@ ranges yy (x,y,nx,ny)
 
 part2 :: Input -> Int
 part2 input = head
-  [ 4_000_000 * y + x
+  [ 4_000_000 * x + y
     | C y x <-
         map fromdiamond $
         removeallof (todiamonds input)
@@ -62,7 +62,7 @@ part2 input = head
 
 -- | Find a corner of a diamond represented as a square region.
 fromdiamond :: Box ('S ('S 'Z)) -> Coord
-fromdiamond (Dim xpy _ (Dim xmy _ Pt)) = C ((xpy + xmy) `div` 2) ((xpy - xmy) `div` 2)
+fromdiamond (Dim xpy _ (Dim xmy _ Pt)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2) 
 
 -- | Covert a diamond centered at a coordinate with a radius into a square region.
 todiamond :: Coord -> Int -> Box ('S ('S 'Z))
