@@ -1,3 +1,4 @@
+{-# Language QuasiQuotes, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -10,12 +11,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent
-import Control.Applicative
-import Data.List
+import Control.Applicative ((<|>))
 import Data.Char (isDigit)
-import Text.ParserCombinators.ReadP
+import Data.List (elemIndex)
+import Text.ParserCombinators.ReadP (ReadP, get, munch1)
 
+import Advent (format)
 data Scramble
   = RotateRight Int
   | RotateLeft Int
@@ -29,17 +30,17 @@ data Scramble
 number :: ReadP Int
 number = read <$> munch1 isDigit
 
-parseScramble :: ReadP Scramble
-parseScramble =
-  RotateRight 1    <$ string "rotate right 1 step"                 <|>
-  RotateRight      <$ string "rotate right "                       <*> number <* string " steps"          <|>
-  RotateLeft 1     <$ string "rotate left 1 step"                  <|>
-  RotateLeft       <$ string "rotate left "                        <*> number <* string " steps"          <|>
-  SwapPosition     <$ string "swap position "                      <*> number <* string " with position " <*> number     <|>
-  SwapLetter       <$ string "swap letter "                        <*> get    <* string " with letter "   <*> get <|>
-  RotateChar       <$ string "rotate based on position of letter " <*> get <|>
-  ReversePositions <$ string "reverse positions "                  <*> number <* string " through "       <*> number     <|>
-  MovePosition     <$ string "move position "                      <*> number <* string " to position "   <*> number
+s :: ReadP Scramble
+s =
+  RotateRight 1    <$ "rotate right 1 step"                 <|>
+  RotateRight      <$ "rotate right "                       <*> number <* " steps" <|>
+  RotateLeft 1     <$ "rotate left 1 step"                  <|>
+  RotateLeft       <$ "rotate left "                        <*> number <* " steps" <|>
+  SwapPosition     <$ "swap position "                      <*> number <* " with position " <*> number <|>
+  SwapLetter       <$ "swap letter "                        <*> get    <* " with letter "   <*> get <|>
+  RotateChar       <$ "rotate based on position of letter " <*> get <|>
+  ReversePositions <$ "reverse positions "                  <*> number <* " through "       <*> number <|>
+  MovePosition     <$ "move position "                      <*> number <* " to position "   <*> number
 
 part1, part2 :: String
 part1 = "abcdefgh"
@@ -50,9 +51,9 @@ part2 = "fbgdceah"
 -- aghfcdeb
 main :: IO ()
 main =
-  do inp <- map (fst . head . readP_to_S parseScramble) <$> getInputLines 2016 21
-     putStrLn $ foldl (flip forward) part1 inp
-     putStrLn $ foldr backward part2 inp
+ do inp <- [format|2016 21 (@s%n)*|]
+    putStrLn (foldl (flip forward) part1 inp)
+    putStrLn (foldr backward part2 inp)
 
 rotateRight :: Int -> [a] -> [a]
 rotateRight n xs = b ++ a

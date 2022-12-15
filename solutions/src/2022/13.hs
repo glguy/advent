@@ -44,7 +44,7 @@ import Control.Applicative ((<|>))
 import Data.List (sortBy)
 import Text.ParserCombinators.ReadP (ReadP, sepBy, readS_to_P)
 
-import Advent (format, stageTH)
+import Advent (format)
 
 -- | An arbitrarily nested list of lists of Int
 data T = N Int | L [T] deriving (Eq, Read, Show)
@@ -54,8 +54,6 @@ data T = N Int | L [T] deriving (Eq, Read, Show)
 t :: ReadP T
 t = L <$ "[" <*> t `sepBy` "," <* "]" <|>
     N <$> readS_to_P reads
-
-stageTH
 
 -- |
 -- >>> :main
