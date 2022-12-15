@@ -8,6 +8,27 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/15>
 
+>>> :{
+:main +
+  "part 1 override 10 part 2 override 20\n\
+  \Sensor at x=2, y=18: closest beacon is at x=-2, y=15\n\
+  \Sensor at x=9, y=16: closest beacon is at x=10, y=16\n\
+  \Sensor at x=13, y=2: closest beacon is at x=15, y=3\n\
+  \Sensor at x=12, y=14: closest beacon is at x=10, y=16\n\
+  \Sensor at x=10, y=20: closest beacon is at x=10, y=16\n\
+  \Sensor at x=14, y=17: closest beacon is at x=10, y=16\n\
+  \Sensor at x=8, y=7: closest beacon is at x=2, y=10\n\
+  \Sensor at x=2, y=0: closest beacon is at x=2, y=10\n\
+  \Sensor at x=0, y=11: closest beacon is at x=2, y=10\n\
+  \Sensor at x=20, y=14: closest beacon is at x=25, y=17\n\
+  \Sensor at x=17, y=20: closest beacon is at x=21, y=22\n\
+  \Sensor at x=16, y=7: closest beacon is at x=15, y=3\n\
+  \Sensor at x=14, y=3: closest beacon is at x=15, y=3\n\
+  \Sensor at x=20, y=1: closest beacon is at x=15, y=3\n"
+:}
+26
+56000011
+
 -}
 module Main (main) where
 
@@ -25,54 +46,60 @@ type Input = [(Int,Int,Int,Int)]
 -- 13622251246513
 main :: IO ()
 main =
- do input <- [format|2022 15 (Sensor at x=%d, y=%d: closest beacon is at x=%d, y=%d%n)*|]
-    print (part1 input)
-    print (part2 input)
+ do (cfg,input) <- [format|2022 15
+      (|part 1 override %u part 2 override %u%n)
+      (Sensor at x=%d, y=%d: closest beacon is at x=%d, y=%d%n)*|]
+    let (diamonds, beacons) = unzip (inputSensors input)
+    print (part1 (maybe 2_000_000 fst cfg) diamonds beacons)
+    print (part2 (maybe 4_000_000 snd cfg) diamonds)
+
+-- | A sensor has a location and a radius
+data Sensor = Sensor Coord Int
+
+-- | Convert input data into a list of sensors and beacon coordinates
+inputSensors :: Input -> [(Sensor, Coord)]
+inputSensors input =
+  [(Sensor s (manhattan s b), b) | (sx,sy,bx,by) <- input, let s = C sy sx, let b = C by bx]
 
 -- part 1 logic
 
-part1 :: Input -> Int
-part1 input =
-  let p1y = 2_000_000 in
+part1 :: Int -> [Sensor] -> [Coord] -> Int
+part1 row diamonds beacons =
   sum $ map size $
-  subtractAllOf (beaconsAtY input p1y) $
+  subtractAllOf [cover x 0 Pt | C y x <- beacons, y == row] $
   makeDisjoint $
-  concatMap (ranges p1y) input
+  concatMap (rowSlice row) diamonds
 
-beaconsAtY :: Input -> Int -> [Box ('S 'Z)]
-beaconsAtY input y = [cover bx 0 Pt | (_,_,bx,by) <- input, by == y]
-
-ranges :: Int -> (Int,Int,Int,Int) -> [Box ('S 'Z)]
-ranges y (sx,sy,bx,by) = [cover sx dx Pt | dx >= 0]
+-- | Generate the 1-d box describing the X region covered by the sensor at a given Y value
+rowSlice ::
+  Int           {- ^ y value            -} ->
+  Sensor        {- ^ sensor             -} ->
+  [Box ('S 'Z)] {- ^ bounds on x values -}
+rowSlice y (Sensor (C sy sx) r) = [cover sx dx Pt | dx >= 0]
   where
     dy = abs (y - sy)
     dx = r - dy
-    r  = manhattan (C sy sx) (C by bx)
 
 -- part 2 logic
 
-part2 :: Input -> Int
-part2 input = head
+part2 :: Int -> [Sensor] -> Int
+part2 search diamonds = head
   [ 4_000_000 * x + y
-    | C y x <-
-        map fromDiamond $
-        subtractAllOf (toDiamonds input)
-        [toDiamond (C 2_000_000 2_000_000) 4_000_000]
-    , 0 <= y, y <= 4_000_000, 0 <= x, x <= 4_000_000]
+    | let center = C (search`div`2) (search`div`2)
+    , C y x <-
+        map boxCorner $
+        subtractAllOf (map diamondBox diamonds)
+        [diamondBox (Sensor center search)]
+    , 0 <= y, y <= search
+    , 0 <= x, x <= search]
 
 -- | Find a corner of a diamond represented as a square region.
-fromDiamond :: Box ('S ('S 'Z)) -> Coord
-fromDiamond (Dim xpy _ (Dim xmy _ Pt)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2) 
+boxCorner :: Box ('S ('S 'Z)) -> Coord
+boxCorner (Dim xpy _ (Dim xmy _ Pt)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2) 
 
 -- | Covert a diamond centered at a coordinate with a radius into a square region.
-toDiamond :: Coord -> Int -> Box ('S ('S 'Z))
-toDiamond (C y x) r = cover (x+y) r (cover (x-y) r Pt)
-
--- | Convert all the sensors in the input file into square regions corresponding to the
--- diamond covered by the sensor.
-toDiamonds :: Input -> [Box ('S ('S 'Z))]
-toDiamonds input =
-  [toDiamond (C sy sx) (manhattan (C sy sx) (C by bx)) | (sx,sy,bx,by) <- input]
+diamondBox :: Sensor -> Box ('S ('S 'Z))
+diamondBox (Sensor (C y x) r) = cover (x+y) r (cover (x-y) r Pt)
 
 -- Box utilities
 
