@@ -35,6 +35,7 @@ getRawInput y d =
      case args of
        []    -> readFile (printf "inputs/%d/%02d.txt" y d)
        "-":_ -> hPutStrLn stderr "Ready!" >> getContents
+       "+":input:_ -> pure input
        fn:_  -> readFile fn
 
 -- | Default input filename given a day number

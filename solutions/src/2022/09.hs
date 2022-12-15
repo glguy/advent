@@ -8,6 +8,34 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/9>
 
+>>> :{
+:main +
+  "R 4\n\
+  \U 4\n\
+  \L 3\n\
+  \D 1\n\
+  \R 4\n\
+  \D 1\n\
+  \L 5\n\
+  \R 2\n"
+:}
+13
+1
+
+>>> :{
+:main +
+  "R 5\n\
+  \U 8\n\
+  \L 8\n\
+  \D 3\n\
+  \R 17\n\
+  \D 10\n\
+  \L 25\n\
+  \U 20\n"
+:}
+88
+36
+
 >>> uniqueLocations [(CR,4),(CU,4),(CL,3),(CD,1),(CR,4),(CD,1),(CL,5),(CR,2)] !! 1
 13
 

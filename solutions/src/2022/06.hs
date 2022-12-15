@@ -8,6 +8,22 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/6>
 
+>>> :main + "mjqjpqmgbljsphdztnvjfqwrcgsmlb\n"
+7
+19
+>>> :main + "bvwbjplbgvbhsrlpgdmjqwftvncz\n"
+5
+23
+>>> :main + "nppdvjthqldpwncqszvftbrmjlhg\n"
+6
+23
+>>> :main + "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg\n"
+10
+29
+>>> :main + "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw\n"
+11
+26
+
 -}
 module Main where
 
@@ -18,16 +34,16 @@ import Advent (format)
 
 -- |
 -- >>> :main
--- Just 1909
--- Just 3380
+-- 1909
+-- 3380
 main :: IO ()
 main =
  do input <- [format|2022 6 %s%n|]
     print (solve  4 input)
     print (solve 14 input)
 
-solve :: Ord a => Int -> [a] -> Maybe Int
-solve n input = fmap (n+) (findIndex (start n) (tails input))
+solve :: Ord a => Int -> [a] -> Int
+solve n input = maybe undefined (n+) (findIndex (start n) (tails input))
 
 start :: Ord a => Int -> [a] -> Bool
 start n xs = length (Set.fromList (take n xs)) == n

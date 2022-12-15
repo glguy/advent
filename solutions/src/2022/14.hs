@@ -11,7 +11,8 @@ Maintainer  : emertens@gmail.com
 >>> :set -XQuasiQuotes
 >>> let input = [format|- ((%u,%u)&( -> )%n)*|] "498,4 -> 498,6 -> 496,6\n503,4 -> 502,4 -> 502,9 -> 494,9\n"
 >>> let world = Set.fromList (concatMap segs input)
->>> let Left world1 = fillFrom Left 10 world top
+>>> let limit = voidLimit world
+>>> let Left world1 = fillFrom Left limit world top
 >>> let picture = Data.Map.fromSet (const '█') world <> Data.Map.fromSet (const '◆') world1
 >>> putStr (Advent.Coord.drawPicture picture)
       ◆
@@ -22,20 +23,25 @@ Maintainer  : emertens@gmail.com
     ◆◆◆◆█
  ◆ ◆◆◆◆◆█
 █████████
-
->>> let Identity world2 = fillFrom Identity 10 world top
+>>> Set.size world1 - Set.size world
+24
+>>> let Identity world2 = fillFrom Identity limit world top
 >>> let picture = Data.Map.fromSet (const '█') world <> Data.Map.fromSet (const '◆') world2
 >>> putStr (Advent.Coord.drawPicture picture)
-         ◆
-        ◆◆◆
-       ◆◆◆◆◆
-      ◆◆◆◆◆◆◆
-     ◆◆█◆◆◆██◆
-    ◆◆◆█◆◆◆█◆◆◆
-   ◆◆███◆◆◆█◆◆◆◆
-  ◆◆◆◆ ◆◆◆◆█◆◆◆◆◆
- ◆◆◆◆◆◆◆◆◆◆█◆◆◆◆◆◆
-◆◆◆█████████◆◆◆◆◆◆◆
+          ◆
+         ◆◆◆
+        ◆◆◆◆◆
+       ◆◆◆◆◆◆◆
+      ◆◆█◆◆◆██◆
+     ◆◆◆█◆◆◆█◆◆◆
+    ◆◆███◆◆◆█◆◆◆◆
+   ◆◆◆◆ ◆◆◆◆█◆◆◆◆◆
+  ◆◆◆◆◆◆◆◆◆◆█◆◆◆◆◆◆
+ ◆◆◆█████████◆◆◆◆◆◆◆
+◆◆◆◆◆       ◆◆◆◆◆◆◆◆◆
+>>> Set.size world2 - Set.size world
+93
+
 -}
 module Main where
 
@@ -56,7 +62,7 @@ main :: IO ()
 main =
  do input <- [format|2022 14 ((%u,%u)&( -> )%n)*|]
     let world = Set.fromList (concatMap segs input)
-        limit = 2 + maximum [y | C y _ <- Set.toList world]
+        limit = voidLimit world
 
     case fillFrom Left limit world top of
       Right _     -> fail "no solution"
@@ -68,6 +74,9 @@ main =
 -- | The entry point of sand at @500,0@
 top :: Coord
 top = C 0 500
+
+voidLimit :: Set Coord -> Int
+voidLimit world = 2 + maximum [y | C y _ <- Set.toList world]
 
 -- | Fill the given world with sand from a fill coordinate returning the
 -- final state of the world. This is parameterized over a callback for how

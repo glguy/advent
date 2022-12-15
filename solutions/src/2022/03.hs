@@ -8,6 +8,18 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/3>
 
+>>> :{
+  :main +
+    "vJrwpWtwJgWrhcsFMMfFFhFp\n\
+    \jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\n\
+    \PmmdzqPrVvPwwTWBwg\n\
+    \wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\n\
+    \ttgJtRGJQctTZtZT\n\
+    \CrZsJsPPZsGzwwsLwLmpwMDw\n"
+:}
+157
+70
+
 -}
 module Main where
 

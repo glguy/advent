@@ -9,6 +9,10 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/2>
 
+>>> :main + "A Y\nB X\nC Z\n"
+15
+12
+
 -}
 module Main where
 

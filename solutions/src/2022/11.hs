@@ -15,6 +15,39 @@ in the same round, but when it throws it to an earlier monkey, that item
 will not be thrown until the next round. Using this we can keep track of
 when an item would stop moving.
 
+>>> :{
+:main +
+  "Monkey 0:\n\
+  \  Starting items: 79, 98\n\
+  \  Operation: new = old * 19\n\
+  \  Test: divisible by 23\n\
+  \    If true: throw to monkey 2\n\
+  \    If false: throw to monkey 3\n\
+  \\n\
+  \Monkey 1:\n\
+  \  Starting items: 54, 65, 75, 74\n\
+  \  Operation: new = old + 6\n\
+  \  Test: divisible by 19\n\
+  \    If true: throw to monkey 2\n\
+  \    If false: throw to monkey 0\n\
+  \\n\
+  \Monkey 2:\n\
+  \  Starting items: 79, 60, 97\n\
+  \  Operation: new = old * old\n\
+  \  Test: divisible by 13\n\
+  \    If true: throw to monkey 1\n\
+  \    If false: throw to monkey 3\n\
+  \\n\
+  \Monkey 3:\n\
+  \  Starting items: 74\n\
+  \  Operation: new = old + 3\n\
+  \  Test: divisible by 17\n\
+  \    If true: throw to monkey 0\n\
+  \    If false: throw to monkey 1\n"
+:}
+10605
+2713310158
+
 -}
 module Main where
 
@@ -35,6 +68,10 @@ import Advent (format, counts)
 -- * The monkey ID when the divisor does not divide the value
 type Input = [(Int, [Int], Char, Maybe Int, Int, Int, Int)]
 
+-- |
+-- >>> :main
+-- 151312
+-- 51382025916
 main :: IO ()
 main =
  do input <- [format|2022 11

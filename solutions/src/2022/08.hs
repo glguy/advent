@@ -8,6 +8,10 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/8>
 
+>>> :main + "30373\n25512\n65332\n33549\n35390\n"
+21
+8
+
 -}
 module Main where
 
@@ -15,6 +19,10 @@ import Data.Array.Unboxed (Ix(inRange, range), UArray, IArray(..), (!))
 import Advent (getInputArray, countBy)
 import Advent.Coord (above, below, left, right, Coord)
 
+-- |
+-- >>> :main
+-- 1690
+-- 535680
 main :: IO ()
 main =
  do input <- getInputArray 2022 08

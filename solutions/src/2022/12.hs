@@ -8,6 +8,17 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/12>
 
+>>> :{
+:main +
+    "Sabqponm\n\
+    \abcryxxl\n\
+    \accszExk\n\
+    \acctuvwj\n\
+    \abdefghi\n"
+:}
+31
+29
+
 -}
 module Main where
 

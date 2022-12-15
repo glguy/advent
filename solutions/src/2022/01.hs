@@ -8,6 +8,10 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/1>
 
+>>> :main + "1000\n2000\n3000\n\n4000\n\n5000\n6000\n\n7000\n8000\n9000\n\n10000\n"
+24000
+45000
+
 -}
 module Main where
 
