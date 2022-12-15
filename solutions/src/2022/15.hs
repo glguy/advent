@@ -30,7 +30,7 @@ Maintainer  : emertens@gmail.com
 56000011
 
 -}
-module Main (main) where
+module Main where
 
 import Advent (format)
 import Advent.Box (Box(Dim,Pt), subtractBox, size)
@@ -63,7 +63,12 @@ inputSensors input =
 
 -- part 1 logic
 
-part1 :: Int -> [Sensor] -> [Coord] -> Int
+-- | Compute the number of locations in a given row that can't contain a sensor.
+part1 ::
+  Int      {- ^ y value of row -} ->
+  [Sensor] {- ^ sensors -} ->
+  [Coord]  {- ^ beacons -} ->
+  Int      {- ^ locations in row that can't contain a sensor -}
 part1 row diamonds beacons =
   sum $ map size $
   subtractAllOf [cover x 0 Pt | C y x <- beacons, y == row] $
@@ -82,7 +87,12 @@ rowSlice y (Sensor (C sy sx) r) = [cover sx dx Pt | dx >= 0]
 
 -- part 2 logic
 
-part2 :: Int -> [Sensor] -> Int
+-- | Find the tuning frequency of the only location in the given region that could
+-- contain an undiscovered beacon.
+part2 ::
+  Int      {- ^ search region size -} ->
+  [Sensor] {- ^ sensors -} ->
+  Int      {- ^ tuning frequency -}
 part2 search diamonds = head
   [ 4_000_000 * x + y
     | let center = C (search`div`2) (search`div`2)
