@@ -11,11 +11,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent ( format )
-import Advent.Box
-import Advent.Coord ( manhattan, Coord(C) )
-import Advent.Nat ( Nat(Z, S) )
+import Advent (format)
+import Advent.Box (Box(Dim,Pt), subtractBox, size)
+import Advent.Coord (manhattan, Coord(C))
+import Advent.Nat (Nat(Z, S))
 
+-- | Input is a list of: sensor x and y, beacon x and y
 type Input = [(Int,Int,Int,Int)]
 
 -- |
@@ -34,7 +35,7 @@ part1 :: Input -> Int
 part1 input =
   let p1y = 2_000_000 in
   sum $ map size $
-  removeallof (beaconsAtY input p1y) $
+  subtractAllOf (beaconsAtY input p1y) $
   makeDisjoint $
   concatMap (ranges p1y) input
 
@@ -42,13 +43,11 @@ beaconsAtY :: Input -> Int -> [Box ('S 'Z)]
 beaconsAtY input y = [cover bx 0 Pt | (_,_,bx,by) <- input, by == y]
 
 ranges :: Int -> (Int,Int,Int,Int) -> [Box ('S 'Z)]
-ranges yy (x,y,nx,ny)
-  | dx < 0 = []
-  | otherwise = [cover x dx Pt]
-    where
-        dy = abs (yy - y)
-        dx = dist - dy
-        dist = manhattan (C y x) (C ny nx)
+ranges y (sx,sy,bx,by) = [cover sx dx Pt | dx >= 0]
+  where
+    dy = abs (y - sy)
+    dx = r - dy
+    r  = manhattan (C sy sx) (C by bx)
 
 -- part 2 logic
 
@@ -56,33 +55,33 @@ part2 :: Input -> Int
 part2 input = head
   [ 4_000_000 * x + y
     | C y x <-
-        map fromdiamond $
-        removeallof (todiamonds input)
-        [todiamond (C 2_000_000 2_000_000) 4_000_000]
+        map fromDiamond $
+        subtractAllOf (toDiamonds input)
+        [toDiamond (C 2_000_000 2_000_000) 4_000_000]
     , 0 <= y, y <= 4_000_000, 0 <= x, x <= 4_000_000]
 
 -- | Find a corner of a diamond represented as a square region.
-fromdiamond :: Box ('S ('S 'Z)) -> Coord
-fromdiamond (Dim xpy _ (Dim xmy _ Pt)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2) 
+fromDiamond :: Box ('S ('S 'Z)) -> Coord
+fromDiamond (Dim xpy _ (Dim xmy _ Pt)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2) 
 
 -- | Covert a diamond centered at a coordinate with a radius into a square region.
-todiamond :: Coord -> Int -> Box ('S ('S 'Z))
-todiamond (C y x) r = cover (x+y) r (cover (x-y) r Pt)
+toDiamond :: Coord -> Int -> Box ('S ('S 'Z))
+toDiamond (C y x) r = cover (x+y) r (cover (x-y) r Pt)
 
 -- | Convert all the sensors in the input file into square regions corresponding to the
 -- diamond covered by the sensor.
-todiamonds :: Input -> [Box ('S ('S 'Z))]
-todiamonds input =
-  [todiamond (C sy sx) (manhattan (C sy sx) (C by bx)) | (sx,sy,bx,by) <- input]
+toDiamonds :: Input -> [Box ('S ('S 'Z))]
+toDiamonds input =
+  [toDiamond (C sy sx) (manhattan (C sy sx) (C by bx)) | (sx,sy,bx,by) <- input]
 
 -- Box utilities
 
 -- | Remove the first list of regions from the second.
-removeallof ::
+subtractAllOf ::
   [Box n] {- ^ remove this -} ->
   [Box n] {- ^ from this -} ->
   [Box n] {- ^ remaining region -}
-removeallof xs ys = foldl remove1 ys xs
+subtractAllOf xs ys = foldl remove1 ys xs
   where
     remove1 acc x = concatMap (subtractBox x) acc
 
@@ -95,4 +94,4 @@ cover x r = Dim (x - r) (x + r + 1)
 makeDisjoint :: [Box a] -> [Box a]
 makeDisjoint = foldr add []
   where
-    add x sofar = x : concatMap (subtractBox x) sofar
+    add box rest = box : concatMap (subtractBox box) rest
