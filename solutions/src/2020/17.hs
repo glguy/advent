@@ -36,19 +36,14 @@ On my MacBook Pro, part 2 of this problem runs in 50ms.
 -}
 module Main (main) where
 
-import Advent
 import Control.Monad (replicateM)
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 
--- | Find the coordinates of live cells.
---
--- >>> parse [".#.", "..#", "###"]
--- [(1,0),(2,1),(0,2),(1,2),(2,2)]
-parse :: [String] -> [(Int,Int)]
-parse input = [(x,y) | (y,line) <- zip [0..] input, (x,'#') <- zip [0..] line]
+import Advent (getInputMap, times)
+import Advent.Coord (Coord(..))
 
 -- |
 -- >>> :main
@@ -56,16 +51,16 @@ parse input = [(x,y) | (y,line) <- zip [0..] input, (x,'#') <- zip [0..] line]
 -- 2532
 main :: IO ()
 main =
-  do inp <- parse <$> getInputLines 2020 17
-     print (run neighborCount3 (map toC3 inp))
-     print (run neighborCount4 (map toC4 inp))
+  do inp <- Map.keysSet . Map.filter ('#'==) <$> getInputMap 2020 17
+     print (run neighborCount3 (Set.map toC3 inp))
+     print (run neighborCount4 (Set.map toC4 inp))
 
 run ::
   Ord a =>
   (a -> Map a Int) {- ^ neighbor generator             -} ->
-  [a]              {- ^ input coordinates              -} ->
+  Set a            {- ^ input coordinates              -} ->
   Int              {- ^ live cells after 6 generations -}
-run neighbor = Set.size . times 6 (step neighbor) . Set.fromList
+run neighbor = Set.size . times 6 (step neighbor)
 
 -- | Determine if a cell should be alive in the next generation.
 rule ::
@@ -99,8 +94,8 @@ step neighbor world
 
 data C3 = C3 !Int !Int !Int      deriving (Eq, Ord)
 
-toC3 :: (Int,Int) -> C3
-toC3 (x,y) = C3 x y 0
+toC3 :: Coord -> C3
+toC3 (C y x) = C3 x y 0
 
 -- | Compute a Map with @1@ stored at each neighboring coordinate
 neighborCount3 :: C3 -> Map C3 Int
@@ -112,8 +107,8 @@ neighborCount3 =
 
 data C4 = C4 !Int !Int !Int !Int deriving (Eq, Ord)
 
-toC4 :: (Int,Int) -> C4
-toC4 (x,y) = C4 x y 0 0
+toC4 :: Coord -> C4
+toC4 (C y x) = C4 x y 0 0
 
 neighborCount4 :: C4 -> Map C4 Int
 neighborCount4 =
