@@ -35,10 +35,11 @@ part1 input =
   let p1y = 2_000_000 in
   sum $ map size $
   removeallof (beaconsAtY input p1y) $
-  makeDisjoint [y | x <- input, y <- ranges p1y x]
+  makeDisjoint $
+  concatMap (ranges p1y) input
 
 beaconsAtY :: Input -> Int -> [Box ('S 'Z)]
-beaconsAtY input ty = [cover nx 0 Pt | (_,_,nx,ny)<-input, ny == ty]
+beaconsAtY input y = [cover bx 0 Pt | (_,_,bx,by) <- input, by == y]
 
 ranges :: Int -> (Int,Int,Int,Int) -> [Box ('S 'Z)]
 ranges yy (x,y,nx,ny)
@@ -72,10 +73,7 @@ todiamond (C y x) r = cover (x+y) r (cover (x-y) r Pt)
 -- diamond covered by the sensor.
 todiamonds :: Input -> [Box ('S ('S 'Z))]
 todiamonds input =
-  [ todiamond (C y x) r
-     | (x,y,nx,ny) <- input
-     , let r = manhattan (C y x) (C ny nx)
-     ]
+  [todiamond (C sy sx) (manhattan (C sy sx) (C by bx)) | (sx,sy,bx,by) <- input]
 
 -- Box utilities
 
@@ -85,7 +83,8 @@ removeallof ::
   [Box n] {- ^ from this -} ->
   [Box n] {- ^ remaining region -}
 removeallof xs ys = foldl remove1 ys xs
-  where remove1 acc x = concatMap (subtractBox x) acc
+  where
+    remove1 acc x = concatMap (subtractBox x) acc
 
 -- | Extend a box to cover a new dimension centered on x with radius r.
 cover :: Int {- ^ position -} -> Int {- ^ radius -} -> Box n -> Box ('S n)
