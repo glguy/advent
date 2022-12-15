@@ -14,7 +14,7 @@ module Main where
 import Data.List (sort)
 
 import Advent ( format )
-import Advent.Box ( size, subtractBox, Box(..) )
+import Advent.Box
 import Advent.Coord ( manhattan, Coord(C) )
 import Advent.Nat ( Nat(Z, S) )
 
@@ -33,12 +33,30 @@ main = do
         removeallof (beaconsAtY input p1y) $
         boxUnion [y | x <- input, y <- ranges p1y x]
     
-    print $ head [
-        yy + 4_000_000 * b
-        | yy <- [0 .. 4_000_000]
-        , [Dim _ b Pt, _] <- [consolidate (boxUnion (concatMap (ranges yy) input))]
-        ]
-        
+    print [
+      4_000_000 * y + x
+      | C y x <- 
+          map fromdiamond $
+          removeallof (todiamonds input)
+          [todiamond (C 2000000 2000000) 4000000 ]
+      , 0 <= y, y <= 4000000, 0 <= x , x <= 4000000]
+
+fromdiamond :: Box ('S ('S 'Z)) -> Coord
+fromdiamond (Dim _ b (Dim _ d Pt)) = C ((b + d)`div`2) ((b-d)`div`2)
+  
+todiamonds :: Input -> [Box ('S ('S 'Z))]
+todiamonds input =
+  [ todiamond (C y x) r
+     | (x,y,nx,ny) <- input
+     , let r = manhattan (C y x) (C ny nx)
+     ]
+
+todiamond :: Coord -> Int -> Box ('S ('S 'Z))
+todiamond (C y x) r =  Dim (a - r) (a + r + 1) (Dim (b - r) (b + r + 1) Pt)
+  where
+    a = x + y
+    b = x - y
+      
 beaconsAtY :: Input -> Int -> [Box ('S 'Z)]
 beaconsAtY input ty = [Dim nx (nx+1) Pt | (_,_,nx,ny)<-input, ny == ty]
 
@@ -60,7 +78,7 @@ consolidate = aux . sort
     aux (x:xs) = x : aux xs
     aux [] = []
 
-removeallof :: [Box ('S 'Z)] -> [Box ('S 'Z)] -> [Box ('S 'Z)]
+removeallof :: [Box n] -> [Box n] -> [Box n]
 removeallof xs ys = foldl remove1 ys xs
  where remove1 acc x = concatMap (subtractBox x) acc
 
