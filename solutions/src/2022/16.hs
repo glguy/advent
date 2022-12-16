@@ -26,7 +26,7 @@ main = do
 
     let routeValues1 = solver graph 30
     print (maximum routeValues1)
-    
+
     let routeValues2 = solver graph 26
     print (maximum [v1+v2 | (open1,v1) : elephants <- tails (Map.assocs routeValues2),
                             (open2,v2) <- elephants,
