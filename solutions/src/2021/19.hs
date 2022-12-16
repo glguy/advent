@@ -114,7 +114,7 @@ rotations (C3 x y z) =
 -- | Determines the maximum manhattan distance between any pair of points.
 -- this is achieved by finding the bounding octahedroid for this set of points.
 radius :: [Coord3] -> Int
-radius = minCube . unionBoxes . map to4
+radius = minCube . coverBoxes . map to4
 
 -- | Find the side length of the smallest hypercube that can bound
 -- the given hyperrectangle.

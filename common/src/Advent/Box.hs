@@ -96,11 +96,20 @@ subtractBox' (Dim a b xs) (Dim c d ys) =
   [Dim b d ys | b < d] ++
   [Dim a b zs | zs <- subtractBox' xs ys]
 
--- | Compute the box that encompasses both arguments.
-unionBox :: Box n -> Box n -> Box n
-unionBox (Dim a b x) (Dim c d y) = Dim (min a c) (max b d) (unionBox x y)
-unionBox Pt Pt = Pt
+-- | Compute the box that encompasses both arguments. This might cover
+-- extra elements as no such box might exist that is the perfect union
+-- of the two boxes.
+coverBox :: Box n -> Box n -> Box n
+coverBox (Dim a b x) (Dim c d y) = Dim (min a c) (max b d) (coverBox x y)
+coverBox Pt Pt = Pt
 
 -- | Compute the box that encompasses all of the boxes in the list.
-unionBoxes :: [Box n] -> Box n
-unionBoxes = foldl1' unionBox
+coverBoxes :: [Box n] -> Box n
+coverBoxes = foldl1' coverBox
+
+-- | Given a list of potentially overlapping boxes create a new list
+-- of boxes that cover the same region but which do not overlap.
+unionBoxes :: [Box a] -> [Box a]
+unionBoxes = foldr add []
+  where
+    add box rest = box : concatMap (subtractBox box) rest

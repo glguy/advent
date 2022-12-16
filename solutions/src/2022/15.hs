@@ -33,7 +33,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (format)
-import Advent.Box (Box(Dim,Pt), subtractBox, size)
+import Advent.Box (Box(Dim,Pt), subtractBox, size, unionBoxes)
 import Advent.Coord (manhattan, Coord(C))
 import Advent.Nat (Nat(Z, S))
 
@@ -72,7 +72,7 @@ part1 ::
 part1 row diamonds beacons =
   sum $ map size $
   subtractAllOf [cover x 0 Pt | C y x <- beacons, y == row] $
-  makeDisjoint $
+  unionBoxes $
   concatMap (rowSlice row) diamonds
 
 -- | Generate the 1-d box describing the X region covered by the sensor at a given Y value
@@ -125,10 +125,3 @@ subtractAllOf xs ys = foldl remove1 ys xs
 -- | Extend a box to cover a new dimension centered on x with radius r.
 cover :: Int {- ^ position -} -> Int {- ^ radius -} -> Box n -> Box ('S n)
 cover x r = Dim (x - r) (x + r + 1)
-
--- | Given a list of potentially overlapping boxes create a new list
--- of boxes that cover the same region but which do not overlap
-makeDisjoint :: [Box a] -> [Box a]
-makeDisjoint = foldr add []
-  where
-    add box rest = box : concatMap (subtractBox box) rest
