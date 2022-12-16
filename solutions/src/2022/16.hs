@@ -33,11 +33,9 @@ import Data.Map.Strict qualified as SMap
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.List (tails, foldl')
-import Data.Maybe
-import Debug.Trace
+import Data.Maybe (maybeToList)
 
-import Advent ( format )
-import Advent.PQueue qualified as PQ
+import Advent (format)
 
 -- |
 -- :main
