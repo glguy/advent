@@ -99,6 +99,15 @@ subtractBox' (Dim a b xs) (Dim c d ys) =
 -- | Compute the box that encompasses both arguments. This might cover
 -- extra elements as no such box might exist that is the perfect union
 -- of the two boxes.
+--
+-- >>> coverBox (Dim 2 3 Pt) (Dim 0 4 Pt)
+-- Dim 0 4 Pt
+--
+-- >>> coverBox (Dim 1 3 Pt) (Dim 2 4 Pt)
+-- Dim 1 4 Pt
+--
+-- >>> coverBox (Dim 0 1 Pt) (Dim 3 4 Pt)
+-- Dim 0 4 Pt
 coverBox :: Box n -> Box n -> Box n
 coverBox (Dim a b x) (Dim c d y) = Dim (min a c) (max b d) (coverBox x y)
 coverBox Pt Pt = Pt
@@ -109,6 +118,17 @@ coverBoxes = foldl1' coverBox
 
 -- | Given a list of potentially overlapping boxes create a new list
 -- of boxes that cover the same region but which do not overlap.
+--
+-- Note that this function does not attempt to combine boxes.
+--
+-- >>> unionBoxes [Dim 2 3 Pt, Dim 0 4 Pt]
+-- [Dim 2 3 Pt,Dim 0 2 Pt,Dim 3 4 Pt]
+--
+-- >>> unionBoxes [Dim 1 3 Pt, Dim 2 4 Pt]
+-- [Dim 1 3 Pt,Dim 3 4 Pt]
+--
+-- >>> unionBoxes [Dim 0 1 Pt, Dim 3 4 Pt]
+-- [Dim 0 1 Pt,Dim 3 4 Pt]
 unionBoxes :: [Box a] -> [Box a]
 unionBoxes = foldr add []
   where
