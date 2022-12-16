@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 16 solution
@@ -29,11 +29,15 @@ module Main where
 
 import Data.Map (Map)
 import Data.Map qualified as Map
+import Data.Map.Strict qualified as SMap
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.List (tails)
+import Data.List (tails, foldl')
+import Data.Maybe
+import Debug.Trace
 
 import Advent ( format )
+import Advent.PQueue qualified as PQ
 
 -- |
 -- :main
@@ -42,25 +46,46 @@ import Advent ( format )
 main :: IO ()
 main = do
     input <- [format|2022 16 (Valve %s has flow rate=%u; tunnel(|s) lead(|s) to valve(|s) %s&(, )%n)*|]
-    let graph = Map.fromList [(k, (n, vs)) | (k, n, vs) <- input]
 
-    let routeValues1 = solver graph 30
+    let flows = Map.fromList [(k, n) | (k, n, _) <- input, n > 0]
+    let distances = fw [k | (k,_,_) <- input] (Map.fromList [((k,v),1) | (k, _, vs) <- input, v <- vs])
+    let graph = Map.fromListWith (++)
+            [(src, [(dst,cost+1,flow)])
+                | ((src,dst),cost) <- Map.assocs distances
+                , src == "AA" || Map.member src flows
+                , flow <- maybeToList (Map.lookup dst flows)]
+
+    let routeValues1 = solve graph 30
     print (maximum routeValues1)
 
-    let routeValues2 = solver graph 26
+    let routeValues2 = solve graph 26
     print (maximum [v1+v2 | (open1,v1) : elephants <- tails (Map.assocs routeValues2),
                             (open2,v2) <- elephants,
-                            Set.null (Set.intersection open1 open2)])
+                            Set.disjoint open1 open2])
 
-solver :: Map String (Int, [String]) -> Int -> Map (Set String) Int
-solver graph = go [(("AA", Set.empty), 0)]
-  where
-    go states 0 = Map.fromListWith max [(open, n) | ((_, open), n) <- states]
-    go states t = go (simplify (concatMap step states)) (t-1)
-        where
-            step ((here, open), n) =
-                [((next, open), n) | next <- snd (graph Map.! here)] ++
-                [((here, Set.insert here open), n + (t-1) * amt)
-                    | Set.notMember here open
-                    , let amt = fst (graph Map.! here), amt /= 0 ]
-    simplify = Map.assocs . Map.fromListWith max
+solve :: Map String [(String, Int, Int)] -> Int -> Map (Set String) Int
+solve graph time0 =
+    SMap.fromListWith max [(open, flow) | (_, _, open, flow) <- go (time0, "AA", Set.empty, 0)]
+    where
+        go (t, here, open, flow) = xs ++ concatMap go xs
+            where
+                xs =
+                    [ (t', next, Set.insert next open, flow + t' * valve)
+                        | (next, cost, valve) <- graph Map.! here
+                        , Set.notMember next open
+                        , let t' = t - cost
+                        , t' > 0
+                    ]
+
+-- | Floyd-Warshall shortest paths
+fw ::
+    Ord k =>
+    [k] {- ^ all verticies -} ->
+    Map (k,k) Int {- ^ distances between a pair of verticies -} ->
+    Map (k,k) Int {- ^ shortest distance between two verticies -}
+fw keys  = each \k -> each \i -> each \j dists ->
+    case (Map.lookup (i,k) dists, Map.lookup (k,j) dists) of
+        (Just d1, Just d2) -> SMap.insertWith min (i,j) (d1+d2) dists
+        _ -> dists
+    where
+        each g z = foldl' (flip g) z keys
