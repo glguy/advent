@@ -38,20 +38,21 @@ import Data.Maybe (maybeToList)
 import Advent (format)
 
 -- |
--- :main
+-- >>> :main
 -- 1820
 -- 2602
 main :: IO ()
 main = do
     input <- [format|2022 16 (Valve %s has flow rate=%u; tunnel(|s) lead(|s) to valve(|s) %s&(, )%n)*|]
 
-    let flows = Map.fromList [(k, n) | (k, n, _) <- input, n > 0]
-    let distances = fw [k | (k,_,_) <- input] (Map.fromList [((k,v),1) | (k, _, vs) <- input, v <- vs])
-    let graph = Map.fromListWith (++)
-            [(src, [(dst,cost+1,flow)])
-                | ((src,dst),cost) <- Map.assocs distances
-                , src == "AA" || Map.member src flows
-                , flow <- maybeToList (Map.lookup dst flows)]
+    let distances1 = Map.fromList [((k,v),1) | (k, _, vs) <- input, v <- vs]
+    let distances  = fw [k | (k,_,_) <- input] distances1
+    let flows      = Map.fromList [(k, n) | (k, n, _) <- input, n > 0]
+    let graph      = Map.fromListWith (++)
+                        [(src, [(dst,cost+1,flow)])
+                            | ((src,dst),cost) <- Map.assocs distances
+                            , src == "AA" || Map.member src flows, src /= dst
+                            , flow <- maybeToList (Map.lookup dst flows)]
 
     let routeValues1 = solve graph 30
     print (maximum routeValues1)
@@ -63,27 +64,26 @@ main = do
 
 solve :: Map String [(String, Int, Int)] -> Int -> Map (Set String) Int
 solve graph time0 =
-    SMap.fromListWith max [(open, flow) | (_, _, open, flow) <- go (time0, "AA", Set.empty, 0)]
+    SMap.fromListWith max (go [(time0, "AA", Set.empty, 0)])
     where
-        go (t, here, open, flow) = xs ++ concatMap go xs
-            where
-                xs =
-                    [ (t', next, Set.insert next open, flow + t' * valve)
-                        | (next, cost, valve) <- graph Map.! here
-                        , Set.notMember next open
-                        , let t' = t - cost
-                        , t' > 0
-                    ]
+        go xs = [(open,flow) | (_,_,open,flow) <- xs] ++ concatMap (go . step) xs
+        step (t, here, open, flow) =
+            [ (t', next, Set.insert next open, flow + t' * valve)
+                | (next, cost, valve) <- graph Map.! here
+                , Set.notMember next open
+                , let t' = t - cost
+                , t' > 0
+            ]
 
 -- | Floyd-Warshall shortest paths
 fw ::
     Ord k =>
-    [k] {- ^ all verticies -} ->
+    [k]           {- ^ all verticies -} ->
     Map (k,k) Int {- ^ distances between a pair of verticies -} ->
     Map (k,k) Int {- ^ shortest distance between two verticies -}
-fw keys  = each \k -> each \i -> each \j dists ->
+fw keys = each \k -> each \i -> each \j dists ->
     case (Map.lookup (i,k) dists, Map.lookup (k,j) dists) of
         (Just d1, Just d2) -> SMap.insertWith min (i,j) (d1+d2) dists
-        _ -> dists
+        _                  -> dists
     where
         each g z = foldl' (flip g) z keys
