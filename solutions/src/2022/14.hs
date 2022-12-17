@@ -15,30 +15,30 @@ Maintainer  : emertens@gmail.com
 >>> let Left world1 = fillFrom Left limit world top
 >>> let picture = Data.Map.fromSet (const '█') world <> Data.Map.fromSet (const '◆') world1
 >>> putStr (Advent.Coord.drawPicture picture)
-      ◆
-     ◆◆◆
-    █◆◆◆██
-   ◆█◆◆◆█
-  ███◆◆◆█
-    ◆◆◆◆█
- ◆ ◆◆◆◆◆█
-█████████
+······◆···
+·····◆◆◆··
+····█◆◆◆██
+···◆█◆◆◆█·
+··███◆◆◆█·
+····◆◆◆◆█·
+·◆·◆◆◆◆◆█·
+█████████·
 >>> Set.size world1 - Set.size world
 24
 >>> let Identity world2 = fillFrom Identity limit world top
 >>> let picture = Data.Map.fromSet (const '█') world <> Data.Map.fromSet (const '◆') world2
 >>> putStr (Advent.Coord.drawPicture picture)
-          ◆
-         ◆◆◆
-        ◆◆◆◆◆
-       ◆◆◆◆◆◆◆
-      ◆◆█◆◆◆██◆
-     ◆◆◆█◆◆◆█◆◆◆
-    ◆◆███◆◆◆█◆◆◆◆
-   ◆◆◆◆ ◆◆◆◆█◆◆◆◆◆
-  ◆◆◆◆◆◆◆◆◆◆█◆◆◆◆◆◆
- ◆◆◆█████████◆◆◆◆◆◆◆
-◆◆◆◆◆       ◆◆◆◆◆◆◆◆◆
+··········◆··········
+·········◆◆◆·········
+········◆◆◆◆◆········
+·······◆◆◆◆◆◆◆·······
+······◆◆█◆◆◆██◆······
+·····◆◆◆█◆◆◆█◆◆◆·····
+····◆◆███◆◆◆█◆◆◆◆····
+···◆◆◆◆·◆◆◆◆█◆◆◆◆◆···
+··◆◆◆◆◆◆◆◆◆◆█◆◆◆◆◆◆··
+·◆◆◆█████████◆◆◆◆◆◆◆·
+◆◆◆◆◆·······◆◆◆◆◆◆◆◆◆
 >>> Set.size world2 - Set.size world
 93
 

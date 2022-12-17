@@ -25,7 +25,6 @@ main =
     let letsGo = print . last . intcodeToList inp . map ord
     letsGo part1
     letsGo part2
-    print $ eval inp ["NOT A J", "WALK"]
 
 eval :: [Int] -> [String] -> Either String Int
 eval pgm input
