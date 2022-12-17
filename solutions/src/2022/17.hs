@@ -19,10 +19,10 @@ reachable from the row above the top of the tower.
 -}
 module Main where
 
+import Data.Array (Array, (!), listArray)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Array
 
 import Advent (format)
 import Advent.Coord (Coord(C), coordRow, east, west, cardinal, coordCol, south)
@@ -98,9 +98,10 @@ findCycle :: Ord a => [a] -> (Int,Int)
 findCycle = go Map.empty 0
   where
     go _ _ [] = error "no cycle"
-    go seen i (x:xs)
-       | Just j <- Map.lookup x seen = (j,i)
-       | otherwise = go (Map.insert x i seen)(i+1) xs
+    go seen i (x:xs) =
+      case Map.lookup x seen of
+        Nothing -> go (Map.insert x i seen)(i+1) xs
+        Just j -> (j,i)
 
 -- | Map the input characters to jet vectors
 dir :: Char -> Coord
@@ -125,10 +126,13 @@ clean stuff = Set.filter alive stuff
     air = bfsN step [C ymin x | x <- [0..6], Set.notMember (C ymin x) stuff]
     alive x = any (`elem` air) (cardinal x) || coordRow x == ymin
 
+-- | Piece the next piece on the top of the tower returning the updated
+-- piece index, jet index, and tower contents. The tower is pruned to
+-- exclude all rocks that are not reachable from the top of the tower.
 place ::
-  Array Int Coord {- ^ jet vectors -} ->
+  Array Int Coord       {- ^ jet vectors                   -} ->
   (Int, Int, Set Coord) {- ^ piece index, jet index, rocks -} ->
-  (Int, Int, Set Coord)
+  (Int, Int, Set Coord) {- ^ piece index, jet index, rocks -}
 place jets (i,j,stuff) =
     case drive j piece' of
       (stuck, j') -> (i', j', clean (Set.union stuff stuck))
