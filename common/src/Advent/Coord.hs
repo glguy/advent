@@ -174,7 +174,7 @@ drawPicture pixels =
   case boundingBox (Map.keys pixels) of
     Nothing -> ""
     Just (C miny minx, C maxy maxx) ->
-      unlines [[Map.findWithDefault ' ' (C y x) pixels | x <- [minx .. maxx]] | y <- [miny .. maxy]]
+      unlines [[Map.findWithDefault '·' (C y x) pixels | x <- [minx .. maxx]] | y <- [miny .. maxy]]
 
 -- | Render a minimal bounding box containing boxes
 -- at the given coordinates.
