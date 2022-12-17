@@ -49,8 +49,8 @@ import Advent.Search (bfsN)
 -- ██
 -- ██
 -- <BLANKLINE>
-pieces :: [Set Coord]
-pieces = [
+pieces :: Array Int (Set Coord)
+pieces = listArray (0,4) [
     Set.fromList [C 0 0, C 0 1, C 0 2, C 0 3],
     Set.fromList [C (-2) 1, C (-1) 0, C (-1) 1, C (-1) 2, C 0 1],
     Set.fromList [C 0 0, C 0 1, C 0 2, C (-1) 2, C (-2) 2],
@@ -71,7 +71,7 @@ main =
  do moves <- map dir <$> [format|2022 17 %s%n|]
     let movesArray = listArray (0, length moves-1) moves
 
-    let states = place movesArray 0 0 initialStuff
+    let states = iterate (place movesArray) (0, 0, initialStuff)
     let heightAt i = case states !! i of (_,_,stuff) -> height stuff
 
     -- part 1
@@ -127,28 +127,25 @@ clean stuff = Set.filter alive stuff
 
 place ::
   Array Int Coord {- ^ jet vectors -} ->
-  Int {- ^ piece index -} ->
-  Int {- ^ jet vector index -} ->
-  Set Coord {- ^ starting tower -} ->
-  [(Int, Int, Set Coord)] {- ^ sequence of towers after each piece is added -}
-place jets i j stuff =
-    (i,j,stuff) :
+  (Int, Int, Set Coord) {- ^ piece index, jet index, rocks -} ->
+  (Int, Int, Set Coord)
+place jets (i,j,stuff) =
     case drive j piece' of
-        (stuck, j') -> place jets i' j' (clean (Set.union stuff stuck))
+      (stuck, j') -> (i', j', clean (Set.union stuff stuck))
     where
-        i' = (i+1)`mod`5
-        p  = pieces !! i 
-        piece' = translate p (C (-height stuff-4) 2)
+      i' = (i+1)`mod`5
+      p  = pieces ! i
+      piece' = translate p (C (-height stuff-4) 2)
 
-        isCrashed piece = not (all inWalls piece) || not (Set.disjoint stuff piece)
+      isCrashed piece = not (all inWalls piece) || not (Set.disjoint stuff piece)
 
-        drive j0 p1
-            | isCrashed p4 = (p3, j')
-            | otherwise = drive j' p4
-            where
-                j' = (j0+1) `mod` length jets
-                x  = jets ! j0
-                p2 = translate p1 x
-                p3 | isCrashed p2 = p1
-                   | otherwise    = p2
-                p4 = translate p3 south
+      drive dj p1
+        | isCrashed p4 = (p3, dj')
+        | otherwise = drive dj' p4
+        where
+            dj' = (dj+1) `mod` length jets
+            x  = jets ! dj
+            p2 = translate p1 x
+            p3 | isCrashed p2 = p1
+               | otherwise    = p2
+            p4 = translate p3 south
