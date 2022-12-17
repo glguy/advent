@@ -34,7 +34,7 @@ import Advent.Search (bfsN)
 -- ████
 -- <BLANKLINE>
 -- ·█·
--- ███
+-- █·█
 -- ·█·
 -- <BLANKLINE>
 -- ··█
@@ -52,7 +52,7 @@ import Advent.Search (bfsN)
 pieces :: Array Int (Set Coord)
 pieces = listArray (0,4) [
     Set.fromList [C 0 0, C 0 1, C 0 2, C 0 3],
-    Set.fromList [C (-2) 1, C (-1) 0, C (-1) 1, C (-1) 2, C 0 1],
+    Set.fromList [C (-2) 1, C (-1) 0, C (-1) 2, C 0 1],
     Set.fromList [C 0 0, C 0 1, C 0 2, C (-1) 2, C (-2) 2],
     Set.fromList [C 0 0, C (-1) 0, C (-2) 0, C (-3) 0],
     Set.fromList [C (-1) 0, C (-1) 1, C 0 0, C 0 1]
@@ -124,7 +124,7 @@ clean stuff = Set.filter alive stuff
     ymin = coordRow (minimum stuff)
     step c = [n | n <- cardinal c, 0 <= coordCol n, coordCol n <= 6, coordRow c >= ymin, Set.notMember n stuff]
     air = bfsN step [C ymin x | x <- [0..6], Set.notMember (C ymin x) stuff]
-    alive x = any (`elem` air) (cardinal x) || coordRow x == ymin
+    alive x = (any (`elem` air) (cardinal x) || coordRow x == ymin)
 
 -- | Piece the next piece on the top of the tower returning the updated
 -- piece index, jet index, and tower contents. The tower is pruned to
@@ -134,22 +134,20 @@ place ::
   (Int, Int, Set Coord) {- ^ piece index, jet index, rocks -} ->
   (Int, Int, Set Coord) {- ^ piece index, jet index, rocks -}
 place jets (i,j,stuff) =
-    case drive j piece' of
+    case drive j start of
       (stuck, j') -> (i', j', clean (Set.union stuff stuck))
     where
       i' = (i+1)`mod`5
-      p  = pieces ! i
-      piece' = translate p (C (-height stuff-4) 2)
+      start = translate (pieces ! i) (C (-height stuff-4) 2)
 
-      isCrashed piece = not (all inWalls piece) || not (Set.disjoint stuff piece)
+      isCrashed piece = not (all inWalls piece && Set.disjoint stuff piece)
 
       drive dj p1
-        | isCrashed p4 = (p3, dj')
-        | otherwise = drive dj' p4
+        | Set.disjoint stuff p4 = drive dj' p4
+        | otherwise             = (p3, dj')
         where
             dj' = (dj+1) `mod` length jets
-            x  = jets ! dj
-            p2 = translate p1 x
+            p2 = translate p1 (jets ! dj)
             p3 | isCrashed p2 = p1
                | otherwise    = p2
             p4 = translate p3 south

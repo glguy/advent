@@ -42,8 +42,8 @@ import Advent.SmallSet qualified as SmallSet
 -- 1820
 -- 2602
 main :: IO ()
-main = do
-    input <- [format|2022 16 (Valve %s has flow rate=%u; tunnel(|s) lead(|s) to valve(|s) %s&(, )%n)*|]
+main =
+ do input <- [format|2022 16 (Valve %s has flow rate=%u; tunnel(|s) lead(|s) to valve(|s) %s&(, )%n)*|]
 
     let distances1 = Map.fromList [((k,v),1) | (k, _, vs) <- input, v <- vs]
     let distances  = fw [k | (k,_,_) <- input] distances1
