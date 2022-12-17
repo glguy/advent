@@ -12,10 +12,10 @@ states with the order defined by the search strategy.
 -}
 module Advent.Search (
   -- * Depth-first search
-  dfs, dfsOn,
+  dfs, dfsN, dfsOn, dfsOnN,
 
   -- * Breadth-first search
-  bfs, bfsOn, bfsOnN,
+  bfs, bfsN, bfsOn, bfsOnN,
 
   -- * A* search
   AStep(..),
@@ -34,6 +34,11 @@ dfs :: Ord a => (a -> [a]) -> a -> [a]
 dfs = dfsOn id
 {-# INLINE dfs #-}
 
+-- | Shortcut for @'dfsOnN' 'id'@
+dfsN :: Ord a => (a -> [a]) -> [a] -> [a]
+dfsN = dfsOnN id
+{-# INLINE dfsN #-}
+
 -- | Depth-first search.
 --
 -- Generates the list of unique visited states from a
@@ -45,7 +50,21 @@ dfsOn ::
   (a -> [a]) {- ^ successors function                 -} ->
   a          {- ^ initial state                       -} ->
   [a]        {- ^ visited states in depth-first order -}
-dfsOn rep next start = loop Set.empty [start]
+dfsOn rep next start = dfsOnN rep next [start]
+{-# INLINE dfsOn #-}
+
+-- | Depth-first search.
+--
+-- Generates the list of unique visited states from a
+-- given starting state. States are unique up to the
+-- characterizing function.
+dfsOnN ::
+  Ord r =>
+  (a -> r)   {- ^ state characterization              -} ->
+  (a -> [a]) {- ^ successors function                 -} ->
+  [a]        {- ^ initial states                      -} ->
+  [a]        {- ^ visited states in depth-first order -}
+dfsOnN rep next = loop Set.empty
   where
     loop !seen = \case
       [] -> []
@@ -60,6 +79,11 @@ dfsOn rep next start = loop Set.empty [start]
 bfs :: Ord a => (a -> [a]) -> a -> [a]
 bfs = bfsOn id
 {-# INLINE bfs #-}
+
+-- | Shortcut for @'bfsOnN' 'id'@
+bfsN :: Ord a => (a -> [a]) -> [a] -> [a]
+bfsN = bfsOnN id
+{-# INLINE bfsN #-}
 
 -- | Enumerate the reachable states in breadth-first order
 -- given a successor state function and initial state.

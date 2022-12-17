@@ -25,9 +25,9 @@ import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 
-import Advent ( format )
+import Advent (format)
 import Advent.Coord (Coord(C), coordRow, east, west, cardinal, coordCol, south)
-import Advent.Search ( bfsOnN )
+import Advent.Search (bfsN)
 
 -- | The set of five blocks
 --
@@ -71,23 +71,18 @@ main :: IO ()
 main =
  do moves <- cycle . map dir <$> [format|2022 17 %s%n|]
     let states = place moves initialStuff (cycle pieces)
+    let heightAt i = height (states !! i)
 
     -- part 1
-    print (height (states !! 2022))
+    print (heightAt 2022)
 
     -- part 2
-    let (cyc1,cyc2) = findCycle $
-            map (map normalize . take 5) $
-            tails states
+    let (cyc1,cyc2) = findCycle (map (map normalize . take 5) (tails states))
     let cycLen = cyc2 - cyc1
-    
+
     let (cycCnt, overflow) = (1_000_000_000_000 - cyc1) `divMod` cycLen
-
-    let preHeight = height (states!!cyc1)
-    let cycHeight = height (states!!cyc2) - height (states!!cyc1)
-    let postHeight = height (states!!(cyc2+overflow)) - height (states!!cyc2)
-
-    print (preHeight + cycHeight * cycCnt + postHeight)
+    let cycHeight = heightAt cyc2 - heightAt cyc1
+    print (heightAt (cyc2 + overflow) + cycHeight * (cycCnt-1))
 
 -- | Height of a tower
 height :: Set Coord -> Int
@@ -104,7 +99,7 @@ findCycle = go Map.empty 0
     go _ _ [] = error "no cycle"
     go seen i (x:xs)
        | Just j <- Map.lookup x seen = (j,i)
-       | otherwise = go (Map.insert x i seen)(i+1) xs 
+       | otherwise = go (Map.insert x i seen)(i+1) xs
 
 -- | Map the input characters to jet vectors
 dir :: Char -> Coord
@@ -126,7 +121,7 @@ clean stuff = Set.filter alive stuff
   where
     ymin = coordRow (minimum stuff)
     step c = [n | n <- cardinal c, 0 <= coordCol n, coordCol n <= 6, coordRow c >= ymin, Set.notMember n stuff]
-    air = bfsOnN id step [C ymin x | x <- [0..6], Set.notMember (C ymin x) stuff]
+    air = bfsN step [C ymin x | x <- [0..6], Set.notMember (C ymin x) stuff]
     alive x = any (`elem` air) (cardinal x) || coordRow x == ymin
 
 place ::
