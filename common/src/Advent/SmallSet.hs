@@ -146,6 +146,10 @@ member x (SmallSet y)
   | inRange x = testBit y x
   | otherwise = error ("Advent.SmallSet.member: bad argument " ++ show x)
 
+-- | Check if two sets contain no common elements
+disjoint :: SmallSet -> SmallSet -> Bool
+disjoint x y = Advent.SmallSet.null (intersection x y)
+
 -- | Number of elements in a set.
 --
 -- >>> size (fromList [1,2,3])
