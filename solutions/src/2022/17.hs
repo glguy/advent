@@ -19,7 +19,7 @@ reachable from the row above the top of the tower.
 -}
 module Main where
 
-import Data.Array (Array, (!), listArray)
+import Data.Array.Unboxed (Array, (!), listArray, rangeSize, bounds)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
@@ -130,7 +130,7 @@ clean stuff = Set.filter alive stuff
 -- piece index, jet index, and tower contents. The tower is pruned to
 -- exclude all rocks that are not reachable from the top of the tower.
 place ::
-  Array Int Coord       {- ^ jet vectors                   -} ->
+  Array Int Coord      {- ^ jet vectors                   -} ->
   (Int, Int, Set Coord) {- ^ piece index, jet index, rocks -} ->
   (Int, Int, Set Coord) {- ^ piece index, jet index, rocks -}
 place jets (i,j,stuff) =
@@ -146,7 +146,7 @@ place jets (i,j,stuff) =
         | Set.disjoint stuff p4 = drive dj' p4
         | otherwise             = (p3, dj')
         where
-            dj' = (dj+1) `mod` length jets
+            dj' = (dj+1) `mod` rangeSize (bounds jets)
             p2 = translate p1 (jets ! dj)
             p3 | isCrashed p2 = p1
                | otherwise    = p2

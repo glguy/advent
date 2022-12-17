@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, DeriveDataTypeable, DeriveGeneric, TypeFamilies, TypeOperators, BlockArguments #-}
+{-# Language ImportQualifiedPost, UnboxedTuples, MagicHash, MultiParamTypeClasses, DeriveDataTypeable, DeriveGeneric, TypeFamilies, TypeOperators, BlockArguments #-}
 {-|
 Module      : Advent.Coord
 Description : Row-major coordinates
@@ -20,13 +20,18 @@ where y grows down, x grows right.
 -}
 module Advent.Coord where
 
+import Data.Array.Base qualified as AB
+import Data.Array.IO.Internals qualified as AB
 import Data.Data (Data)
 import Data.Foldable (toList)
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.MemoTrie (HasTrie(..))
 import GHC.Generics (Generic)
+import Control.Monad.ST ( ST, stToIO, runST )
+import GHC.ST (ST(ST))
 import GHC.Ix (Ix(unsafeIndex, range, index, inRange, unsafeRangeSize), indexError)
+import GHC.Exts (Int(I#), (+#), (*#), indexIntArray#, readIntArray#, writeIntArray#)
 
 -- | Two-dimensional coordinate
 data Coord = C !Int !Int
@@ -39,35 +44,6 @@ coordRow (C row _) = row
 -- | Column (x) of coordinate
 coordCol :: Coord -> Int
 coordCol (C _ col) = col
-
--- | Row-major coordinate indexing
---
--- >>> range (C 1 1, C 2 2)
--- [C 1 1,C 1 2,C 2 1,C 2 2]
---
--- >>> index (C 1 1, C 2 2) <$> range (C 1 1, C 2 2)
--- [0,1,2,3]
-instance Ix Coord where
-  unsafeIndex (C lorow locol, C hirow hicol) (C row col) =
-    unsafeIndex (lorow,hirow) row * unsafeRangeSize (locol,hicol) + unsafeIndex (locol,hicol) col
-  {-# INLINE unsafeIndex #-}
-
-  index b i
-    | inRange b i = unsafeIndex b i
-    | otherwise   = indexError b i "Coord" 
-  {-# INLINE index #-}
-
-  inRange (C lorow locol, C hirow hicol) (C row col) =
-    inRange (lorow,hirow) row && inRange (locol,hicol) col
-  {-# INLINE inRange #-}
-
-  range (C lorow locol, C hirow hicol) =
-    [C row col | row <- [lorow..hirow], col <- [locol..hicol]]
-  {-# INLINE range #-}
-
-  unsafeRangeSize (C lorow locol, C hirow hicol) =
-    (hirow - lorow + 1) * (hicol - locol + 1)
-  {-# INLINE unsafeRangeSize #-}
 
 -- | Decrement y coordinate
 above :: Coord -> Coord
@@ -186,9 +162,11 @@ drawCoords coords = drawPicture (Map.fromList [(c,'█') | c <- toList coords])
 coordLines :: [String] -> [(Coord, Char)]
 coordLines rows = [(C y x, z) | (y,row) <- zip [0..] rows, (x,z) <- zip [0..] row]
 
+-- | Apply a function to the y and x coordinate
 mapCoord :: (Int -> Int) -> Coord -> Coord
 mapCoord f (C y x) = C (f y) (f x)
 
+-- | Use a function pairwise on x and y coordinates of the two arguments
 zipCoord :: (Int -> Int -> Int) -> Coord -> Coord -> Coord
 zipCoord f (C y1 x1) (C y2 x2) = C (f y1 y2) (f x1 x2)
 
@@ -214,3 +192,90 @@ instance HasTrie Coord where
   trie f = CT (trie \y -> trie \x -> f (C y x))
   CT t `untrie` C y x = t `untrie` y `untrie` x
   enumerate (CT t) = [(C y x, a) | (y, xs) <- enumerate t, (x, a) <- enumerate xs]
+
+-- Array package interoperability
+
+-- | Row-major coordinate indexing
+--
+-- >>> range (C 1 1, C 2 2)
+-- [C 1 1,C 1 2,C 2 1,C 2 2]
+--
+-- >>> index (C 1 1, C 2 2) <$> range (C 1 1, C 2 2)
+-- [0,1,2,3]
+instance Ix Coord where
+  unsafeIndex (C lorow locol, C hirow hicol) (C row col) =
+    unsafeIndex (lorow,hirow) row * unsafeRangeSize (locol,hicol) + unsafeIndex (locol,hicol) col
+  {-# INLINE unsafeIndex #-}
+
+  index b i
+    | inRange b i = unsafeIndex b i
+    | otherwise   = indexError b i "Coord" 
+  {-# INLINE index #-}
+
+  inRange (C lorow locol, C hirow hicol) (C row col) =
+    inRange (lorow,hirow) row && inRange (locol,hicol) col
+  {-# INLINE inRange #-}
+
+  range (C lorow locol, C hirow hicol) =
+    [C row col | row <- [lorow..hirow], col <- [locol..hicol]]
+  {-# INLINE range #-}
+
+  unsafeRangeSize (C lorow locol, C hirow hicol) =
+    (hirow - lorow + 1) * (hicol - locol + 1)
+  {-# INLINE unsafeRangeSize #-}
+
+instance AB.IArray AB.UArray Coord where
+  {-# INLINE bounds #-}
+  bounds (AB.UArray l u _ _) = (l,u)
+  {-# INLINE numElements #-}
+  numElements (AB.UArray _ _ n _) = n
+  {-# INLINE unsafeArray #-}
+  unsafeArray lu ies = runST (AB.unsafeArrayUArray lu ies 0)
+  {-# INLINE unsafeAt #-}
+  unsafeAt (AB.UArray _ _ _ arr#) (I# i#) =
+    C (I# (indexIntArray# arr# (2# *# i#)))
+      (I# (indexIntArray# arr# (2# *# i# +# 1#)))
+  {-# INLINE unsafeReplace #-}
+  unsafeReplace arr ies = runST (AB.unsafeReplaceUArray arr ies)
+  {-# INLINE unsafeAccum #-}
+  unsafeAccum f arr ies = runST (AB.unsafeAccumUArray f arr ies)
+  {-# INLINE unsafeAccumArray #-}
+  unsafeAccumArray f initialValue lu ies = runST (AB.unsafeAccumArrayUArray f initialValue lu ies)
+
+instance AB.MArray (AB.STUArray s) Coord (ST s) where
+    {-# INLINE getBounds #-}
+    getBounds (AB.STUArray l u _ _) = return (l,u)
+    {-# INLINE getNumElements #-}
+    getNumElements (AB.STUArray _ _ n _) = return n
+    {-# INLINE unsafeNewArray_ #-}
+    unsafeNewArray_ (l,u) = AB.unsafeNewArraySTUArray_ (l,u) (\x -> 2# *# AB.wORD_SCALE x)
+    {-# INLINE newArray_ #-}
+    newArray_ arrBounds = AB.newArray arrBounds 0
+    {-# INLINE unsafeRead #-}
+    unsafeRead (AB.STUArray _ _ _ marr#) (I# i#) = ST $ \s1# ->
+        case readIntArray# marr# (2# *# i#      ) s1# of { (# s2#, y# #) ->
+        case readIntArray# marr# (2# *# i# +# 1#) s2# of { (# s3#, x# #) ->
+        (# s3#, C (I# y#) (I# x#) #) }}
+    {-# INLINE unsafeWrite #-}
+    unsafeWrite (AB.STUArray _ _ _ marr#) (I# i#) (C (I# y#) (I# x#)) = ST $ \s1# ->
+        case writeIntArray# marr# (2# *# i#      ) y# s1# of { s2# ->
+        case writeIntArray# marr# (2# *# i# +# 1#) x# s2# of { s3# ->
+        (# s3#, () #) }}
+
+instance AB.MArray AB.IOUArray Coord IO where
+    {-# INLINE getBounds #-}
+    getBounds (AB.IOUArray arr) = stToIO $ AB.getBounds arr
+    {-# INLINE getNumElements #-}
+    getNumElements (AB.IOUArray arr) = stToIO $ AB.getNumElements arr
+    {-# INLINE newArray #-}
+    newArray lu initialValue = stToIO $ do
+        marr <- AB.newArray lu initialValue; return (AB.IOUArray marr)
+    {-# INLINE unsafeNewArray_ #-}
+    unsafeNewArray_ lu = stToIO $ do
+        marr <- AB.unsafeNewArray_ lu; return (AB.IOUArray marr)
+    {-# INLINE newArray_ #-}
+    newArray_ = AB.unsafeNewArray_
+    {-# INLINE unsafeRead #-}
+    unsafeRead (AB.IOUArray marr) i = stToIO (AB.unsafeRead marr i)
+    {-# INLINE unsafeWrite #-}
+    unsafeWrite (AB.IOUArray marr) i e = stToIO (AB.unsafeWrite marr i e)
