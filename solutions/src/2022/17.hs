@@ -8,10 +8,9 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/17>
 
-This solution optimistically hopes that a cycle is occuring when
-the top of the tower looks the same after placing one of each of
-the five pieces as it does doing the same in the future. I have
-no reason to believe that this always works.
+This solution looks for cycles when the move index, piece index,
+and tower envelope repeat. The tower envelope is the set of rocks that are
+reachable from the row above the top of the tower.
 
 >>> :main + ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>\n"
 3068
@@ -20,10 +19,10 @@ no reason to believe that this always works.
 -}
 module Main where
 
-import Data.List ( tails )
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Data.Array
 
 import Advent (format)
 import Advent.Coord (Coord(C), coordRow, east, west, cardinal, coordCol, south)
@@ -69,15 +68,17 @@ initialStuff = Set.fromList [C 0 x | x <- [0..6]]
 -- 1564705882327
 main :: IO ()
 main =
- do moves <- cycle . map dir <$> [format|2022 17 %s%n|]
-    let states = place moves initialStuff (cycle pieces)
-    let heightAt i = height (states !! i)
+ do moves <- map dir <$> [format|2022 17 %s%n|]
+    let movesArray = listArray (0, length moves-1) moves
+
+    let states = place movesArray 0 0 initialStuff
+    let heightAt i = case states !! i of (_,_,stuff) -> height stuff
 
     -- part 1
     print (heightAt 2022)
 
     -- part 2
-    let (cyc1,cyc2) = findCycle (map (map normalize . take 5) (tails states))
+    let (cyc1,cyc2) = findCycle [(i,j,normalize stuff) | (i,j,stuff) <- states]
     let cycLen = cyc2 - cyc1
 
     let (cycCnt, overflow) = (1_000_000_000_000 - cyc1) `divMod` cycLen
@@ -125,25 +126,28 @@ clean stuff = Set.filter alive stuff
     alive x = any (`elem` air) (cardinal x) || coordRow x == ymin
 
 place ::
-  [Coord] {- ^ jet vectors -} ->
+  Array Int Coord {- ^ jet vectors -} ->
+  Int {- ^ piece index -} ->
+  Int {- ^ jet vector index -} ->
   Set Coord {- ^ starting tower -} ->
-  [Set Coord] {- ^ pieces to place -} ->
-  [Set Coord] {- ^ sequence of towers after each piece is added -}
-place _ stuff [] = [stuff]
-place moves stuff (p:ps) =
-    stuff :
-    case drive moves piece' of
-        (stuck, moves') -> place moves' (clean (Set.union stuff stuck)) ps
+  [(Int, Int, Set Coord)] {- ^ sequence of towers after each piece is added -}
+place jets i j stuff =
+    (i,j,stuff) :
+    case drive j piece' of
+        (stuck, j') -> place jets i' j' (clean (Set.union stuff stuck))
     where
+        i' = (i+1)`mod`5
+        p  = pieces !! i 
         piece' = translate p (C (-height stuff-4) 2)
 
         isCrashed piece = not (all inWalls piece) || not (Set.disjoint stuff piece)
 
-        drive [] _ = error "finite move list"
-        drive (x:xs) p1
-            | isCrashed p4 = (p3, xs)
-            | otherwise = drive xs p4
+        drive j0 p1
+            | isCrashed p4 = (p3, j')
+            | otherwise = drive j' p4
             where
+                j' = (j0+1) `mod` length jets
+                x  = jets ! j0
                 p2 = translate p1 x
                 p3 | isCrashed p2 = p1
                    | otherwise    = p2
