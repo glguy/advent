@@ -27,15 +27,15 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
+import Data.List (tails, foldl')
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Map.Strict qualified as SMap
-import Data.Set (Set)
-import Data.Set qualified as Set
-import Data.List (tails, foldl')
 import Data.Maybe (maybeToList)
 
 import Advent (format)
+import Advent.SmallSet (SmallSet)
+import Advent.SmallSet qualified as SmallSet
 
 -- |
 -- >>> :main
@@ -48,7 +48,8 @@ main = do
     let distances1 = Map.fromList [((k,v),1) | (k, _, vs) <- input, v <- vs]
     let distances  = fw [k | (k,_,_) <- input] distances1
     let flows      = Map.fromList [(k, n) | (k, n, _) <- input, n > 0]
-    let graph      = Map.fromListWith (++)
+    let graph      = renumber $ 
+                     Map.fromListWith (++)
                         [(src, [(dst,cost+1,flow)])
                             | ((src,dst),cost) <- Map.assocs distances
                             , src == "AA" || Map.member src flows, src /= dst
@@ -60,20 +61,29 @@ main = do
     let routeValues2 = solve graph 26
     print (maximum [v1+v2 | (open1,v1) : elephants <- tails (Map.assocs routeValues2),
                             (open2,v2) <- elephants,
-                            Set.disjoint open1 open2])
+                            SmallSet.disjoint open1 open2])
 
-solve :: Map String [(String, Int, Int)] -> Int -> Map (Set String) Int
+solve :: Map Int [(Int, Int, Int)] -> Int -> Map SmallSet Int
 solve graph time0 =
-    SMap.fromListWith max (go [(time0, "AA", Set.empty, 0)])
+    SMap.fromListWith max (go [(time0, 0, SmallSet.empty, 0)])
     where
         go xs = [(open,flow) | (_,_,open,flow) <- xs] ++ concatMap (go . step) xs
         step (t, here, open, flow) =
-            [ (t', next, Set.insert next open, flow + t' * valve)
+            [ (t', next, SmallSet.insert next open, flow + t' * valve)
                 | (next, cost, valve) <- graph Map.! here
-                , Set.notMember next open
+                , not (SmallSet.member next open)
                 , let t' = t - cost
                 , t' > 0
             ]
+
+-- | Replace all the string names with sequentially assign Int names to speed
+-- up comparisons and enable the use of SmallSet
+renumber :: Map String [(String, Int, Int)] -> Map Int [(Int, Int, Int)]
+renumber graph =
+    Map.fromList [ (a Map.! k, [(a Map.! x,y,z) | (x,y,z) <- vs])
+                 | (k, vs) <- Map.toList graph]
+    where
+        a = Map.fromList (zip (Map.keys graph) [0..])
 
 -- | Floyd-Warshall shortest paths
 fw ::
