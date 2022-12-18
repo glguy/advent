@@ -116,7 +116,10 @@ boundingBox t =
     []         -> Nothing
     C y x : cs -> go y x y x cs
   where
-    go loy lox hiy hix [] = Just (C loy lox, C hiy hix)
+    go loy lox hiy hix [] = lo `seq` hi `seq` Just (lo, hi)
+      where
+        lo = C loy lox
+        hi = C hiy hix
     go loy lox hiy hix (C y x : cs) = go (min loy y) (min lox x) (max hiy y) (max hix x) cs
 
 -- | Coordinate at the origin

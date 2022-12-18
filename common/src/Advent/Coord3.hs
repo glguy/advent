@@ -37,7 +37,10 @@ boundingBox t =
     C3 x y z : cs -> go x y z x y z cs
   where
     go lox loy loz hix hiy hiz [] =
-        Just (C3 lox loy loz, C3 hix hiy hiz)
+        lo `seq` hi `seq` Just (lo, hi)
+        where
+          lo = C3 lox loy loz
+          hi = C3 hix hiy hiz
     go lox loy loz hix hiy hiz (C3 x y z : cs) =
         go (min lox x) (min loy y) (min loz z) (max hix x) (max hiy y) (max hiz z) cs
 
