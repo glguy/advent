@@ -51,7 +51,7 @@ when an item would stop moving.
 -}
 module Main where
 
-import Data.Array.Unboxed ( Array, (!), array )
+import Data.Array ( Array, (!), array )
 import Data.Foldable (toList)
 import Data.List (sortBy)
 
