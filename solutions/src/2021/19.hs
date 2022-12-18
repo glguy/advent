@@ -162,9 +162,9 @@ compared more than once.
 module Main (main) where
 
 import Advent (format, counts)
-import Advent.Box
+import Advent.Box (coverBoxes, Box(..))
 import Advent.Coord3 (Coord3(..), origin)
-import Advent.Nat
+import Advent.Nat (Nat(Z, S))
 import Control.Monad ((>=>))
 import Data.Either (partitionEithers)
 import Data.List (transpose)
