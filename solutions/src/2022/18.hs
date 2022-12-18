@@ -44,14 +44,14 @@ import Advent.Coord3
 -- 4332
 -- 2524
 main :: IO ()
-main = do
-    input <- map toC3 <$> [format|2022 18 (%u,%u,%u%n)*|]
+main =
+ do input <- map toC3 <$> [format|2022 18 (%u,%u,%u%n)*|]
     let cubes = Set.fromList input
     let (lo,hi) = fromJust (boundingBox (Set.toList cubes))
     let bnds = (lo - 1, hi + 1)
     let air = Set.fromList (bfs (step bnds cubes) (hi + 1))
-    print $ length [n | c <- input, n <- neigh c, n `Set.notMember` cubes]
-    print $ length [n | c <- input, n <- neigh c, n `Set.notMember` cubes, Set.member n air]
+    print $ length [n | c <- input, n <- neigh c, Set.notMember n cubes]
+    print $ length [n | c <- input, n <- neigh c, Set.member n air]
 
 toC3 :: (Int, Int, Int) -> Coord3
 toC3 (x,y,z) = C3 x y z
