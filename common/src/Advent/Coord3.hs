@@ -11,6 +11,7 @@ module Advent.Coord3 where
 
 import Data.Data (Data)
 import GHC.Generics (Generic)
+import GHC.Ix (Ix(unsafeIndex, range, index, inRange, unsafeRangeSize), indexError)
 
 data Coord3 = C3 !Int !Int !Int deriving (Eq, Ord, Show, Generic, Data)
 
@@ -25,3 +26,58 @@ diff (C3 x y z) (C3 x' y' z') = C3 (x-x') (y-y') (z-z')
 
 add :: Coord3 -> Coord3 -> Coord3
 add  (C3 x y z) (C3 x' y' z') = C3 (x+x') (y+y') (z+z')
+
+-- | Find the upper-left and lower-right coordinates that
+-- inclusively contain all the coordinates in a list of
+-- coordinates.
+boundingBox :: [Coord3] -> Maybe (Coord3, Coord3)
+boundingBox t =
+  case t of
+    []            -> Nothing
+    C3 x y z : cs -> go x y z x y z cs
+  where
+    go lox loy loz hix hiy hiz [] =
+        Just (C3 lox loy loz, C3 hix hiy hiz)
+    go lox loy loz hix hiy hiz (C3 x y z : cs) =
+        go (min lox x) (min loy y) (min loz z) (max hix x) (max hiy y) (max hiz z) cs
+
+-- | Apply a function to the y and x coordinate
+mapCoord :: (Int -> Int) -> Coord3 -> Coord3
+mapCoord f (C3 x y z) = C3 (f x) (f y) (f z)
+
+-- | Use a function pairwise on x and y coordinates of the two arguments
+zipCoord :: (Int -> Int -> Int) -> Coord3 -> Coord3 -> Coord3
+zipCoord f (C3 x1 y1 z1) (C3 x2 y2 z2) = C3 (f x1 x2) (f y1 y2) (f z1 z2)
+
+-- | Paisewise treatment of coordinates
+instance Num Coord3 where
+  (+) = zipCoord (+)
+  {-# INLINE (+) #-}
+  (-) = zipCoord (-)
+  {-# INLINE (-) #-}
+  (*) = zipCoord (*)
+  {-# INLINE (*) #-}
+  negate = mapCoord negate
+  {-# INLINE negate #-}
+  abs = mapCoord abs
+  {-# INLINE abs #-}
+  signum = mapCoord signum
+  {-# INLINE signum #-}
+  fromInteger = (\i -> C3 i i i) . fromInteger
+  {-# INLINE fromInteger #-}
+
+instance Ix Coord3 where
+    range (C3 l1 l2 l3, C3 u1 u2 u3) =
+        [C3 i1 i2 i3 
+                | i1 <- range (l1,u1),
+                  i2 <- range (l2,u2),
+                  i3 <- range (l3,u3)]
+
+    unsafeIndex (C3 l1 l2 l3, C3 u1 u2 u3) (C3 i1 i2 i3) =
+      unsafeIndex (l3,u3) i3 + unsafeRangeSize (l3,u3) * (
+      unsafeIndex (l2,u2) i2 + unsafeRangeSize (l2,u2) * (
+      unsafeIndex (l1,u1) i1))
+
+    inRange (C3 l1 l2 l3, C3 u1 u2 u3) (C3 i1 i2 i3) =
+      inRange (l1,u1) i1 && inRange (l2,u2) i2 &&
+      inRange (l3,u3) i3
