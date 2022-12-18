@@ -1,3 +1,6 @@
+package *
+  ghc-options: -haddock
+
 packages:
   common/advent.cabal
   solutions/solutions.cabal
