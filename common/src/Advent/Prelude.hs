@@ -91,7 +91,7 @@ minimumMaybe xs
 -- Nothing
 -- >>> maximumMaybe [2,1,3]
 -- Just 3
-maximumMaybe :: Ord a => [a] -> Maybe a
+maximumMaybe :: (Foldable f, Ord a) => f a -> Maybe a
 maximumMaybe xs
   | null xs   = Nothing
   | otherwise = Just $! maximum xs
