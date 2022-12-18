@@ -52,7 +52,7 @@ import Data.Set (Set)
 import Data.Set qualified as Set
 
 import Advent (format)
-import Advent.Coord (below, coordRow, left, right, Coord(..))
+import Advent.Coord (coordRow, below, coordRow, left, right, Coord(..))
 
 -- |
 -- >>> :main
@@ -75,8 +75,9 @@ main =
 top :: Coord
 top = C 0 500
 
+-- | Find the level beyond any walls.
 voidLimit :: Set Coord -> Int
-voidLimit world = 2 + maximum [y | C y _ <- Set.toList world]
+voidLimit world = 2 + coordRow (maximum world)
 
 -- | Fill the given world with sand from a fill coordinate returning the
 -- final state of the world. This is parameterized over a callback for how
