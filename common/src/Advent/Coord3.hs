@@ -13,19 +13,17 @@ import Data.Data (Data)
 import GHC.Generics (Generic)
 import GHC.Ix (Ix(unsafeIndex, range, index, inRange, unsafeRangeSize), indexError)
 
-data Coord3 = C3 !Int !Int !Int deriving (Eq, Ord, Show, Generic, Data)
+-- | Three-dimensional coordinate: x, y, z
+data Coord3 = C3 !Int !Int !Int
+  deriving (Eq, Ord, Show, Generic, Data)
 
+-- | Alias for @0, 0, 0@
 origin :: Coord3
 origin = C3 0 0 0
 
+-- | Sum of absolute value of differences in each of the 3 axes.
 manhattan :: Coord3 -> Coord3 -> Int
 manhattan (C3 x1 y1 z1) (C3 x2 y2 z2) = abs (x1 - x2) + abs (y1 - y2) + abs (z1 - z2)
-
-diff :: Coord3 -> Coord3 -> Coord3
-diff (C3 x y z) (C3 x' y' z') = C3 (x-x') (y-y') (z-z')
-
-add :: Coord3 -> Coord3 -> Coord3
-add  (C3 x y z) (C3 x' y' z') = C3 (x+x') (y+y') (z+z')
 
 -- | Find the upper-left and lower-right coordinates that
 -- inclusively contain all the coordinates in a list of
@@ -52,7 +50,7 @@ mapCoord f (C3 x y z) = C3 (f x) (f y) (f z)
 zipCoord :: (Int -> Int -> Int) -> Coord3 -> Coord3 -> Coord3
 zipCoord f (C3 x1 y1 z1) (C3 x2 y2 z2) = C3 (f x1 x2) (f y1 y2) (f z1 z2)
 
--- | Paisewise treatment of coordinates
+-- | Vector arithmetic
 instance Num Coord3 where
   (+) = zipCoord (+)
   {-# INLINE (+) #-}

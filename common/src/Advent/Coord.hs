@@ -173,7 +173,7 @@ mapCoord f (C y x) = C (f y) (f x)
 zipCoord :: (Int -> Int -> Int) -> Coord -> Coord -> Coord
 zipCoord f (C y1 x1) (C y2 x2) = C (f y1 y2) (f x1 x2)
 
--- | Paisewise treatment of coordinates
+-- | Vector arithmetic
 instance Num Coord where
   (+) = zipCoord (+)
   {-# INLINE (+) #-}
@@ -267,15 +267,13 @@ instance AB.MArray (AB.STUArray s) Coord (ST s) where
 
 instance AB.MArray AB.IOUArray Coord IO where
     {-# INLINE getBounds #-}
-    getBounds (AB.IOUArray arr) = stToIO $ AB.getBounds arr
+    getBounds (AB.IOUArray arr) = stToIO (AB.getBounds arr)
     {-# INLINE getNumElements #-}
-    getNumElements (AB.IOUArray arr) = stToIO $ AB.getNumElements arr
+    getNumElements (AB.IOUArray arr) = stToIO (AB.getNumElements arr)
     {-# INLINE newArray #-}
-    newArray lu initialValue = stToIO $ do
-        marr <- AB.newArray lu initialValue; return (AB.IOUArray marr)
+    newArray lu initialValue = stToIO (AB.IOUArray <$> AB.newArray lu initialValue)
     {-# INLINE unsafeNewArray_ #-}
-    unsafeNewArray_ lu = stToIO $ do
-        marr <- AB.unsafeNewArray_ lu; return (AB.IOUArray marr)
+    unsafeNewArray_ lu = stToIO (AB.IOUArray <$> AB.unsafeNewArray_ lu)
     {-# INLINE newArray_ #-}
     newArray_ = AB.unsafeNewArray_
     {-# INLINE unsafeRead #-}
