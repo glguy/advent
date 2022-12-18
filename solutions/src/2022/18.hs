@@ -50,8 +50,8 @@ main =
     let (lo,hi) = fromJust (boundingBox (Set.toList cubes))
     let bnds = (lo - 1, hi + 1)
     let air = Set.fromList (bfs (step bnds cubes) (hi + 1))
-    print $ length [n | c <- input, n <- neigh c, Set.notMember n cubes]
-    print $ length [n | c <- input, n <- neigh c, Set.member n air]
+    print $ length [() | c <- input, n <- neigh c, Set.notMember n cubes]
+    print $ length [() | c <- input, n <- neigh c, Set.member n air]
 
 toC3 :: (Int, Int, Int) -> Coord3
 toC3 (x,y,z) = C3 x y z
