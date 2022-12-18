@@ -35,9 +35,9 @@ import Data.Maybe (fromJust)
 import Data.Set (Set)
 import Data.Set qualified as Set
 
-import Advent
-import Advent.Search ( bfs )
-import Advent.Coord3
+import Advent (format)
+import Advent.Search (bfs)
+import Advent.Coord3 (Coord3(..), boundingBox)
 
 -- |
 -- >>> :main
@@ -45,21 +45,24 @@ import Advent.Coord3
 -- 2524
 main :: IO ()
 main =
- do input <- map toC3 <$> [format|2022 18 (%u,%u,%u%n)*|]
-    let cubes = Set.fromList input
-    let (lo,hi) = fromJust (boundingBox (Set.toList cubes))
-    let bnds = (lo - 1, hi + 1)
-    let air = Set.fromList (bfs (step bnds cubes) (hi + 1))
-    print $ length [() | c <- input, n <- neigh c, Set.notMember n cubes]
-    print $ length [() | c <- input, n <- neigh c, Set.member n air]
+ do input <- [format|2022 18 (%u,%u,%u%n)*|]
+    let cubes    = Set.fromList (map toC3 input)
+    let air      = findAir cubes
+    print (length [() | c <- Set.toList cubes, n <- neigh c, Set.notMember n cubes])
+    print (length [() | c <- Set.toList cubes, n <- neigh c, Set.member    n air  ])
 
-toC3 :: (Int, Int, Int) -> Coord3
-toC3 (x,y,z) = C3 x y z
-
--- | Return all the adjacent air boxes.
-step :: (Coord3, Coord3) -> Set Coord3 -> Coord3 -> [Coord3]
-step box cubes c = [n | n <- neigh c, inRange box n, Set.notMember n cubes]
+-- | Given the the location of the lava cubes, find a bounding box of air surrounding them.
+findAir :: Set Coord3 -> Set Coord3
+findAir cubes = Set.fromList (bfs step (hi + 1))
+  where
+    (lo, hi) = fromJust (boundingBox (Set.toList cubes))
+    box      = (lo - 1, hi + 1)
+    step c   = [n | n <- neigh c, inRange box n, Set.notMember n cubes]
 
 -- | Neighbors of the cubes (excluding diagonals)
 neigh :: Coord3 -> [Coord3]
 neigh (C3 x y z) = [C3 (x+1) y z, C3 (x-1) y z, C3 x (y+1) z, C3 x (y-1) z, C3 x y (z+1), C3 x y (z-1)]
+
+-- | Convert tuple to Coord3
+toC3 :: (Int, Int, Int) -> Coord3
+toC3 (x,y,z) = C3 x y z
