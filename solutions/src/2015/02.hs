@@ -10,6 +10,14 @@ Maintainer  : emertens@gmail.com
 
 Computes volumes and surface areas of boxes.
 
+>>> :main + "2x3x4\n"
+58
+34
+
+>>> :main + "1x1x10\n"
+43
+14
+
 -}
 module Main where
 
@@ -19,6 +27,10 @@ import Data.List (sort)
 data Package = Package Int Int Int
 data Face = Face Int Int
 
+-- |
+-- >>> :main
+-- 1606483
+-- 3842356
 main :: IO ()
 main =
  do input <- [format|2015 2 (%ux%ux%u%n)*|]

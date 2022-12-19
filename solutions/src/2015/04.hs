@@ -1,3 +1,4 @@
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 4 solution
@@ -12,7 +13,7 @@ Compute the MD5 hashes of things.
 -}
 module Main where
 
-import Advent (getInputLines)
+import Advent (format)
 import Control.Monad                 (replicateM)
 import Data.Binary.Get               (runGet, getWord32le)
 import Data.Bits                     ((.|.), (.&.), complement, rotateL, xor)
@@ -26,9 +27,14 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Vector as Vector
 
+-- |
+-- @
+-- 282749
+-- 9962624
+-- @
 main :: IO ()
 main =
-  do [key] <- getInputLines 2015 4
+  do key <- [format|2015 4 %s%n|]
      print (solve key 5)
      print (solve key 6)
 

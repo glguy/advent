@@ -68,6 +68,7 @@ toCompare ">=" = (>=)
 toCompare "<=" = (<=)
 toCompare "!=" = (/=)
 toCompare "==" = (==)
+toCompare name = error ("Bad comparison function: " ++ name)
 
 -- | Convert the string representation of an arithmetic operation to a function.
 toArith ::

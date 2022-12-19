@@ -10,6 +10,22 @@ Maintainer  : emertens@gmail.com
 
 Follow up, down, left, right instructions to build a path.
 
+>>> :main + ">\n"
+2
+2
+
+>>> :main + "^v\n"
+2
+3
+
+>>> :main + "^>v<\n"
+4
+3
+
+>>> :main + "^v^v^v^v^v\n"
+2
+11
+
 -}
 module Main where
 
@@ -22,7 +38,7 @@ import Data.List (transpose, scanl')
 -- 2631
 main :: IO ()
 main =
- do input <- [format|2015 3 (^|v|<|>)*!|]
+ do input <- [format|2015 3 (^|v|<|>)*!%n|]
     let directions = map parseChar input
     print (countHouses 1 directions)
     print (countHouses 2 directions)
