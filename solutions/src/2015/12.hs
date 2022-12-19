@@ -1,8 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
 {-|
 Module      : Main
-Description : Day 18 solution
-Copyright   : (c) Eric Mertens, 2021
+Description : Day 12 solution
+Copyright   : (c) Eric Mertens, 2015
 License     : ISC
 Maintainer  : emertens@gmail.com
 
@@ -13,35 +13,58 @@ Sum up the numbers in a JSON value.
 Rather than pull in a heavy JSON parsing dependency, this
 just parses out the subset of JSON that the problem uses.
 
+>>> :main + "[1,2,3]\n"
+6
+6
+
+>>> :main + "{\"a\":2,\"b\":4}\n"
+6
+6
+
+>>> :main + "{\"a\":{\"b\":4},\"c\":-1}\n"
+3
+3
+
+>>> :main + "[1,{\"c\":\"red\",\"b\":2},3]\n"
+6
+4
+
+>>> :main + "{\"d\":\"red\",\"e\":[1,2,3,4],\"f\":5}\n"
+15
+0
+
+>>> :main + "[1,\"red\",5]\n"
+6
+6
+
 -}
 module Main where
 
-import Advent.Input (getInputLines)
-import Advent.ReadS (P(..), char, runP, sepBy, between)
+import Advent (format)
 import Control.Applicative (Alternative((<|>)))
+import Text.ParserCombinators.ReadP (ReadP, between, readS_to_P, sepBy)
 
 -- | >>> :main
 -- 119433
 -- 68466
 main :: IO ()
 main =
- do [input] <- getInputLines 2015 12
-    let value = runP pValue input 
+ do value <- [format|2015 12 @p%n|]
     print (numbers       value)
     print (nonredNumbers value)
 
-pValue :: P Value
-pValue =
+p :: ReadP Value
+p =
   Object <$> between "{" "}" (pEntry `sepBy` ",") <|>
-  Array  <$> between "[" "]" (pValue `sepBy` ",") <|>
+  Array  <$> between "[" "]" (p `sepBy` ",") <|>
   String <$> pString <|>
-  Number <$> P reads
+  Number <$> readS_to_P reads
 
-pString :: P String
-pString = P reads
+pString :: ReadP String
+pString = readS_to_P reads
 
-pEntry :: P Value
-pEntry = pString *> char ':' *> pValue -- use char as : and - lex together
+pEntry :: ReadP Value
+pEntry = pString *> ":" *> p
 
 -- | Sum of all the number values in in JSON value.
 numbers :: Value -> Int

@@ -1,8 +1,28 @@
 {-# Language QuasiQuotes, RecordWildCards #-}
+{-|
+Module      : Main
+Description : Day 14 solution
+Copyright   : (c) Eric Mertens, 2015
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/14>
+
+>>> :{
+:main +
+  "time 1000\n\
+  \Comet can fly 14 km/s for 10 seconds, but then must rest for 127 seconds.\n\
+  \Dancer can fly 16 km/s for 11 seconds, but then must rest for 162 seconds.\n"
+:}
+1120
+689
+
+-}
 module Main where
 
 import Advent.Format (format)
 import Data.List (transpose)
+import Data.Maybe (fromMaybe)
 
 data Reindeer = Reindeer
   { speed     :: Int   -- ^ units of distance flown per second
@@ -10,11 +30,16 @@ data Reindeer = Reindeer
   , breaktime :: Int   -- ^ number of seconds rested before flying
   }
 
+-- |
+-- >>> :main
+-- 2660
+-- 1256
 main :: IO ()
 main =
- do input <- [format|2015 14 (%s can fly %u km/s for %u seconds, but then must rest for %u seconds.%n)*|]
+ do (mbtime,input) <- [format|2015 14 (time %u%n|)(%s can fly %u km/s for %u seconds, but then must rest for %u seconds.%n)*|]
+    let time = fromMaybe 2503 mbtime
     let rs = [Reindeer{..} | (_, speed, stamina, breaktime) <- input]    
-    let race = map (take 2503 . positions) rs
+    let race = map (take time . positions) rs
     print (maximum (map last race))
     print (maximum (scores race))
 

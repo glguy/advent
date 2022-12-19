@@ -1,7 +1,21 @@
+{-|
+Module      : Main
+Description : Day 8 solution
+Copyright   : (c) Eric Mertens, 2015
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/8>
+
+-}
 module Main where
 
 import Advent.Input (getInputLines)
 
+-- |
+-- >>> :main
+-- 1350
+-- 2085
 main :: IO ()
 main =
   do ws <- getInputLines 2015 8

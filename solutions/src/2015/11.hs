@@ -1,3 +1,13 @@
+{-|
+Module      : Main
+Description : Day 13 solution
+Copyright   : (c) Eric Mertens, 2015
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/13>
+
+-}
 module Main where
 
 import Advent.Input (getInputLines)

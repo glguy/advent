@@ -1,4 +1,36 @@
 {-# LANGUAGE ImportQualifiedPost, DeriveFunctor, OverloadedStrings #-}
+{-|
+Module      : Main
+Description : Day 7 solution
+Copyright   : (c) Eric Mertens, 2015
+License     : ISC
+Maintainer  : emertens@gmail.com
+
+<https://adventofcode.com/2015/day/7>
+
+>>> :{
+mapM_
+  (\(k,v) -> putStrLn (k ++ ": " ++ show v))
+  (Map.assocs (tieCircuit (parse [
+    "123 -> x",
+    "456 -> y",
+    "x AND y -> d",
+    "x OR y -> e",
+    "x LSHIFT 2 -> f",
+    "y RSHIFT 2 -> g",
+    "NOT x -> h",
+    "NOT y -> i"])))
+:}
+d: 72
+e: 507
+f: 492
+g: 114
+h: 65412
+i: 65079
+x: 123
+y: 456
+
+-}
 module Main where
 
 import Advent (getInputLines)
@@ -13,6 +45,10 @@ data Gate a = Gate1 Op1 a | Gate2 a Op2 a deriving Functor
 data Op1 = Not | Id
 data Op2 = And | Or | LShift | RShift
 
+-- |
+-- >>> :main
+-- 16076
+-- 2797
 main :: IO ()
 main =
  do circuit1 <- parse <$> getInputLines 2015 7
