@@ -951,3 +951,9 @@ executable sln_2022_18
   import:              day
   main-is:             2022/18.hs
   build-depends:       containers
+
+executable sln_2022_19
+  import:              day
+  main-is:             2022/19.hs
+  build-depends:       containers, async
+  ghc-options: -threaded
