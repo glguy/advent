@@ -957,3 +957,8 @@ executable sln_2022_19
   main-is:             2022/19.hs
   build-depends:       containers, parallel
   ghc-options: -threaded
+
+executable sln_2022_20
+  import:              day
+  main-is:             2022/20.hs
+  build-depends:       containers
