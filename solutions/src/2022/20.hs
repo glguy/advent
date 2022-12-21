@@ -16,12 +16,13 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent (format, timesM)
-import Data.List (elemIndex)
-import Data.Foldable (for_)
 import Control.Monad (replicateM_)
 import Data.Array.IO (IOUArray, newListArray, readArray, writeArray)
 import Data.Array.Unboxed (UArray, (!), listArray)
+import Data.Foldable (for_)
+import Data.List (elemIndex)
+
+import Advent (format, timesM)
 
 -- |
 -- >>> :main
