@@ -150,6 +150,12 @@ times n f x
   | n <= 0    = x
   | otherwise = times (n-1) f $! f x
 
+-- | Apply a function @n@ times strictly.
+timesM :: Monad m => Int -> (a -> m a) -> a -> m a
+timesM n f x
+  | n <= 0    = pure x
+  | otherwise = timesM (n-1) f =<< f x
+
 -- | Given a list of constraints such that each constraint identifies
 -- a unique variable and the set of assignments it can have, this
 -- computes assignments of those variables such that no two input
