@@ -149,12 +149,14 @@ times :: Int -> (a -> a) -> a -> a
 times n f x
   | n <= 0    = x
   | otherwise = times (n-1) f $! f x
+{-# INLINE times #-}
 
 -- | Apply a function @n@ times strictly.
 timesM :: Monad m => Int -> (a -> m a) -> a -> m a
 timesM n f x
   | n <= 0    = pure x
   | otherwise = timesM (n-1) f =<< f x
+{-# INLINE timesM #-}
 
 -- | Given a list of constraints such that each constraint identifies
 -- a unique variable and the set of assignments it can have, this

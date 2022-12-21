@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, NumericUnderscores, BlockArguments #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, NumericUnderscores, BlockArguments, BangPatterns #-}
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 {-|
 Module      : Main
@@ -42,7 +42,7 @@ solve iterations xs =
     replicateM_ iterations $
       for_ [0..n-1] \i ->
        do let d = inputArray!i `mod` (n-1)
-              d' = if d > n`div`2 then d-n+1 else d
+              d' = if d > n`div`2 then d-(n-1) else d
           a <- removeRing i ring
           a' <- walk d' a ring
           insertBeforeRing i a' ring
@@ -51,11 +51,11 @@ solve iterations xs =
     i1 <- walk 1_000 z  ring
     i2 <- walk 1_000 i1 ring
     i3 <- walk 1_000 i2 ring
-    pure (sum [inputArray!i1, inputArray!i2, inputArray!i3])
+    pure $! sum [inputArray!i1, inputArray!i2, inputArray!i3]
 
 data Ring = Ring {
-    fwdLinks :: IOUArray Int Int, -- ^ forward links
-    bwdLinks :: IOUArray Int Int  -- ^ backward links
+    fwdLinks :: !(IOUArray Int Int), -- ^ forward links
+    bwdLinks :: !(IOUArray Int Int)  -- ^ backward links
 }
 
 -- | Build a new circular ring of given size
@@ -93,6 +93,6 @@ walk ::
   Int {- ^ starting index -} ->
   Ring {- ^ ring -} ->
   IO Int {- ^ ending index -}
-walk n i ring
+walk n i !ring
   | n < 0     = timesM (-n) (readArray (bwdLinks ring)) i
   | otherwise = timesM   n  (readArray (fwdLinks ring)) i
