@@ -26,7 +26,8 @@ import Data.Map.Strict qualified as SMap
 import Data.Ord (comparing)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Language.Haskell.TH (DecsQ)
+import Language.Haskell.TH (DecsQ, stringE)
+import Language.Haskell.TH.Quote (QuasiQuoter(..))
 
 -- | Count the number of elements in a foldable value that satisfy a predicate.
 count :: (Foldable f, Eq a) => a -> f a -> Int
@@ -242,3 +243,21 @@ scanlM f z t = runStateT (traverse (coerce f) t) z
 -- can see data types that it might want to parse.
 stageTH :: DecsQ
 stageTH = pure []
+
+multiline :: QuasiQuoter
+multiline = QuasiQuoter {
+  quoteExp = trimLeadingWhitespace,
+  quoteType = const (fail "multiline doesn't do types"),
+  quoteDec = const (fail "multiline doesn't do decs"),
+  quotePat = const (fail "multiline doesn't do patterns")
+  }
+  where
+    trimLeadingWhitespace str =
+      case lines str of
+        [] -> fail "empty multiline string??"
+        x:xs
+          | not (null x) -> fail "stuff on first line??"
+          | null xs      -> fail "empty multiline string??"
+          | otherwise    -> stringE (unlines (map (drop n) xs))
+          where
+            n = minimum (map (length . takeWhile (' '==)) xs)
