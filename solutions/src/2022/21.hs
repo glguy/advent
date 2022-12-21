@@ -16,7 +16,7 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 
 import Advent (format)
-import Advent.Fix (Fix(Fix), cata)
+import Advent.Fix (Fix(Fix))
 
 -- |
 -- >>> :main
@@ -54,12 +54,12 @@ buildMap xs =
     _               -> error "bad expression"
 
 constProp :: Fix Expr -> Fix Expr
-constProp = cata \case
-  Add (I x) (I y) -> I (x+y)
-  Sub (I x) (I y) -> I (x-y)
-  Mul (I x) (I y) -> I (x*y)
-  Div (I x) (I y) | (z,0) <- x `quotRem` y -> I z
-  e -> Fix e
+constProp = \case
+  Fix (Add (I x) (I y)) -> I (x+y)
+  Fix (Sub (I x) (I y)) -> I (x-y)
+  Fix (Mul (I x) (I y)) -> I (x*y)
+  Fix (Div (I x) (I y)) | (z,0) <- x `quotRem` y -> I z
+  e -> e
 
 equal :: Fix Expr -> Int -> Int
 equal (Fix (Div x (I y))) z = equal x (y*z)
