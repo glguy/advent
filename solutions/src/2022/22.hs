@@ -13,12 +13,16 @@ The version of the code I used to submit. Cleanup needed!
 -}
 module Main where
 
+import Data.Map (Map)
 import Data.Map qualified as Map
 
 import Advent ( getInputLines )
 import Advent.Coord
 
-
+-- |
+-- >>> :main
+-- 162186
+-- 55267
 main :: IO ()
 main =
  do input <- Map.filter (/= ' ') . Map.fromList . coordLines <$> getInputLines 2022 22
@@ -29,7 +33,7 @@ main =
     let (C row2 col2, face2) = go2 key east start input
     print (1000 * row2 + 4 * col2 + faceval face2)
 
-go1 :: String -> Coord -> Coord -> Map.Map Coord Char -> (Coord, Coord)
+go1 :: String -> Coord -> Coord -> Map Coord Char -> (Coord, Coord)
 go1 commands dir here board
   | null commands = (here + 1, dir)
   | [(n,commands')] <- (reads :: ReadS Int) commands =
@@ -39,9 +43,10 @@ go1 ('L':commands') dir here board =
    go1 commands' (turnLeft dir) here board
 go1 ('R':commands') dir here board =
    go1 commands' (turnRight dir) here board
+go1 _ _ _ _ = undefined
 
-walk1 :: Int -> Coord -> Coord -> Map.Map Coord Char -> Coord
-walk1 0 dir here board = here :: Coord
+walk1 :: Int -> Coord -> Coord -> Map Coord Char -> Coord
+walk1 0 _ here _ = here
 walk1 n dir here board    
   | board Map.! here' ==  '#' = here
   | otherwise = walk1 (n-1) dir here' board
@@ -56,10 +61,9 @@ faceval x
   | x == west = 2
   | x == south = 1
   | x == east = 0
+  | otherwise = error "faceval: bad direction"
 
-
-
-go2 :: String -> Coord -> Coord -> Map.Map Coord Char -> (Coord, Coord)
+go2 :: String -> Coord -> Coord -> Map Coord Char -> (Coord, Coord)
 go2 commands dir here board
   | null commands = (here + 1, dir)
   | [(n,commands')] <- (reads :: ReadS Int) commands =
@@ -69,8 +73,10 @@ go2 ('L':commands') dir here board =
    go2 commands' (turnLeft dir) here board
 go2 ('R':commands') dir here board =
    go2 commands' (turnRight dir) here board
+go2 _ _ _ _ = undefined
 
-walk 0 dir here board = (here,dir)
+walk :: Int -> Coord -> Coord -> Map Coord Char -> (Coord, Coord)
+walk 0 dir here _ = (here,dir)
 walk n dir here board
   | Map.notMember here' board = error (show here')
   | board Map.! here' ==  '#' = (here,dir)
@@ -81,21 +87,9 @@ walk n dir here board
    (here', dir') =
       let fr = coordRow here `mod` 50
           fc = coordCol here `mod` 50
-          fr' = 49 - fr
-          fc' = 49 - fc in
+          fr' = 49 - fr in
       case (cubeface here, cubeface (here+dir)) of
-         (x,y) | x == y -> (here+dir, dir)
-
-         (1,2) -> (here+dir, dir)
-         (2,1) -> (here+dir, dir)
-         (1,3) -> (here+dir, dir)
-         (3,1) -> (here+dir, dir)
-         (3,4) -> (here+dir, dir)
-         (4,3) -> (here+dir, dir)
-         (4,5) -> (here+dir, dir)
-         (5,4) -> (here+dir, dir)
-         (5,6) -> (here+dir, dir)
-         (6,5) -> (here+dir, dir)
+         (_,y) | -1 /= y -> (here+dir, dir)
 
          -- 5
          (1,_) | dir == west -> (C (2*50+fr') 0, east)
@@ -123,7 +117,7 @@ walk n dir here board
 cubeface :: Coord -> Int
 cubeface (C y x) =
    case (div y 50, div x 50) of
-      (0,1) -> 1::Int
+      (0,1) -> 1
       (0,2) -> 2
       (1,1) -> 3
       (2,0) -> 5
