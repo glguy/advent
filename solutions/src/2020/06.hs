@@ -22,4 +22,4 @@ main :: IO ()
 main =
   do inp <- [format|2020 6 (%s%n)*&%n|]
      print (length (foldr union []   =<< inp))
-     print (length (foldr1 intersect =<< inp))
+     print (length (foldl1 intersect =<< inp))
