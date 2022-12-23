@@ -972,3 +972,8 @@ executable sln_2022_22
   import:              day
   main-is:             2022/22.hs
   build-depends:       containers
+
+executable sln_2022_23
+  import:              day
+  main-is:             2022/23.hs
+  build-depends:       containers
