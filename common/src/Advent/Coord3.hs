@@ -10,6 +10,7 @@ Maintainer  : emertens@gmail.com
 module Advent.Coord3 where
 
 import Data.Data (Data)
+import Data.Foldable (toList)
 import GHC.Generics (Generic)
 import GHC.Ix (Ix(unsafeIndex, range, index, inRange, unsafeRangeSize), indexError)
 
@@ -28,9 +29,9 @@ manhattan (C3 x1 y1 z1) (C3 x2 y2 z2) = abs (x1 - x2) + abs (y1 - y2) + abs (z1 
 -- | Find the upper-left and lower-right coordinates that
 -- inclusively contain all the coordinates in a list of
 -- coordinates.
-boundingBox :: [Coord3] -> Maybe (Coord3, Coord3)
+boundingBox :: Foldable f => f Coord3 -> Maybe (Coord3, Coord3)
 boundingBox t =
-  case t of
+  case toList t of
     []            -> Nothing
     C3 x y z : cs -> go x y z x y z cs
   where
