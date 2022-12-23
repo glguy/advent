@@ -110,9 +110,9 @@ neighbors c = c `seq` [above c, left c, right c, below c,
 -- | Find the upper-left and lower-right coordinates that
 -- inclusively contain all the coordinates in a list of
 -- coordinates.
-boundingBox :: [Coord] -> Maybe (Coord, Coord)
+boundingBox :: Foldable f => f Coord -> Maybe (Coord, Coord)
 boundingBox t =
-  case t of
+  case toList t of
     []         -> Nothing
     C y x : cs -> go y x y x cs
   where

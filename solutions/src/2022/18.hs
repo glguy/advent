@@ -55,7 +55,7 @@ main =
 findAir :: Set Coord3 -> Set Coord3
 findAir cubes = Set.fromList (bfs step (hi + 1))
   where
-    (lo, hi) = fromJust (boundingBox (Set.toList cubes))
+    (lo, hi) = fromJust (boundingBox cubes)
     box      = (lo - 1, hi + 1)
     step c   = [n | n <- neigh c, inRange box n, Set.notMember n cubes]
 

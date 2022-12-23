@@ -24,16 +24,14 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Control.Applicative ((<|>))
-import Control.Monad (guard)
-import Data.Ix (range)
+import Data.Ix (rangeSize)
 import Data.List (tails)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 
-import Advent (getInputMap, countBy, counts)
-import Advent.Coord (above, below, boundingBox, left, neighbors, right, Coord)
+import Advent (getInputMap, counts)
+import Advent.Coord (Coord, above, below, boundingBox, left, neighbors, right)
 
 -- |
 -- >>> :main
@@ -43,12 +41,12 @@ main :: IO ()
 main =
  do input <- Map.keysSet . Map.filter ('#'==) <$> getInputMap 2022 23
     let states = sim input
-    
+
     -- part 1
     let b = states !! 10
-    print case boundingBox (Set.toList b) of
-      Just box -> countBy (`Set.notMember` b) (range box)
-      Nothing -> 0
+    print case boundingBox b of
+      Just box -> rangeSize box - Set.size b
+      Nothing  -> 0
 
     -- part 2
     print (sameIx 1 states)
@@ -63,40 +61,30 @@ sim :: Set Coord -> [Set Coord]
 sim start = scanl (\elves move -> step (move elves) elves) start moves
 
 step :: (Coord -> Maybe Coord) -> Set Coord -> Set Coord
-step m board =
-   Set.union (Map.keysSet ok)
-     (Set.difference board (Map.keysSet steps'))
+step m elves = Set.union (Map.keysSet ok) (Set.difference elves moved)
    where
-      steps = Map.fromList [(e, t) | e <- Set.toList board, any (`Set.member` board) (neighbors e), Just t <- [m e]]
-      ok = Map.filter (== 1) (counts steps)
-      steps' = Map.filter (\t -> Map.member t ok) steps
+      movers  = Set.filter (isCrowded elves) elves
+      targets = Map.mapMaybe id (Map.fromSet m movers)
+      ok      = Map.filter (1 ==) (counts targets)
+      moved   = Map.keysSet (Map.filter (`Map.member` ok) targets)
 
-nMove :: Set Coord -> Coord -> Maybe Coord
-nMove board here  =
- do guard (all (\x -> Set.notMember x board)
-          [above here, above (right here), above (left here)])
-    Just (above here)
+isCrowded :: Set Coord -> Coord -> Bool
+isCrowded elves elf = any (`Set.member` elves) (neighbors elf)
 
-sMove :: Set Coord -> Coord -> Maybe Coord
-sMove board here  =
- do guard (all (\x -> Set.notMember x board)
-          [below here, below (right here), below (left here)])
-    Just (below here)
-
-eMove :: Set Coord -> Coord -> Maybe Coord
-eMove board here  =
- do guard (all (\x -> Set.notMember x board)
-          [right here, right (above here), right (below here)])
-    Just (right here)
-
-wMove :: Set Coord -> Coord -> Maybe Coord
-wMove board here  =
- do guard (all (\x -> Set.notMember x board)
-          [left here, left (above here), left (below here)])
-    Just (left here)
+moveSets :: [(Coord -> Coord, Coord -> Coord, Coord -> Coord)]
+moveSets = [
+  (above, left , right),
+  (below, left , right),
+  (left , above, below),
+  (right, above, below)]
 
 moves :: [Set Coord -> Coord -> Maybe Coord]
-moves = map (combine . take 4) (tails (cycle [nMove, sMove, wMove, eMove]))
+moves = map (combine . take 4) (tails (cycle moveSets))
   where
-   combine [] _ _ = Nothing
-   combine (x:xs) board here = x board here <|> combine xs board here
+    combine [] _ _ = Nothing
+    combine ((a,b,c):xs) elves here
+      | all (`Set.notMember` elves) locs = Just (a here)
+      | otherwise = combine xs elves here
+      where
+        here' = a here
+        locs = [here', b here', c here']
