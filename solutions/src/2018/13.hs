@@ -11,11 +11,13 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.Coord (Coord(C))
-import Advent.Input (getInputArray)
 import Data.Array.Unboxed qualified as A
 import Data.Map (Map)
 import Data.Map.Strict qualified as Map
+import Data.Maybe (maybeToList)
+
+import Advent.Coord
+import Advent.Input (getInputArray)
 
 -- | Turns determine the behavior at an intersection
 data Turn = NextL | NextR | NextS deriving Show
@@ -25,7 +27,7 @@ data Turn = NextL | NextR | NextS deriving Show
 data Cart = Cart !Velocity !Turn deriving Show
 
 -- | Velocities are stored row then column to match coordinates
-data Velocity = V !Int !Int deriving (Eq, Show)
+type Velocity = Coord
 
 -- | Road is a random-accessible representation of the track.
 newtype Road = Road (A.UArray Coord Char)
@@ -76,12 +78,7 @@ findCarts (Road rs) =
   Map.fromList
     [ (pos, Cart vel NextL)
     | (pos, c) <- A.assocs rs
-    , vel <- case c of
-               '^' -> [north]
-               'v' -> [south]
-               '>' -> [east ]
-               '<' -> [west ]
-               _   -> []
+    , vel <- maybeToList (charToVec c)
     ]
 
 -- | Run the simulation to completion. Take the collision behavior
@@ -120,14 +117,14 @@ tick onCollision road carts done =
 drive :: Road -> Coord -> Cart -> (Coord, Cart)
 drive road pos (Cart vel next) = (pos', cart')
   where
-    pos' = addVelocity pos vel
+    pos' = pos + vel
 
     cart' =
       case indexRoad road pos' of
-        '\\' -> Cart (invert    vel) next
-        '/'  -> Cart (invert'   vel) next
+        '\\' -> Cart (invert vel) next
+        '/'  -> Cart (invert' vel) next
         '+'  -> Cart (turn next vel) (nextTurn next)
-        _    -> Cart vel             next
+        _    -> Cart vel next
 
 -- | Apply a turn to a velocity.
 turn :: Turn -> Velocity -> Velocity
@@ -135,49 +132,8 @@ turn NextL = turnLeft
 turn NextR = turnRight
 turn NextS = id
 
--- | Invert a velocity along a line y=x. (remember y grows down)
---
--- >>> map invert [north, south, east, west] == [west, east, south, north]
--- True
-invert :: Velocity -> Velocity
-invert (V dy dx) = V dx dy
-
--- | Invert a velocity along a line y = -x (remember y grows down)
--- >>> map invert' [north, south, east, west] == [east, west, north, south]
--- True
-invert' :: Velocity -> Velocity
-invert' (V dy dx) = V (-dx) (-dy)
-
--- | Change a velocity counter-clockwise
---
--- >>> take 4 (iterate turnLeft north) == [north, west, south, east]
--- True
-turnLeft :: Velocity -> Velocity
-turnLeft (V dy dx) = V (-dx) dy
-
--- | Change a velocity clockwise
---
--- >>> take 4 (iterate turnRight north) == [north, east, south, west]
--- True
-turnRight :: Velocity -> Velocity
-turnRight (V dy dx) = V dx (-dy)
-
 -- | Advance a turn to the next one in sequence.
 nextTurn :: Turn -> Turn
 nextTurn NextL = NextS
 nextTurn NextS = NextR
 nextTurn NextR = NextL
-
--- | Add a velocity to a coordinate.
---
--- >>> addVelocity (C 10 20) north
--- C 9 20
-addVelocity :: Coord -> Velocity -> Coord
-addVelocity (C y x) (V dy dx) = C (y + dy) (x + dx)
-
--- | Unit vectors in cardinal directions.
-north, east, south, west :: Velocity
-north = V (-1) 0
-south = V 1 0
-east  = V 0 1
-west  = V 0 (-1)

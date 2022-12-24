@@ -29,9 +29,11 @@ Follow up, down, left, right instructions to build a path.
 -}
 module Main where
 
-import Advent (chunks, format, counts)
-import Advent.Coord (Coord, origin, north, east, south, west)
 import Data.List (transpose, scanl')
+import Data.Maybe (mapMaybe)
+
+import Advent (chunks, format, counts)
+import Advent.Coord (Coord, origin, north, east, south, west, charToVec)
 
 -- | >>> :main
 -- 2572
@@ -39,19 +41,10 @@ import Data.List (transpose, scanl')
 main :: IO ()
 main =
  do input <- [format|2015 3 (^|v|<|>)*!%n|]
-    let directions = map parseChar input
+    let directions = mapMaybe charToVec input
     print (countHouses 1 directions)
     print (countHouses 2 directions)
 
 countHouses :: Int {- ^ workers -} -> [Coord] -> Int
 countHouses n =
   length . counts . concatMap (scanl' (+) origin) . transpose . chunks n
-
-parseChar :: Char -> Coord
-parseChar c =
-  case c of
-    '^' -> north
-    'v' -> south
-    '<' -> west
-    '>' -> east
-    _   -> error ("Bad input character: " ++ [c])

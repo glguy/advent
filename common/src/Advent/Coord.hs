@@ -20,6 +20,7 @@ where y grows down, x grows right.
 -}
 module Advent.Coord where
 
+import Control.Monad.ST ( ST, stToIO, runST )
 import Data.Array.Base qualified as AB
 import Data.Array.IO.Internals qualified as AB
 import Data.Data (Data)
@@ -27,11 +28,10 @@ import Data.Foldable (toList)
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.MemoTrie (HasTrie(..))
-import GHC.Generics (Generic)
-import Control.Monad.ST ( ST, stToIO, runST )
-import GHC.ST (ST(ST))
-import GHC.Ix (Ix(unsafeIndex, range, index, inRange, unsafeRangeSize), indexError)
 import GHC.Exts (Int(I#), (+#), (*#), indexIntArray#, readIntArray#, writeIntArray#)
+import GHC.Generics (Generic)
+import GHC.Ix (Ix(unsafeIndex, range, index, inRange, unsafeRangeSize), indexError)
+import GHC.ST (ST(ST))
 
 -- | Two-dimensional coordinate
 data Coord = C !Int !Int
@@ -64,6 +64,10 @@ right (C y x) = C y (x+1)
 -- | Swap x and y coordinates
 invert :: Coord -> Coord
 invert (C y x) = C x y
+
+-- | Swap x and y coordinates
+invert' :: Coord -> Coord
+invert' (C y x) = C (-x) (-y)
 
 -- | Invert the x coordinate
 flipX :: Coord -> Coord
@@ -173,6 +177,14 @@ mapCoord f (C y x) = C (f y) (f x)
 zipCoord :: (Int -> Int -> Int) -> Coord -> Coord -> Coord
 zipCoord f (C y1 x1) (C y2 x2) = C (f y1 y2) (f x1 x2)
 
+-- | Generate a unit vector corresponding to the arrow symbol: @^v<>@
+charToVec :: Char -> Maybe Coord
+charToVec '^' = Just north
+charToVec 'v' = Just south
+charToVec '>' = Just east
+charToVec '<' = Just west
+charToVec  _  = Nothing
+
 -- | Vector arithmetic
 instance Num Coord where
   (+) = zipCoord (+)
@@ -212,7 +224,7 @@ instance Ix Coord where
 
   index b i
     | inRange b i = unsafeIndex b i
-    | otherwise   = indexError b i "Coord" 
+    | otherwise   = indexError b i "Coord"
   {-# INLINE index #-}
 
   inRange (C lorow locol, C hirow hicol) (C row col) =

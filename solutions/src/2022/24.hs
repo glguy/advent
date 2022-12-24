@@ -71,16 +71,11 @@ grow corner world best =
       , Set.notMember next world
     ]
 
-dir :: Char -> Coord
-dir '>' = east
-dir '<' = west
-dir '^' = north
-dir 'v' = south
-dir _ = undefined
-
 -- | Compute the location an obstacle will be at at a given time step
 location :: Coord -> Coord -> Int -> Char -> Coord
 location _ here _ '#' = here
-location corner here t c =
-  zipCoord mod (here - 1 + scaleCoord t (dir c)) (corner - 1) + 1
+location corner here t c
+  | Just vec <- charToVec c =
+    zipCoord mod (here - 1 + scaleCoord t vec) (corner - 1) + 1
+location _ _ _ _ = undefined
 
