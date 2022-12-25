@@ -48,11 +48,9 @@ toSnafu :: Int -> String
 toSnafu = go ""
   where
     go acc 0 = acc
-    go acc n = go (toS m' : acc) ((n-m')`div`5)
+    go acc n = go (toS (m-2) : acc) n'
       where
-        m = n `mod` 5
-        m' | m > 2     = m - 5
-           | otherwise = m
+        (n',m) = (n+2) `divMod` 5
 
 toS :: Int -> Char
 toS (-2) = '='
@@ -60,6 +58,7 @@ toS (-1) = '-'
 toS 0 = '0'
 toS 1 = '1'
 toS 2 = '2'
+toS _ = error "toS: bad digit"
 
 fromS :: Char -> Int
 fromS '2' = 2
@@ -67,3 +66,4 @@ fromS '1' = 1
 fromS '0' = 0
 fromS '-' = -1
 fromS '=' = -2
+fromS _ = error "fromS: bad digit"
