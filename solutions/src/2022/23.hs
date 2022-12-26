@@ -26,6 +26,7 @@ module Main where
 
 import Data.List (tails, foldl')
 import Data.Maybe (fromMaybe, maybeToList)
+import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
@@ -61,24 +62,24 @@ sim :: Set Coord -> [Set Coord]
 sim start = scanl step start moves
 
 step :: Set Coord -> (UArray Coord Bool -> Coord -> Maybe Coord) -> Set Coord
-step elves m = elves Set.\\ src <> dst
+step elves m = foldl' (flip Set.delete) elves targets <> Map.keysSet targets
    where
-      elves'  = setArray elves
-      targets = Map.fromList
-                  [ (elf, c)
-                  | elf <- Set.toList elves
+      targets = resolve
+                  [ (c,elf)
+                  | let elves'  = setArray elves
+                  , elf <- Set.toList elves
                   , isCrowded elves' elf
                   , c <- maybeToList (m elves' elf)
                   ]
-      dst = resolve targets
-      src = Map.keysSet (Map.filter (`Set.member` dst) targets)
-  
-resolve :: (Foldable t, Ord a) => t a -> Set a
-resolve targets = foldl' f Set.empty targets
+
+resolve ::
+  [(Coord,Coord)] {- ^ destinations and sources -} ->
+  Map Coord Coord {- ^ uncontested destinations and sources -}
+resolve = foldl' f Map.empty
   where
-    f acc x
-      | Set.member x acc = Set.delete x acc
-      | otherwise = Set.insert x acc
+    f acc (k,v)
+      | Map.member k acc = Map.delete k acc
+      | otherwise = Map.insert k v acc
 
 setArray :: Set Coord -> UArray Coord Bool
 setArray s = accumArray (\_ x -> x) False b [(c, True) | c <- Set.toList s]
