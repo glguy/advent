@@ -28,6 +28,7 @@ import Data.Map.Strict qualified as SMap
 import Data.Ord (comparing)
 import Data.Set (Set)
 import Data.Set qualified as Set
+import GHC.Stack (HasCallStack)
 import Language.Haskell.TH (DecsQ, stringE)
 import Language.Haskell.TH.Quote (QuasiQuoter(..))
 
@@ -195,7 +196,7 @@ uniqueAssignment m =
 --
 -- >>> fromDigits 10 []
 -- 0
-fromDigits :: Integral a => a -> [a] -> a
+fromDigits :: HasCallStack => Integral a => a -> [a] -> a
 fromDigits base
   | base < 2  = error "fromDigits: bad base"
   | otherwise = foldl' (\acc x -> acc * base + x) 0
@@ -210,7 +211,7 @@ fromDigits base
 --
 -- >>> toDigits 10 0
 -- []
-toDigits :: Integral a => a -> a -> [a]
+toDigits :: HasCallStack => Integral a => a -> a -> [a]
 toDigits base x
   | base < 2  = error "toDigits: bad base"
   | x < 0     = error "toDigits: negative number"
@@ -227,7 +228,7 @@ toDigits base x
 --
 -- >>> power (*) 2 10
 -- 1024 
-power :: (a -> a -> a) -> a -> Integer -> a
+power :: HasCallStack => (a -> a -> a) -> a -> Integer -> a
 power (#) one n
   | n < 1 = error ("power: bad argument " ++ show n)
   | otherwise = go n

@@ -12,13 +12,14 @@ enables efficient intersection and subtraction operations.
 -}
 module Advent.Box where
 
-import Advent.Nat (Nat(S,Z), FromNatural, UnfoldNat(unfoldNat))
-import Advent.ReadS
 import Control.Monad (foldM)
+import Data.Functor.Compose (Compose(Compose, getCompose))
 import Data.Kind (Type)
 import Data.List (foldl1')
 import GHC.Stack (HasCallStack)
-import Data.Functor.Compose
+
+import Advent.Nat (Nat(S,Z), FromNatural, UnfoldNat(unfoldNat))
+import Advent.ReadS (pread, preadParen, tok, P(unP))
 
 -- | Type synonym for 'Box' allowing the use of natural number literals.
 type Box' n = Box (FromNatural n)
@@ -118,7 +119,7 @@ coverBox (Dim a b x) (Dim c d y) = Dim (min a c) (max b d) (coverBox x y)
 coverBox Pt Pt = Pt
 
 -- | Compute the box that encompasses all of the boxes in the list.
-coverBoxes :: [Box n] -> Box n
+coverBoxes :: HasCallStack => [Box n] -> Box n
 coverBoxes = foldl1' coverBox
 
 -- | Given a list of potentially overlapping boxes create a new list
