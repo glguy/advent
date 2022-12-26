@@ -24,13 +24,13 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Data.List (tails)
+import Data.List (tails, foldl')
 import Data.Maybe (fromMaybe, maybeToList)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Array.Unboxed (Ix(rangeSize), UArray, accumArray)
-import Advent (getInputMap, counts, arrIx)
+import Advent (getInputMap, arrIx)
 import Advent.Coord (Coord, above, below, boundingBox, left, neighbors, right)
 
 -- |
@@ -61,7 +61,7 @@ sim :: Set Coord -> [Set Coord]
 sim start = scanl step start moves
 
 step :: Set Coord -> (UArray Coord Bool -> Coord -> Maybe Coord) -> Set Coord
-step elves m = elves Set.\\ moved <> Map.keysSet ok
+step elves m = elves Set.\\ src <> dst
    where
       elves'  = setArray elves
       targets = Map.fromList
@@ -70,8 +70,15 @@ step elves m = elves Set.\\ moved <> Map.keysSet ok
                   , isCrowded elves' elf
                   , c <- maybeToList (m elves' elf)
                   ]
-      ok      = Map.filter (1 ==) (counts targets)
-      moved   = Map.keysSet (Map.filter (`Map.member` ok) targets)
+      dst = resolve targets
+      src = Map.keysSet (Map.filter (`Set.member` dst) targets)
+  
+resolve :: (Foldable t, Ord a) => t a -> Set a
+resolve targets = foldl' f Set.empty targets
+  where
+    f acc x
+      | Set.member x acc = Set.delete x acc
+      | otherwise = Set.insert x acc
 
 setArray :: Set Coord -> UArray Coord Bool
 setArray s = accumArray (\_ x -> x) False b [(c, True) | c <- Set.toList s]
