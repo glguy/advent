@@ -63,7 +63,7 @@ executable sln_2015_06
 executable sln_2015_07
   import:              day
   main-is:             2015/07.hs
-  build-depends:       containers, monad-loops
+  build-depends:       containers
 
 executable sln_2015_08
   import:              day
