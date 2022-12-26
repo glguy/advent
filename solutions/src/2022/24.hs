@@ -23,40 +23,24 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Data.Ix (inRange)
-import Data.Map (Map)
-import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
+import Data.Array.Unboxed
 
-import Advent ( getInputMap )
-import Advent.Coord ( cardinal, west, Coord(..) )
+import Advent ( getInputArray )
+import Advent.Coord (cardinal, west, Coord(..))
 
-data World = World {
-  stormsE, stormsW, stormsN, stormsS :: Map Int (Set Int),
-  region    :: Coord 
-} deriving (Show)
-
-parseWorld :: Map Coord Char -> World
-parseWorld m = World {
-  stormsE = Map.fromListWith Set.union [(y-1, Set.singleton (x-1)) | (C y x, '>') <- Map.assocs m],
-  stormsW = Map.fromListWith Set.union [(y-1, Set.singleton (x-1)) | (C y x, '<') <- Map.assocs m],
-  stormsN = Map.fromListWith Set.union [(x-1, Set.singleton (y-1)) | (C y x, '^') <- Map.assocs m],
-  stormsS = Map.fromListWith Set.union [(x-1, Set.singleton (y-1)) | (C y x, 'v') <- Map.assocs m],
-  region = maximum (Map.keys m)
-}
-
-checkBlizzard :: World -> Int -> Coord -> Bool
-checkBlizzard w t (C y x) =
-  seq w $
-  maybe False (Set.member ((x'-t)`mod`(xm-1))) (Map.lookup y' (stormsE w)) ||
-  maybe False (Set.member ((x'+t)`mod`(xm-1))) (Map.lookup y' (stormsW w)) ||
-  maybe False (Set.member ((y'-t)`mod`(ym-1))) (Map.lookup x' (stormsS w)) ||
-  maybe False (Set.member ((y'+t)`mod`(ym-1))) (Map.lookup x' (stormsN w))
+checkCell :: UArray Coord Char -> Int -> Coord -> Bool
+checkCell w t here@(C y x) =
+  w!here /= '#' &&
+  w!(C y ((x'-t)`mod`xm+1)) /= '>' &&
+  w!(C y ((x'+t)`mod`xm+1)) /= '<' &&
+  w!(C ((y'-t)`mod`ym+1) x) /= 'v' &&
+  w!(C ((y'+t)`mod`ym+1) x) /= '^'
   where
     y' = y-1
     x' = x-1
-    C ym xm = region w
+    C ym xm = snd (bounds w) - 1
 
 -- |
 -- >>> :main
@@ -64,14 +48,13 @@ checkBlizzard w t (C y x) =
 -- 851
 main :: IO ()
 main =
- do input <- Map.filter ('.' /=) <$> getInputMap 2022 24
-    let w = parseWorld input
-    let corner = maximum (Map.keys input)
-    let target = corner + west
+ do input <- getInputArray 2022 24
+    let (_,hi) = bounds input
+    let target = hi + west
 
     let loop t end prev
           | Set.member end prev = t
-          | otherwise = loop (t+1) end (grow w (t+1) end prev)
+          | otherwise = loop (t+1) end (grow input (t+1) prev)
 
     let t1 = loop 0  target  (Set.singleton (C 0 1))
         t2 = loop t1 (C 0 1) (Set.singleton target)
@@ -80,12 +63,12 @@ main =
     print t3
 
 -- | Given a set of locations the elf could be find the set the elf can be at next.
-grow :: World -> Int -> Coord -> Set Coord -> Set Coord
-grow w t end prev =
+grow :: UArray Coord Char -> Int -> Set Coord -> Set Coord
+grow w t prev =
   Set.fromList
     [ next
       | here <- Set.toList prev
       , next <- here : cardinal here
-      , inRange (1,region w-1) next || next == here || next == end
-      , not (checkBlizzard w t next)
+      , inRange (bounds w) next
+      , checkCell w t next
     ]
