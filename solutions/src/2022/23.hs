@@ -24,13 +24,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Data.Ix (rangeSize)
 import Data.List (tails)
-import Data.Maybe ( fromMaybe, maybeToList )
+import Data.Maybe (fromMaybe, maybeToList)
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Array.Unboxed
+import Data.Array.Unboxed (Ix(rangeSize), UArray, accumArray)
 import Advent (getInputMap, counts, arrIx)
 import Advent.Coord (Coord, above, below, boundingBox, left, neighbors, right)
 
@@ -59,10 +58,10 @@ sameIx i (x:y:z)
 sameIx _ _ = undefined
 
 sim :: Set Coord -> [Set Coord]
-sim start = scanl (\elves move -> step move elves) start moves
+sim start = scanl step start moves
 
-step :: (UArray Coord Bool -> Coord -> Maybe Coord) -> Set Coord -> Set Coord
-step m elves = Set.union (Map.keysSet ok) (Set.difference elves moved)
+step :: Set Coord -> (UArray Coord Bool -> Coord -> Maybe Coord) -> Set Coord
+step elves m = elves Set.\\ moved <> Map.keysSet ok
    where
       elves'  = setArray elves
       targets = Map.fromList
@@ -77,7 +76,7 @@ step m elves = Set.union (Map.keysSet ok) (Set.difference elves moved)
 setArray :: Set Coord -> UArray Coord Bool
 setArray s = accumArray (\_ x -> x) False b [(c, True) | c <- Set.toList s]
   where
-    Just b = boundingBox s
+    b = fromMaybe (0,0) (boundingBox s)
 
 arrayMember :: UArray Coord Bool -> Coord -> Bool
 arrayMember a x = fromMaybe False (arrIx a x)
