@@ -1,4 +1,4 @@
-{-# Language StandaloneDeriving, KindSignatures, GADTs, DataKinds, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
+{-# Language StandaloneDeriving, BlockArguments, KindSignatures, GADTs, DataKinds, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
 {-|
 Module      : Advent.Box
 Description : N-dimensional boxes
@@ -12,11 +12,16 @@ enables efficient intersection and subtraction operations.
 -}
 module Advent.Box where
 
-import Advent.Nat (Nat(S,Z))
+import Advent.Nat (Nat(S,Z), FromNatural, UnfoldNat(unfoldNat))
+import Advent.ReadS
 import Control.Monad (foldM)
 import Data.Kind (Type)
 import Data.List (foldl1')
 import GHC.Stack (HasCallStack)
+import Data.Functor.Compose
+
+-- | Type synonym for 'Box' allowing the use of natural number literals.
+type Box' n = Box (FromNatural n)
 
 -- | An n-dimensional box.
 data Box :: Nat -> Type where
@@ -133,3 +138,14 @@ unionBoxes :: [Box a] -> [Box a]
 unionBoxes = foldr add []
   where
     add box rest = box : concatMap (subtractBox box) rest
+
+instance UnfoldNat n => Read (Box n) where
+  readsPrec p = unP (getCompose (unfoldNat pt dim))
+    where
+      pt :: Compose P Box 'Z
+      pt = Compose (preadParen False (Pt <$ tok "Pt"))
+
+      dim :: Compose P Box m -> Compose P Box ('S m)
+      dim (Compose more) = Compose (preadParen (p >= 11)
+        (Dim <$ tok "Dim" <*> pread <*> pread <*> more))
+    

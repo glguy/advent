@@ -33,9 +33,9 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (format)
-import Advent.Box (Box(Dim,Pt), subtractBox, size, unionBoxes)
+import Advent.Box (Box', Box(Dim,Pt), subtractBox, size, unionBoxes)
 import Advent.Coord (manhattan, Coord(C))
-import Advent.Nat (Nat(Z, S))
+import Advent.Nat (Nat(S))
 
 -- | Input is a list of: sensor x and y, beacon x and y
 type Input = [(Int,Int,Int,Int)]
@@ -79,7 +79,7 @@ part1 row diamonds beacons =
 rowSlice ::
   Int           {- ^ y value            -} ->
   Sensor        {- ^ sensor             -} ->
-  [Box ('S 'Z)] {- ^ bounds on x values -}
+  [Box' 1] {- ^ bounds on x values -}
 rowSlice y (Sensor (C sy sx) r) = [cover sx dx Pt | dx >= 0]
   where
     dy = abs (y - sy)
@@ -104,11 +104,11 @@ part2 search diamonds = head
     , 0 <= x, x <= search]
 
 -- | Find a corner of a diamond represented as a square region.
-boxCorner :: Box ('S ('S 'Z)) -> Coord
-boxCorner (Dim xpy _ (Dim xmy _ Pt)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2) 
+boxCorner :: Box' 2 -> Coord
+boxCorner (Dim xpy _ (Dim xmy _ _)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2) 
 
 -- | Covert a diamond centered at a coordinate with a radius into a square region.
-diamondBox :: Sensor -> Box ('S ('S 'Z))
+diamondBox :: Sensor -> Box' 2
 diamondBox (Sensor (C y x) r) = cover (x+y) r (cover (x-y) r Pt)
 
 -- Box utilities

@@ -17,7 +17,7 @@ import Data.Functor (void)
 import Data.String (IsString(..))
 
 -- | Wrapper for 'ReadS'
-newtype P a = P (ReadS a)
+newtype P a = P { unP :: ReadS a }
 
 -- | Parse a string or throw an error
 runP :: P a -> String -> a
@@ -76,6 +76,10 @@ eof = void (tok "")
 -- | Parse using a 'Read' instance.
 pread :: Read a => P a
 pread = P reads
+
+-- | Wrapper for 'readParen'
+preadParen :: Bool -> P a -> P a
+preadParen req (P p) = P (readParen req p)
 
 -- | Left-biased choice. Uses righthand-side if lefthand-side fails.
 (<++) :: P a -> P a -> P a
