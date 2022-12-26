@@ -69,16 +69,18 @@ solve ::
     Map Int [(Int, Int, Int)] {- graph: source to (dest, distance, flow) -} ->
     Int                       {- starting time -} ->
     Map SmallSet Int          {- map of opened values to maximum flow -}
-solve graph time0 = SMap.fromListWith max (go [(time0, 0, SmallSet.empty, 0)])
+solve graph time0 = SMap.fromListWith max (go [S time0 0 SmallSet.empty 0])
     where
-        go xs = [(open,flow) | (_,_,open,flow) <- xs] ++ concatMap (go . step) xs
-        step (t, here, open, flow) =
-            [(t', next, SmallSet.insert next open, flow + t' * valve)
+        go xs = [(open,flow) | S _ _ open flow <- xs] ++ concatMap (go . step) xs
+        step (S t here open flow) =
+            [S t' next (SmallSet.insert next open) (flow + t' * valve)
                 | (next, cost, valve) <- graph Map.! here
                 , not (SmallSet.member next open)
                 , let t' = t - cost
                 , t' > 0
             ]
+
+data S = S !Int !Int !SmallSet !Int
 
 -- | Replace all the string names with sequentially assign Int names to speed
 -- up comparisons and enable the use of SmallSet
