@@ -26,11 +26,12 @@ module Main where
 
 import Data.Ix (rangeSize)
 import Data.List (tails)
+import Data.Maybe ( fromMaybe, maybeToList )
 import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
-
-import Advent (getInputMap, counts)
+import Data.Array.Unboxed
+import Advent (getInputMap, counts, arrIx)
 import Advent.Coord (Coord, above, below, boundingBox, left, neighbors, right)
 
 -- |
@@ -58,18 +59,31 @@ sameIx i (x:y:z)
 sameIx _ _ = undefined
 
 sim :: Set Coord -> [Set Coord]
-sim start = scanl (\elves move -> step (move elves) elves) start moves
+sim start = scanl (\elves move -> step move elves) start moves
 
-step :: (Coord -> Maybe Coord) -> Set Coord -> Set Coord
+step :: (UArray Coord Bool -> Coord -> Maybe Coord) -> Set Coord -> Set Coord
 step m elves = Set.union (Map.keysSet ok) (Set.difference elves moved)
    where
-      movers  = Set.filter (isCrowded elves) elves
-      targets = Map.mapMaybe id (Map.fromSet m movers)
+      elves'  = setArray elves
+      targets = Map.fromList
+                  [ (elf, c)
+                  | elf <- Set.toList elves
+                  , isCrowded elves' elf
+                  , c <- maybeToList (m elves' elf)
+                  ]
       ok      = Map.filter (1 ==) (counts targets)
       moved   = Map.keysSet (Map.filter (`Map.member` ok) targets)
 
-isCrowded :: Set Coord -> Coord -> Bool
-isCrowded elves elf = any (`Set.member` elves) (neighbors elf)
+setArray :: Set Coord -> UArray Coord Bool
+setArray s = accumArray (\_ x -> x) False b [(c, True) | c <- Set.toList s]
+  where
+    Just b = boundingBox s
+
+arrayMember :: UArray Coord Bool -> Coord -> Bool
+arrayMember a x = fromMaybe False (arrIx a x)
+
+isCrowded :: UArray Coord Bool -> Coord -> Bool
+isCrowded elves elf = any (arrayMember elves) (neighbors elf)
 
 moveSets :: [(Coord -> Coord, Coord -> Coord, Coord -> Coord)]
 moveSets = [
@@ -78,12 +92,12 @@ moveSets = [
   (left , above, below),
   (right, above, below)]
 
-moves :: [Set Coord -> Coord -> Maybe Coord]
+moves :: [UArray Coord Bool -> Coord -> Maybe Coord]
 moves = map (combine . take 4) (tails (cycle moveSets))
   where
     combine [] _ _ = Nothing
     combine ((a,b,c):xs) elves here
-      | all (`Set.notMember` elves) locs = Just (a here)
+      | not (any (arrayMember elves) locs) = Just (a here)
       | otherwise = combine xs elves here
       where
         here' = a here
