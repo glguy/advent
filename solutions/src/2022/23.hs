@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, BlockArguments, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, BangPatterns, BlockArguments, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 23 solution
@@ -64,22 +64,16 @@ sim start = scanl step start moves
 step :: Set Coord -> (UArray Coord Bool -> Coord -> Maybe Coord) -> Set Coord
 step elves m = foldl' (flip Set.delete) elves targets <> Map.keysSet targets
    where
-      targets = resolve
-                  [ (c,elf)
-                  | let elves'  = setArray elves
-                  , elf <- Set.toList elves
-                  , isCrowded elves' elf
-                  , c <- maybeToList (m elves' elf)
-                  ]
+      elves'  = setArray elves
+      targets = elves' `seq` foldl' updateElf Map.empty elves
 
-resolve ::
-  [(Coord,Coord)] {- ^ destinations and sources -} ->
-  Map Coord Coord {- ^ uncontested destinations and sources -}
-resolve = foldl' f Map.empty
-  where
-    f acc (k,v) = Map.alter (g v) k acc
-    g v Nothing = Just v
-    g _ (Just _) = Nothing
+      updateElf acc elf
+        | isCrowded elves' elf
+        , Just elf' <- m elves' elf = Map.alter (uniq elf) elf' acc
+        | otherwise = acc
+
+      uniq v Nothing = Just v   -- If the location is unassigned, assign it
+      uniq _ (Just _) = Nothing -- If the location is assigned, unassign it
 
 setArray :: Set Coord -> UArray Coord Bool
 setArray s = accumArray (\_ x -> x) False b [(c, True) | c <- Set.toList s]
