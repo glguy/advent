@@ -24,13 +24,13 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
+import Data.Array.Unboxed (Ix(rangeSize), UArray, accumArray)
 import Data.List (tails, foldl')
-import Data.Maybe (fromMaybe, maybeToList)
-import Data.Map (Map)
 import Data.Map qualified as Map
+import Data.Maybe (fromMaybe)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Array.Unboxed (Ix(rangeSize), UArray, accumArray)
+
 import Advent (getInputMap, arrIx)
 import Advent.Coord (Coord, above, below, boundingBox, left, neighbors, right)
 
