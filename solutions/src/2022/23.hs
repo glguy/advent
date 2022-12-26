@@ -77,9 +77,9 @@ resolve ::
   Map Coord Coord {- ^ uncontested destinations and sources -}
 resolve = foldl' f Map.empty
   where
-    f acc (k,v)
-      | Map.member k acc = Map.delete k acc
-      | otherwise = Map.insert k v acc
+    f acc (k,v) = Map.alter (g v) k acc
+    g v Nothing = Just v
+    g _ (Just _) = Nothing
 
 setArray :: Set Coord -> UArray Coord Bool
 setArray s = accumArray (\_ x -> x) False b [(c, True) | c <- Set.toList s]
