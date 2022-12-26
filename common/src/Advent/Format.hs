@@ -89,7 +89,9 @@ format = QuasiQuoter
 
 prepare :: String -> Q (Maybe (Int, Int), String)
 prepare str =
-  case lines str of
+  -- GHC on Windows has a bug where it adds \r
+  -- https://gitlab.haskell.org/ghc/ghc/-/issues/8424
+  case lines (filter ('\r' /=) str) of
     []   -> fail "Empty input format"
     [x]
       | Just (yd, str') <- splitLeader x -> pure (yd, str')
