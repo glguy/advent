@@ -8,22 +8,30 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/19>
 
+This solution uses a few optimizations to achieve lightning fast performance:
+
+* Prune out any state that has the same number of bots at a given time with fewer resources
+* Prune out any state that in the best case produces fewer geodes than the any state doing nothing
+* Generate a new state for each purchase, not individual timesteps.
+* Any bot bought is bought at the earliest possible time.
+
 >>> :{
 :main +
     "Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.\n\
     \Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.\n"
 :}
 33
+3472
 
 -}
-module Main (main) where
+module Main where
 
 import Control.Parallel.Strategies (parMap, rseq)
-import Data.List (foldl', maximumBy)
+import Control.Parallel (par)
+import Data.List (foldl', sortBy)
 import Data.Map qualified as Map
-import Data.Set qualified as Set
 
-import Advent (format, ordNub)
+import Advent (format)
 
 type Blueprint = (Int, Int, Int, Int, Int, Int, Int)
 
@@ -39,24 +47,50 @@ main = do
          Each obsidian robot costs %u ore and %u clay.
          Each geode robot costs %u ore and %u obsidian.%n)*|]
     let xs = parMap rseq (\b@(i,_,_,_,_,_,_) -> i * solve 24 b) input
-    print (sum xs)
     let ys = parMap rseq (solve 32) (take 3 input)
+    print (ys `par` sum xs)
     print (product ys)
 
 solve :: Int -> Blueprint -> Int
-solve t0 blue@(i,_,_,_,_,_,_) = go Set.empty (Map.singleton t0 [def])
+solve t0 blue = go (Map.singleton t0 [def])
   where
-    go seen q =
+    go q =
         case Map.maxViewWithKey q of
             Nothing -> 0
             Just ((0,sts), _) -> maximum (map geo sts)
             Just ((t,sts), q') ->
-                go (Set.fromList (map botRep sts) <> seen) $
-                foldl' (\q_ st -> foldl' ins q_ (step blue t st)) q' sts'
+                go (foldl' (\q_ st -> foldl' ins q_ (step blue t st)) q'
+                    (filter (\x -> overapprox t x >= u) covers))
               where
-                sts' = filter (\x -> Set.notMember (botRep x) seen) (ordNub sts)
+                byRep = Map.fromListWith (++) [(botRep st, [st]) | st <- sts]
+                covers = concatMap (keepBest . sortBy (flip compare)) byRep
+
+                u = maximum (map (underapprox t) covers)
+
 
     ins q (t, st) = Map.insertWith (++) t [st] q
+
+-- | amount of geodes we'd end with if we bought a geode bot every single timestep
+overapprox :: Int -> State -> Int
+overapprox t st = sum [geoBots st .. geoBots st + t - 1] + geo st
+
+-- | amount of geodes we'd end with if we didn't buy any more geode bots
+underapprox :: Int -> State -> Int
+underapprox t st = t * geoBots st + geo st
+
+keepBest :: Foldable f => f State -> [State]
+keepBest = foldl' f []
+  where
+    f acc x
+      | any (\a -> cover a x) acc = acc
+      | otherwise = x : filter (not . cover x) acc
+
+cover :: State -> State -> Bool
+cover a b =
+    ore a >= ore b &&
+    cla a >= cla b &&
+    obs a >= obs b &&
+    geo a >= geo b
 
 botRep :: State -> (Int, Int, Int, Int)
 botRep st = (oreBots st, claBots st, obsBots st, geoBots st)
@@ -80,8 +114,15 @@ step (_, oreCostOre, claCostOre, obsCostOre, obsCostCla, geoCostOre, geoCostObs)
   | otherwise = buys
     where
         oreCostMax = oreCostOre `max` claCostOre `max` obsCostOre `max` geoCostOre
+        
+        cap x = x {
+            ore = if oreBots x == oreCostMax then min (ore x) (oreBots x) else ore x,
+            cla = if claBots x == obsCostCla then min (cla x) (claBots x) else cla x,
+            obs = if obsBots x == geoCostObs then min (obs x) (obsBots x) else obs x
+          }
+        
         buys =
-            [(t', st
+            [(t', cap st
                 { ore = ore st + oreBots st * dt - geoCostOre
                 , cla = cla st + claBots st * dt
                 , obs = obs st + obsBots st * dt - geoCostObs
@@ -94,7 +135,7 @@ step (_, oreCostOre, claCostOre, obsCostOre, obsCostCla, geoCostOre, geoCostObs)
                         ((geoCostObs - obs st) `divUp` obsBots st))
                 , let t' = t - dt
                 , t' >= 0] ++
-            [(t', st
+            [(t', cap st
                 { ore = ore st + oreBots st * dt - obsCostOre
                 , cla = cla st + claBots st * dt - obsCostCla
                 , obs = obs st + obsBots st * dt
@@ -107,7 +148,7 @@ step (_, oreCostOre, claCostOre, obsCostOre, obsCostCla, geoCostOre, geoCostObs)
                         ((obsCostCla - cla st) `divUp` claBots st))
                 , let t' = t - dt
                 , t' >= 0] ++
-            [(t', st
+            [(t', cap st
                 { ore = ore st + oreBots st * dt - claCostOre
                 , cla = cla st + claBots st * dt
                 , obs = obs st + obsBots st * dt
@@ -118,7 +159,7 @@ step (_, oreCostOre, claCostOre, obsCostOre, obsCostCla, geoCostOre, geoCostObs)
                         ((claCostOre - ore st) `divUp` oreBots st)
                 , let t' = t - dt
                 , t' >= 0] ++
-            [(t', st
+            [(t', cap st
                 { ore = ore st + oreBots st * dt - oreCostOre
                 , cla = cla st + claBots st * dt
                 , obs = obs st + obsBots st * dt

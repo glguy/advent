@@ -89,8 +89,7 @@ format = QuasiQuoter
 
 prepare :: String -> Q (Maybe (Int, Int), String)
 prepare str =
-  -- GHC on Windows has a bug where it adds \r
-  -- https://gitlab.haskell.org/ghc/ghc/-/issues/8424
+  -- Git on Windows has a bad behavior where it can add \r to files
   case lines (filter ('\r' /=) str) of
     []   -> fail "Empty input format"
     [x]
