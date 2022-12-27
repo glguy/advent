@@ -28,7 +28,7 @@ module Main where
 
 import Control.Parallel.Strategies (parMap, rseq)
 import Control.Parallel (par)
-import Data.List (foldl', sortBy)
+import Data.List (foldl')
 import Data.Map qualified as Map
 
 import Advent (format)
@@ -54,21 +54,20 @@ main = do
 solve :: Int -> Blueprint -> Int
 solve t0 blue = go (Map.singleton t0 [def])
   where
-    go q =
-        case Map.maxViewWithKey q of
-            Nothing -> 0
-            Just ((0,sts), _) -> maximum (map geo sts)
-            Just ((t,sts), q') ->
-                go (foldl' (\q_ st -> foldl' ins q_ (step blue t st)) q'
-                    (filter (\x -> overapprox t x >= u) covers))
-              where
-                byRep = Map.fromListWith (++) [(botRep st, [st]) | st <- sts]
-                covers = concatMap (keepBest . sortBy (flip compare)) byRep
-
-                u = maximum (map (underapprox t) covers)
-
-
     ins q (t, st) = Map.insertWith (++) t [st] q
+    go q =
+      case Map.maxViewWithKey q of
+        Nothing -> 0
+        Just ((0,sts), _) -> maximum (map geo sts)
+        Just ((t,sts), q') ->
+          go $ foldl' ins q' $      -- incorporate queue up states
+          concatMap (step blue t) $ -- compute next states
+          concatMap keepBest      $ -- remove redundant states
+          Map.fromListWith (++)
+            [(botCounts st, [st])
+            | let u = maximum (map (underapprox t) sts)
+            , st <- sts
+            , overapprox t st >= u]
 
 -- | amount of geodes we'd end with if we bought a geode bot every single timestep
 overapprox :: Int -> State -> Int
@@ -92,8 +91,8 @@ cover a b =
     obs a >= obs b &&
     geo a >= geo b
 
-botRep :: State -> (Int, Int, Int, Int)
-botRep st = (oreBots st, claBots st, obsBots st, geoBots st)
+botCounts :: State -> (Int, Int, Int, Int)
+botCounts st = (oreBots st, claBots st, obsBots st, geoBots st)
 
 data State = State {
     oreBots, claBots, obsBots, geoBots,
