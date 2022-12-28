@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, BangPatterns #-}
+{-# Language QuasiQuotes, OverloadedRecordDot, ImportQualifiedPost, BangPatterns #-}
 {-|
 Module      : Main
 Description : Day 19 solution
@@ -54,118 +54,125 @@ main = do
 solve :: Int -> Blueprint -> Int
 solve t0 blue = go (Map.singleton t0 [def])
   where
-    ins q (t, st) = Map.insertWith (++) t [st] q
     go q =
       case Map.maxViewWithKey q of
         Nothing -> 0
-        Just ((0,sts), _) -> maximum (map geo sts)
+        Just ((0,sts), _) -> maximum (map (geo . amts) sts)
         Just ((t,sts), q') ->
-          go $ foldl' ins q' $      -- incorporate queue up states
-          concatMap (step blue t) $ -- compute next states
-          concatMap keepBest      $ -- remove redundant states
+          go $ Map.unionWith (++) q' $
           Map.fromListWith (++)
-            [(botCounts st, [st])
-            | let u = maximum (map (underapprox t) sts)
-            , st <- sts
-            , overapprox t st >= u]
+          [ (t',[v'])
+          | (k,vs) <-
+                Map.assocs $
+                Map.fromListWith (++)
+                [ (bots st, [amts st])
+                | let u = maximum (map (underapprox t) sts)
+                , st <- sts
+                , overapprox t st >= u]
+          , v       <- keepBest vs
+          , (t',v') <- step blue t k v]
 
 -- | amount of geodes we'd end with if we bought a geode bot every single timestep
 overapprox :: Int -> State -> Int
-overapprox t st = sum [geoBots st .. geoBots st + t - 1] + geo st
+overapprox t st = underapprox t st + t * (t - 1) `div` 2
 
 -- | amount of geodes we'd end with if we didn't buy any more geode bots
 underapprox :: Int -> State -> Int
-underapprox t st = t * geoBots st + geo st
+underapprox t st = t * st.bots.geo + st.amts.geo
 
-keepBest :: Foldable f => f State -> [State]
+-- | Remove all resource sets from the list that are dominated by another
+-- entry in the list.
+keepBest :: [Res] -> [Res]
 keepBest = foldl' f []
   where
     f acc x
       | any (\a -> cover a x) acc = acc
       | otherwise = x : filter (not . cover x) acc
 
-cover :: State -> State -> Bool
+-- | Relation for the first element dominating the second.
+cover :: Res -> Res -> Bool
 cover a b =
-    ore a >= ore b &&
-    cla a >= cla b &&
-    obs a >= obs b &&
-    geo a >= geo b
-
-botCounts :: State -> (Int, Int, Int, Int)
-botCounts st = (oreBots st, claBots st, obsBots st, geoBots st)
+    a.ore >= b.ore &&
+    a.cla >= b.cla &&
+    a.obs >= b.obs &&
+    a.geo >= b.geo
 
 data State = State {
-    oreBots, claBots, obsBots, geoBots,
+    bots :: !Res,
+    amts :: !Res
+} deriving (Show, Eq, Ord)
+
+data Res = Res {
     ore, cla, obs, geo :: !Int
 } deriving (Show, Eq, Ord)
 
 def :: State
 def = State {
-    oreBots=1, claBots=0, obsBots=0, geoBots=0, ore=0, cla=0, obs=0, geo=0
+    bots = Res { ore=1, cla=0, obs=0, geo=0 },
+    amts = Res { ore=0, cla=0, obs=0, geo=0 }
 }
 
 divUp :: Int -> Int -> Int
 divUp x y = (x+y-1) `div` y
 
-step :: Blueprint -> Int -> State -> [(Int,State)]
-step (_, oreCostOre, claCostOre, obsCostOre, obsCostCla, geoCostOre, geoCostObs) t !st
-  | null buys = [(0, st { geo = geo st + t * geoBots st }) | t > 0]
+step :: Blueprint -> Int -> Res -> Res -> [(Int,State)]
+step (_, oreCostOre, claCostOre, obsCostOre, obsCostCla, geoCostOre, geoCostObs) t !bs !as
+  | null buys = [(0, State { amts = as { geo = as.geo + t * bs.geo }, bots = bs}) | t > 0]
   | otherwise = buys
     where
         oreCostMax = oreCostOre `max` claCostOre `max` obsCostOre `max` geoCostOre
-        
-        cap x = x {
-            ore = if oreBots x == oreCostMax then min (ore x) (oreBots x) else ore x,
-            cla = if claBots x == obsCostCla then min (cla x) (claBots x) else cla x,
-            obs = if obsBots x == geoCostObs then min (obs x) (obsBots x) else obs x
-          }
-        
+
+        cap b a = State b a{
+            ore = if b.ore == oreCostMax then min b.ore a.ore else a.ore,
+            cla = if b.cla == obsCostCla then min b.cla a.cla else a.cla,
+            obs = if b.obs == geoCostObs then min b.obs a.obs else a.obs}
+
         buys =
-            [(t', cap st
-                { ore = ore st + oreBots st * dt - geoCostOre
-                , cla = cla st + claBots st * dt
-                , obs = obs st + obsBots st * dt - geoCostObs
-                , geo = geo st + geoBots st * dt
-                , geoBots = geoBots st + 1 })
-                | obsBots st > 0
+            [(t', cap
+                  bs{ geo = bs.geo + 1 }
+                  as{ ore = as.ore + bs.ore * dt - geoCostOre
+                    , cla = as.cla + bs.cla * dt
+                    , obs = as.obs + bs.obs * dt - geoCostObs
+                    , geo = as.geo + bs.geo * dt })
+                | bs.obs > 0
                 , let dt = 1 +
                         max 0 (max
-                        ((geoCostOre - ore st) `divUp` oreBots st)
-                        ((geoCostObs - obs st) `divUp` obsBots st))
+                        ((geoCostOre - as.ore) `divUp` bs.ore)
+                        ((geoCostObs - as.obs) `divUp` bs.obs))
                 , let t' = t - dt
                 , t' >= 0] ++
-            [(t', cap st
-                { ore = ore st + oreBots st * dt - obsCostOre
-                , cla = cla st + claBots st * dt - obsCostCla
-                , obs = obs st + obsBots st * dt
-                , geo = geo st + geoBots st * dt
-                , obsBots = obsBots st + 1 })
-                | obsBots st < geoCostObs
-                , claBots st > 0
+            [(t', cap
+                  bs{ obs = bs.obs + 1 }
+                  as{ ore = as.ore + bs.ore * dt - obsCostOre
+                    , cla = as.cla + bs.cla * dt - obsCostCla
+                    , obs = as.obs + bs.obs * dt
+                    , geo = as.geo + bs.geo * dt})
+                | bs.obs < geoCostObs
+                , bs.cla > 0
                 , let dt = 1 + max 0 (max
-                        ((obsCostOre - ore st) `divUp` oreBots st)
-                        ((obsCostCla - cla st) `divUp` claBots st))
+                        ((obsCostOre - as.ore) `divUp` bs.ore)
+                        ((obsCostCla - as.cla) `divUp` bs.cla))
                 , let t' = t - dt
                 , t' >= 0] ++
-            [(t', cap st
-                { ore = ore st + oreBots st * dt - claCostOre
-                , cla = cla st + claBots st * dt
-                , obs = obs st + obsBots st * dt
-                , geo = geo st + geoBots st * dt
-                , claBots = claBots st + 1 })
-                | claBots st < obsCostCla
+            [(t', cap
+                  bs{ cla = bs.cla + 1 }
+                  as{ ore = as.ore + bs.ore * dt - claCostOre
+                    , cla = as.cla + bs.cla * dt
+                    , obs = as.obs + bs.obs * dt
+                    , geo = as.geo + bs.geo * dt})
+                | bs.cla < obsCostCla
                 , let dt = 1 + max 0
-                        ((claCostOre - ore st) `divUp` oreBots st)
+                        ((claCostOre - as.ore) `divUp` bs.ore)
                 , let t' = t - dt
                 , t' >= 0] ++
-            [(t', cap st
-                { ore = ore st + oreBots st * dt - oreCostOre
-                , cla = cla st + claBots st * dt
-                , obs = obs st + obsBots st * dt
-                , geo = geo st + geoBots st * dt
-                , oreBots = oreBots st + 1 })
-                | oreBots st < oreCostMax
+            [(t', cap
+                  bs{ ore = bs.ore + 1 }
+                  as{ ore = as.ore + bs.ore * dt - oreCostOre
+                    , cla = as.cla + bs.cla * dt
+                    , obs = as.obs + bs.obs * dt
+                    , geo = as.geo + bs.geo * dt})
+                | bs.ore < oreCostMax
                 , let dt = 1 + max 0
-                        ((oreCostOre - ore st) `divUp` oreBots st)
+                        ((oreCostOre - as.ore) `divUp` bs.ore)
                 , let t' = t - dt
                 , t' >= 0]
