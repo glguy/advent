@@ -68,7 +68,7 @@ main =
 solve ::
     Map Int [(Int, Int, Int)] {- graph: source to (dest, distance, flow) -} ->
     Int                       {- starting time -} ->
-    Map SmallSet Int          {- map of opened values to maximum flow -}
+    Map SmallSet Int          {- map of opened valves to maximum flow -}
 solve graph time0 = SMap.fromListWith max (go [S time0 0 SmallSet.empty 0])
     where
         go xs = [(open,flow) | S _ _ open flow <- xs] ++ concatMap (go . step) xs
@@ -82,8 +82,8 @@ solve graph time0 = SMap.fromListWith max (go [S time0 0 SmallSet.empty 0])
 
 data S = S !Int !Int !SmallSet !Int
 
--- | Replace all the string names with sequentially assign Int names to speed
--- up comparisons and enable the use of SmallSet
+-- | Replace all the string names with sequentially assigned Int names to
+-- speed up comparisons and enable the use of SmallSet
 renumber :: Map String [(String, Int, Int)] -> Map Int [(Int, Int, Int)]
 renumber graph =
     Map.fromList [ (a Map.! k, [(a Map.! x,y,z) | (x,y,z) <- vs])
@@ -94,9 +94,9 @@ renumber graph =
 -- | Floyd-Warshall shortest paths
 fw ::
     Ord k =>
-    [k]           {- ^ all verticies -} ->
-    Map (k,k) Int {- ^ distances between a pair of verticies -} ->
-    Map (k,k) Int {- ^ shortest distance between two verticies -}
+    [k]           {- ^ all vertices -} ->
+    Map (k,k) Int {- ^ distances between a pair of vertices -} ->
+    Map (k,k) Int {- ^ shortest distance between two vertices -}
 fw keys = each \k -> each \i -> each \j dists ->
     case (Map.lookup (i,k) dists, Map.lookup (k,j) dists) of
         (Just d1, Just d2) -> SMap.insertWith min (i,j) (d1+d2) dists
