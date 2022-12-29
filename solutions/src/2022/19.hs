@@ -117,15 +117,15 @@ divUp x y = (x+y-1) `div` y
 
 step :: Blueprint -> Int -> Res -> Res -> [(Int,State)]
 step (_, oreCostOre, claCostOre, obsCostOre, obsCostCla, geoCostOre, geoCostObs) t !bs !as
-  | null buys = [(0, State { amts = as { geo = as.geo + t * bs.geo }, bots = bs}) | t > 0]
+  | null buys = [(0, State{ bots = bs, amts = as { geo = as.geo + t * bs.geo }}) | t > 0]
   | otherwise = buys
     where
         oreCostMax = oreCostOre `max` claCostOre `max` obsCostOre `max` geoCostOre
 
-        cap b a = State b a{
+        cap b a = State { bots = b , amts = a{
             ore = if b.ore == oreCostMax then min b.ore a.ore else a.ore,
             cla = if b.cla == obsCostCla then min b.cla a.cla else a.cla,
-            obs = if b.obs == geoCostObs then min b.obs a.obs else a.obs}
+            obs = if b.obs == geoCostObs then min b.obs a.obs else a.obs}}
 
         buys =
             [(t', cap
