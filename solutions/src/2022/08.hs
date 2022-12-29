@@ -1,4 +1,3 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 8 solution
@@ -16,6 +15,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Data.Array.Unboxed (Ix(inRange, range), UArray, IArray(..), (!))
+
 import Advent (getInputArray, countBy)
 import Advent.Coord (above, below, left, right, Coord)
 

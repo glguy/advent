@@ -45,10 +45,11 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent (format, stageTH)
-import Advent.Coord (Coord(..), origin, east, north, south, west, normInf)
 import Data.List (transpose)
 import Data.Set qualified as Set
+
+import Advent (format, stageTH)
+import Advent.Coord (Coord(..), origin, east, north, south, west, normInf)
 
 -- | Rope movement instructions
 data C

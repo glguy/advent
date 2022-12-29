@@ -1,5 +1,4 @@
 {-# Language QuasiQuotes, ImportQualifiedPost, NumericUnderscores, BlockArguments, BangPatterns #-}
-{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 {-|
 Module      : Main
 Description : Day 20 solution

@@ -26,8 +26,8 @@ This solution uses a few optimizations to achieve lightning fast performance:
 -}
 module Main where
 
-import Control.Parallel.Strategies (parMap, rseq)
 import Control.Parallel (par)
+import Control.Parallel.Strategies (parMap, rseq)
 import Data.List (foldl')
 import Data.Map qualified as Map
 
@@ -86,7 +86,7 @@ keepBest :: [Res] -> [Res]
 keepBest = foldl' f []
   where
     f acc x
-      | any (\a -> cover a x) acc = acc
+      | any (`cover` x) acc = acc
       | otherwise = x : filter (not . cover x) acc
 
 -- | Relation for the first element dominating the second.

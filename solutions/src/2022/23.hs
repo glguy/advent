@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, BangPatterns, BlockArguments, ImportQualifiedPost #-}
+{-# Language BlockArguments, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 23 solution

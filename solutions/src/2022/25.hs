@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell, BlockArguments, LambdaCase, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 25 solution
@@ -40,7 +40,7 @@ main =
     putStrLn (toSnafu (sum (map fromSnafu input)))
 
 fromSnafu :: String -> Int
-fromSnafu xs = foldl f 0 xs
+fromSnafu = foldl f 0
   where
     f acc c = 5 * acc + fromS c
 

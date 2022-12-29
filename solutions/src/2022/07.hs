@@ -44,11 +44,11 @@ files that are contained within subdirectories.
 -}
 module Main where
 
+import Data.List (tails)
+import Data.List.NonEmpty (NonEmpty(..), (<|))
 import Data.Map qualified as Map
 import Data.Tree (Tree(..))
 import Data.Tree qualified as Tree
-import Data.List.NonEmpty (NonEmpty(..), (<|))
-import Data.List (tails)
 
 import Advent (format)
 

@@ -15,8 +15,9 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent (format)
 import Data.List (sortBy)
+
+import Advent (format)
 
 -- |
 -- >>> :main
@@ -24,7 +25,7 @@ import Data.List (sortBy)
 -- 200158
 main :: IO ()
 main =
- do input <- [format|2022 1 (%u%n)*&%n|]
+ do input <- [format|2022 1 (%u%n)+&%n|]
     let elves = sortBy (flip compare) (map sum input)
     let top n = sum (take n elves)
     print (top 1)

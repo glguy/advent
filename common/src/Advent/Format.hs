@@ -56,15 +56,15 @@ module Advent.Format (format) where
 
 import Advent.Prelude (countBy)
 import Advent.Input (getRawInput)
-import Advent.Format.Lexer ( alexScanTokens, AlexPosn(..) )
-import Advent.Format.Parser (parseFormat, ParseError(..) )
+import Advent.Format.Lexer (alexScanTokens, AlexPosn(..))
+import Advent.Format.Parser (parseFormat, ParseError(..))
 import Advent.Format.Types
 import Control.Applicative ((<|>), some)
-import Control.Monad ( (<=<))
-import Data.Char ( isDigit, isSpace, isUpper )
+import Control.Monad ((<=<), void)
+import Data.Char (isDigit, isSpace, isUpper, isAsciiLower, isAsciiUpper)
 import Data.Maybe ( listToMaybe )
 import Language.Haskell.TH
-import Language.Haskell.TH.Quote ( QuasiQuoter(..) )
+import Language.Haskell.TH.Quote (QuasiQuoter(..))
 import Text.ParserCombinators.ReadP
 
 parse :: String -> Q Format
@@ -120,7 +120,7 @@ makeParser mb str =
 toReadP :: Format -> ExpQ
 toReadP s =
   case s of
-    Literal xs -> [| () <$ string xs |]
+    Literal xs -> [| void (string xs) |]
 
     Gather p -> [| fst <$> gather $(toReadP p) |]
 
@@ -134,29 +134,29 @@ toReadP s =
     SignedInt       -> [| (read :: String -> Int    ) <$> ((++) <$> option "" (string "-") <*> munch1 isDigit) |]
 
     Char      -> [| satisfy ('\n' /=) |]
-    Letter    -> [| satisfy (\x -> 'a' <= x && x <= 'z' || 'A' <= x && x <= 'Z') |]
+    Letter    -> [| satisfy (\x -> isAsciiLower x || isAsciiUpper x) |]
     Word      -> [| some (satisfy (not . isSpace)) |]
 
     Many x ->
      do whenM (acceptsEmpty x) (fail ("Argument to * accepts ε: " ++ showFormat 0 s ""))
         if interesting x then
-          [|       many $(toReadP x) |]
+          [| many $(toReadP x) |]
         else
-          [| () <$ many $(toReadP x) |]
+          [| void (many $(toReadP x)) |]
 
     Some x ->
      do whenM (acceptsEmpty x) (fail ("Argument to + accepts ε: " ++ showFormat 0 s ""))
         if interesting x then
-          [|       some $(toReadP x) |]
+          [| some $(toReadP x) |]
         else
-          [| () <$ some $(toReadP x) |]
+          [| void (some $(toReadP x)) |]
 
     SepBy x y ->
      do whenM (andM (acceptsEmpty x) (acceptsEmpty y)) (fail ("Both arguments to & accept ε: " ++ showFormat 0 s ""))
         if interesting x then
-          [|       sepBy $(toReadP x) $(toReadP y) |]
+          [| sepBy $(toReadP x) $(toReadP y) |]
         else
-          [| () <$ sepBy $(toReadP x) $(toReadP y) |]
+          [| void (sepBy $(toReadP x) $(toReadP y)) |]
 
     Alt x y
       | xi, yi    -> [| Left    <$> $xp <|> Right   <$> $yp |]

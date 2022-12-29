@@ -23,8 +23,9 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent (format, countBy)
 import Data.Ix (inRange)
+
+import Advent (format, countBy)
 
 -- |
 -- >>> :main

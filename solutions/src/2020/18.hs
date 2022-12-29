@@ -1,4 +1,4 @@
-{-# Language BlockArguments, OverloadedStrings #-}
+{-# Language BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 18 solution

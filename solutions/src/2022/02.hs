@@ -1,5 +1,4 @@
 {-# Language QuasiQuotes, TemplateHaskell #-}
-{-# OPTIONS_GHC -w #-}
 {-|
 Module      : Main
 Description : Day 2 solution

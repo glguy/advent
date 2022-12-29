@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, OverloadedStrings, TemplateHaskell #-}
+{-# Language QuasiQuotes, OverloadedStrings #-}
 {-|
 Module      : Main
 Description : Day 13 solution

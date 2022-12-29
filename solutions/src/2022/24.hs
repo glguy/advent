@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 24 solution
@@ -23,9 +23,9 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
+import Data.Array.Unboxed (UArray, (!), bounds, inRange)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.Array.Unboxed (UArray, (!), bounds, inRange)
 
 import Advent (getInputArray)
 import Advent.Coord (Coord(..), cardinal, west)
@@ -81,12 +81,12 @@ isOpen ::
   Coord             {- ^ location           -} ->
   Bool              {- ^ location available -}
 isOpen w t here@(C y x) =
-  inRange (bounds w) here            &&
-  w ! here                    /= '#' && -- walls
-  w ! (C y ((x'-t)`mod`xm+1)) /= '>' && -- east-bound storms
-  w ! (C y ((x'+t)`mod`xm+1)) /= '<' && -- west-bound storms
-  w ! (C ((y'-t)`mod`ym+1) x) /= 'v' && -- south-bound storms
-  w ! (C ((y'+t)`mod`ym+1) x) /= '^'    -- north-bound storms
+  inRange (bounds w) here          &&
+  '#' /= w ! here                  && -- walls
+  '>' /= w ! C y ((x'-t)`mod`xm+1) && -- east-bound storms
+  '<' /= w ! C y ((x'+t)`mod`xm+1) && -- west-bound storms
+  'v' /= w ! C ((y'-t)`mod`ym+1) x && -- south-bound storms
+  '^' /= w ! C ((y'+t)`mod`ym+1) x    -- north-bound storms
   where
     y' = y-1
     x' = x-1

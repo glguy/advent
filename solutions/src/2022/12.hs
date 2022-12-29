@@ -1,4 +1,3 @@
-{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 12 solution
@@ -22,10 +21,11 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
+import Data.Array.Unboxed (UArray, (!), assocs, amap)
+
 import Advent (getInputArray, arrIx)
 import Advent.Coord (Coord, cardinal)
 import Advent.Search (bfsOnN)
-import Data.Array.Unboxed (UArray, (!), assocs, amap)
 
 -- |
 -- >>> :main

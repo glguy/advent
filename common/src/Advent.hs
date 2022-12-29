@@ -1,4 +1,3 @@
-{-# Language ImportQualifiedPost, OverloadedStrings #-}
 {-|
 Module      : Advent
 Description : Solution helper library
