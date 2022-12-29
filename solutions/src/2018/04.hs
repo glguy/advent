@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost #-}
+{-# Language OverloadedStrings, QuasiQuotes, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 4 solution
@@ -11,12 +11,22 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (counts, getInputLines)
+import Control.Applicative ((<|>))
 import Data.List (maximumBy, sortBy)
-import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Ord (comparing)
-import Data.Time (LocalTime, readSTime, defaultTimeLocale, todMin, localTimeOfDay)
+import Data.Time (LocalTime, readPTime, defaultTimeLocale, todMin, localTimeOfDay)
+import Text.ParserCombinators.ReadP (ReadP, readS_to_P)
+
+import Advent (counts, format)
+
+p :: ReadP LocalTime
+p = readPTime True defaultTimeLocale "%Y-%m-%d %H:%M"
+
+a :: ReadP Action
+a = Wake  <$ "wakes up" <|>
+    Sleep <$ "falls asleep" <|>
+    Start <$ "Guard #" <*> (Guard <$> readS_to_P reads) <* " begins shift" 
 
 -- | Print solutions to part 1 and part 2 of day 4
 --
@@ -25,9 +35,10 @@ import Data.Time (LocalTime, readSTime, defaultTimeLocale, todMin, localTimeOfDa
 -- 39940
 main :: IO ()
 main =
-  do input <- toSleepMinutes . parseFile <$> getInputLines 2018 4
-     print (part1 input)
-     print (part2 input)
+ do input <- [format|2018 4 ([@p] @a%n)*|]
+    let timesheet = toSleepMinutes (sortBy (comparing fst) input)
+    print (part1 timesheet)
+    print (part2 timesheet)
 
 -- | Log entry actions
 data Action
@@ -38,26 +49,6 @@ data Action
 
 newtype Guard = Guard { guardId :: Int }
   deriving (Show, Read, Eq, Ord)
-
--- | Parse a file into lines of entries and sort them by timestamp.
-parseFile :: [String] -> [(LocalTime, Action)]
-parseFile = sortBy (comparing fst) . map parseLine
-
--- | Parse one of the log entries as a pair of timestamp and action.
-parseLine :: String -> (LocalTime, Action)
-parseLine str =
-  case readSTime True defaultTimeLocale "[%Y-%m-%d %H:%M]" str of
-    [(time, descr)] -> (time, parseAction descr)
-    _               -> error ("parseLine: " ++ str)
-
--- | Parse the action text of a log entry.
-parseAction :: String -> Action
-parseAction str =
-  case words str of
-    ["wakes", "up"]                       -> Wake
-    ["falls", "asleep"]                   -> Sleep
-    ["Guard", '#':num, "begins", "shift"] -> Start (Guard (read num))
-    _                                     -> error ("parseAction: " ++ str)
 
 -- | Generate a list of Guard ID and minute pairs for each minute that
 -- a particular guard is sleeping.
@@ -84,16 +75,16 @@ getMinute = todMin . localTimeOfDay
 part1 :: [(Guard, Int)] -> Int
 part1 sleepMins = guardId sleepyWho * sleepyMin
   where
-    sleepyWho = bigKey (counts [n | (n, _) <- sleepMins])
-    sleepyMin = bigKey (counts [m | (n, m) <- sleepMins, n == sleepyWho])
+    sleepyWho = mostCommon [n | (n, _) <- sleepMins]
+    sleepyMin = mostCommon [m | (n, m) <- sleepMins, n == sleepyWho]
 
 -- | Give a list of guard/minute pairs, find the product of the
 -- guard that sleeps the most in a particular minute and that minute.
 part2 :: [(Guard, Int)] -> Int
 part2 sleepMins = guardId who * minute
   where
-    (who, minute) = bigKey (counts sleepMins)
+    (who, minute) = mostCommon sleepMins
 
 -- | Find the key associated with the largest value in a 'Map'.
-bigKey :: Ord a => Map k a -> k
-bigKey = fst . maximumBy (comparing snd) . Map.toList
+mostCommon :: Ord a => [a] -> a
+mostCommon = fst . maximumBy (comparing snd) . Map.assocs . counts
