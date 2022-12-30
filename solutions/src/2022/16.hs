@@ -28,9 +28,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Data.List (tails, foldl')
-import Data.Map (Map)
 import Data.Map qualified as Map
-import Data.Map.Strict qualified as SMap
 import Data.IntMap (IntMap)
 import Data.IntMap.Strict qualified as IntMap
 import Data.Maybe (maybeToList)
@@ -45,25 +43,33 @@ import Advent.SmallSet qualified as SmallSet
 -- 2602
 main :: IO ()
 main =
- do input <- [format|2022 16 (Valve %s has flow rate=%u; tunnel(|s) lead(|s) to valve(|s) %s&(, )%n)*|]
+ do (aa, input) <-
+      renumber <$>
+      [format|2022 16
+        (Valve %s has flow rate=%u;
+         tunnel(|s) lead(|s) to valve(|s) %s&(, )%n)*|]
 
-    let distances1 = Map.fromList [((k,v),1) | (k, _, vs) <- input, v <- vs]
-    let distances  = fw [k | (k,_,_) <- input] distances1
-    let flows      = Map.fromList [(k, n) | (k, n, _) <- input, n > 0]
-    let graph      = renumber $
-                     Map.fromListWith (++)
+    let distances1 = IntMap.fromList [(k, IntMap.fromList [(v,1) | v <- vs]) | (k, _, vs) <- input]
+    let distances  = fw (IntMap.keys distances1) distances1
+    let flows      = IntMap.fromList [(k, n) | (k, n, _) <- input, n > 0]
+    let graph      = buildEdges aa $
+                     IntMap.fromListWith (++)
                         [(src, [(dst,cost+1,flow)])
-                            | ((src,dst),cost) <- Map.assocs distances
-                            , src == "AA" || Map.member src flows, src /= dst
-                            , flow <- maybeToList (Map.lookup dst flows)]
+                            | (src,m) <- IntMap.assocs distances
+                            , src == aa || IntMap.member src flows
+                            , (dst,cost) <- IntMap.assocs m
+                            , src /= dst
+                            , flow <- maybeToList (IntMap.lookup dst flows)]
 
     let routeValues1 = solve graph 30
     print (maximum routeValues1)
 
     let routeValues2 = solve graph 26
-    print (maximum [v1+v2 | (open1,v1) : elephants <- tails (IntMap.assocs routeValues2),
-                            (open2,v2) <- elephants,
-                            SmallSet.disjoint (SmallSet.SmallSet (fromIntegral open1)) (SmallSet.SmallSet (fromIntegral open2))])
+    print (maximum [v1+v2
+        | (open1,v1) : elephants <- tails (IntMap.assocs routeValues2)
+        , (open2,v2) <- elephants
+        , SmallSet.disjoint (SmallSet.SmallSet (fromIntegral open1))
+                            (SmallSet.SmallSet (fromIntegral open2))])
 
 -- | Find the maximum water flow achievable from activating all possible combinations
 -- of valves.
@@ -79,31 +85,38 @@ solve start time0 = IntMap.fromListWith max (go [S time0 start SmallSet.empty 0]
                 | (graph', next, cost, valve) <- graph
                 , SmallSet.disjoint next open
                 , let t' = t - cost
-                , t' > 0
-            ]
+                , t' > 0]
 
 data S = S !Int Edges !SmallSet !Int
 
 newtype Edges = Node [(Edges, SmallSet, Int, Int)]
 
+renumber :: [(String, Int, [String])] -> (Int, [(Int, Int, [Int])])
+renumber xs = (f "AA", [(f k, x, map f ks) | (k,x,ks) <- xs])
+  where
+    ns = Map.fromList (zip [k | (k,_,_) <- xs] [0..])
+    f i = ns Map.! i
+
 -- | Replace all the string names with sequentially assigned Int names to
 -- speed up comparisons and enable the use of SmallSet
-renumber :: Map String [(String, Int, Int)] -> Edges
-renumber graph = m Map.! "AA"
+buildEdges :: Int -> IntMap [(Int, Int, Int)] -> Edges
+buildEdges aa graph = m IntMap.! aa
     where
-        a = Map.fromList (zip (Map.keys graph) (map SmallSet.singleton [0..]))
         m = fmap (Node . map f) graph
-        f (n,x,y) = (m Map.! n, a Map.! n, x, y)
+        f (n,x,y) = (m IntMap.! n, SmallSet.singleton n, x, y)
 
 -- | Floyd-Warshall shortest paths
 fw ::
-    Ord k =>
-    [k]           {- ^ all vertices -} ->
-    Map (k,k) Int {- ^ distances between a pair of vertices -} ->
-    Map (k,k) Int {- ^ shortest distance between two vertices -}
+    [Int]               {- ^ all vertices -} ->
+    IntMap (IntMap Int) {- ^ distances between a pair of vertices -} ->
+    IntMap (IntMap Int) {- ^ shortest distance between two vertices -}
 fw keys = each \k -> each \i -> each \j dists ->
-    case (Map.lookup (i,k) dists, Map.lookup (k,j) dists) of
-        (Just d1, Just d2) -> SMap.insertWith min (i,j) (d1+d2) dists
-        _                  -> dists
+    case (lk i k dists, lk k j dists) of
+        (Just d1, Just d2) ->
+            IntMap.insertWith (IntMap.unionWith min) i (IntMap.singleton j (d1+d2)) dists
+        _ -> dists
     where
         each g z = foldl' (flip g) z keys
+        lk i j m =
+         do m' <- IntMap.lookup i m
+            IntMap.lookup j m'
