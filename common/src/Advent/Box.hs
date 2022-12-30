@@ -1,4 +1,4 @@
-{-# Language StandaloneDeriving, BlockArguments, KindSignatures, GADTs, DataKinds, MonadComprehensions, TemplateHaskell, ImportQualifiedPost, QuasiQuotes, ViewPatterns #-}
+{-# Language StandaloneDeriving, BlockArguments, KindSignatures, GADTs, DataKinds, MonadComprehensions #-}
 {-|
 Module      : Advent.Box
 Description : N-dimensional boxes
@@ -99,8 +99,8 @@ subtractBox' :: Box n -> Box n -> [Box n]
 subtractBox' Pt Pt = []
 subtractBox' (Dim a b xs) (Dim c d ys) =
   [Dim c a ys | c < a] ++
-  [Dim b d ys | b < d] ++
-  [Dim a b zs | zs <- subtractBox' xs ys]
+  [Dim a b zs | zs <- subtractBox' xs ys] ++
+  [Dim b d ys | b < d]
 
 -- | Compute the box that encompasses both arguments. This might cover
 -- extra elements as no such box might exist that is the perfect union

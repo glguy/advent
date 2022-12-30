@@ -31,6 +31,8 @@ import Data.List (tails, foldl')
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Map.Strict qualified as SMap
+import Data.IntMap (IntMap)
+import Data.IntMap.Strict qualified as IntMap
 import Data.Maybe (maybeToList)
 
 import Advent (format)
@@ -48,7 +50,7 @@ main =
     let distances1 = Map.fromList [((k,v),1) | (k, _, vs) <- input, v <- vs]
     let distances  = fw [k | (k,_,_) <- input] distances1
     let flows      = Map.fromList [(k, n) | (k, n, _) <- input, n > 0]
-    let graph      = renumber $ 
+    let graph      = renumber $
                      Map.fromListWith (++)
                         [(src, [(dst,cost+1,flow)])
                             | ((src,dst),cost) <- Map.assocs distances
@@ -59,37 +61,39 @@ main =
     print (maximum routeValues1)
 
     let routeValues2 = solve graph 26
-    print (maximum [v1+v2 | (open1,v1) : elephants <- tails (Map.assocs routeValues2),
+    print (maximum [v1+v2 | (open1,v1) : elephants <- tails (IntMap.assocs routeValues2),
                             (open2,v2) <- elephants,
-                            SmallSet.disjoint open1 open2])
+                            SmallSet.disjoint (SmallSet.SmallSet (fromIntegral open1)) (SmallSet.SmallSet (fromIntegral open2))])
 
 -- | Find the maximum water flow achievable from activating all possible combinations
 -- of valves.
 solve ::
-    Map Int [(Int, Int, Int)] {- graph: source to (dest, distance, flow) -} ->
-    Int                       {- starting time -} ->
-    Map SmallSet Int          {- map of opened valves to maximum flow -}
-solve graph time0 = SMap.fromListWith max (go [S time0 0 SmallSet.empty 0])
+    Edges      {- graph: source to (dest, distance, flow) -} ->
+    Int        {- starting time -} ->
+    IntMap Int {- map of opened valves to maximum flow -}
+solve start time0 = IntMap.fromListWith max (go [S time0 start SmallSet.empty 0])
     where
-        go xs = [(open,flow) | S _ _ open flow <- xs] ++ concatMap (go . step) xs
-        step (S t here open flow) =
-            [S t' next (SmallSet.insert next open) (flow + t' * valve)
-                | (next, cost, valve) <- graph Map.! here
-                , not (SmallSet.member next open)
+        go xs = [(fromIntegral (SmallSet.setRep open),flow) | S _ _ open flow <- xs] ++ concatMap (go . step) xs
+        step (S t (Node graph) open flow) =
+            [S t' graph' (SmallSet.union next open) (flow + t' * valve)
+                | (graph', next, cost, valve) <- graph
+                , SmallSet.disjoint next open
                 , let t' = t - cost
                 , t' > 0
             ]
 
-data S = S !Int !Int !SmallSet !Int
+data S = S !Int Edges !SmallSet !Int
+
+newtype Edges = Node [(Edges, SmallSet, Int, Int)]
 
 -- | Replace all the string names with sequentially assigned Int names to
 -- speed up comparisons and enable the use of SmallSet
-renumber :: Map String [(String, Int, Int)] -> Map Int [(Int, Int, Int)]
-renumber graph =
-    Map.fromList [ (a Map.! k, [(a Map.! x,y,z) | (x,y,z) <- vs])
-                 | (k, vs) <- Map.toList graph]
+renumber :: Map String [(String, Int, Int)] -> Edges
+renumber graph = m Map.! "AA"
     where
-        a = Map.fromList (zip (Map.keys graph) [0..])
+        a = Map.fromList (zip (Map.keys graph) (map SmallSet.singleton [0..]))
+        m = fmap (Node . map f) graph
+        f (n,x,y) = (m Map.! n, a Map.! n, x, y)
 
 -- | Floyd-Warshall shortest paths
 fw ::
