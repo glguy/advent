@@ -42,10 +42,10 @@ main =
         (move %u from %c to %c%n)*|]
     let stacks = Map.fromList (zip labels (map catMaybes (transpose toppart)))
     let solve f = map head (Map.elems (foldl (apply f) stacks commands))
-    putStrLn (solve reverse)
-    putStrLn (solve id     )
+    putStrLn (solve (flip (foldl (flip (:)))))
+    putStrLn (solve (++))
 
-apply :: Ord k => ([a] -> [a]) -> Map k [a] -> (Int, k, k) -> Map k [a]
+apply :: Ord k => ([a] -> [a] -> [a]) -> Map k [a] -> (Int, k, k) -> Map k [a]
 apply f stacks (n, fr, to) =
     case Map.alterF (traverse (splitAt n)) fr stacks of
-        (a, m) -> Map.adjust (f a ++) to m
+        (a, m) -> Map.adjust (f a) to m

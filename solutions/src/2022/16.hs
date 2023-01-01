@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, BlockArguments #-}
+{-# Language TypeApplications, QuasiQuotes, ImportQualifiedPost, BlockArguments, TupleSections #-}
 {-|
 Module      : Main
 Description : Day 16 solution
@@ -36,6 +36,7 @@ import Data.Maybe (maybeToList)
 import Advent (format)
 import Advent.SmallSet (SmallSet)
 import Advent.SmallSet qualified as SmallSet
+import Advent.Tokenize
 
 -- |
 -- >>> :main
@@ -92,11 +93,8 @@ data S = S !Int Edges !SmallSet !Int
 newtype Edges = Node [(Edges, SmallSet, Int, Int)]
 
 renumber :: [(String, Int, [String])] -> (Int, [(Int, Int, [Int])])
-renumber xs = (f "AA", [(f k, x, map f ks) | (k,x,ks) <- xs])
-  where
-    ns = Map.fromList (zip [k | (k,_,_) <- xs] [0..])
-    f i = ns Map.! i
-
+renumber xs = autoTokenize ("AA", xs)
+    
 -- | Replace all the string names with sequentially assigned Int names to
 -- speed up comparisons and enable the use of SmallSet
 buildEdges :: Int -> IntMap [(Int, Int, Int)] -> Edges

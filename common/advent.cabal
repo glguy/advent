@@ -44,6 +44,7 @@ library
     Advent.ReadS
     Advent.Search
     Advent.SmallSet
+    Advent.Tokenize
     Advent.Visualize
 
   other-modules:
