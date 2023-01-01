@@ -81,7 +81,7 @@ main =
         Test: divisible by %u%n
           If true: throw to monkey %u%n
           If false: throw to monkey %u%n)&%n|]
-    
+
     -- It's safe to work with integers mod the lcm of all the divisor tests.
     -- This will keep the worry numbers small while preserving all the
     -- divisibility tests.

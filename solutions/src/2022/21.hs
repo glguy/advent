@@ -46,12 +46,12 @@ import Advent.Fix (Fix(Fix))
 main :: IO ()
 main =
  do input <- buildMap <$> [format|2022 21 (%s: (%d|%s %c %s)%n)*|]
-    
+
     -- part 1
     case evalRoot input of
       I p1 -> print p1
       _ -> fail "unsupported part 1"
-    
+
     -- part 2
     case evalRoot (Map.insert "humn" Answer input) of
       Fix (Add x (I y)) -> print (equal x y)

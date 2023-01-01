@@ -1,4 +1,4 @@
-{-# Language TypeApplications, QuasiQuotes, ImportQualifiedPost, BlockArguments, TupleSections #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 16 solution
@@ -94,7 +94,7 @@ newtype Edges = Node [(Edges, SmallSet, Int, Int)]
 
 renumber :: [(String, Int, [String])] -> (Int, [(Int, Int, [Int])])
 renumber xs = autoTokenize ("AA", xs)
-    
+
 -- | Replace all the string names with sequentially assigned Int names to
 -- speed up comparisons and enable the use of SmallSet
 buildEdges :: Int -> IntMap [(Int, Int, Int)] -> Edges

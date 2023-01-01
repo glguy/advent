@@ -105,7 +105,7 @@ part2 search diamonds = head
 
 -- | Find a corner of a diamond represented as a square region.
 boxCorner :: Box' 2 -> Coord
-boxCorner (Dim xpy _ (Dim xmy _ _)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2) 
+boxCorner (Dim xpy _ (Dim xmy _ _)) = C ((xpy - xmy) `div` 2) ((xpy + xmy) `div` 2)
 
 -- | Covert a diamond centered at a coordinate with a radius into a square region.
 diamondBox :: Sensor -> Box' 2

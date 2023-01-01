@@ -45,7 +45,7 @@ solve input startLetter =
     where
         startStates = [(k, 0) | (k, v) <- assocs input, v == startLetter]
         elevations  = amap elevation input
-        
+
         step (here, n) =
             [ (next, n+1)
             | next <- cardinal here

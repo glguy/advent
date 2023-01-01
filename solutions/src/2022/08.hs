@@ -29,7 +29,7 @@ main =
     print (countBy (isEdgeVisible input) (range (bounds input)))
     print (maximum (map (scenicScore input) (range (bounds input))))
 
--- | Return the list of elements in the array starting 
+-- | Return the list of elements in the array starting
 outToEdge ::
     UArray Coord Char {- ^ array -} ->
     Coord             {- ^ starting coordinate -} ->
@@ -54,7 +54,7 @@ scenicScore :: UArray Coord Char -> Coord -> Int
 scenicScore a c = product (map treesSeen (sightLines a c))
 
 treesSeen :: [Char] -> Int
-treesSeen [] = error "cansee: empty list"
+treesSeen [] = error "treesSeen: empty list"
 treesSeen (x:xs) =
     case break (>= x) xs of
         (a,[])  -> length a
