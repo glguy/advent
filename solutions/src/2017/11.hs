@@ -31,9 +31,8 @@ and compute distances on it.
 -}
 module Main where
 
-import Advent (format, stageTH)
+import Advent (format, partialSums, stageTH)
 import Advent.Coord (Coord(..), north, east, south, west)
-import Data.List (scanl')
 
 data D = Dn | Dne | Dnw | Dse | Dsw | Ds deriving Show
 
@@ -72,10 +71,3 @@ translate Dnw = west
 translate Dsw = south + west
 translate Ds  = south
 translate Dse = east
-
--- | Compute the partial sums of a list.
---
--- >>> partialSums [1,4,7]
--- [0,1,5,12]
-partialSums :: Num a => [a] -> [a]
-partialSums = scanl' (+) 0

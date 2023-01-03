@@ -20,7 +20,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main where
 
-import Advent.Format (format)
+import Advent (format, partialSums)
 import Data.List (transpose)
 import Data.Maybe (fromMaybe)
 
@@ -61,10 +61,3 @@ awardPoints ::
 awardPoints posns = [ if p == best then 1 else 0 | p <- posns ]
   where
   best = maximum posns
-
--- | Partial sums starting with first element.
---
--- > paritalSums [1..5]
--- [1,3,6,10,15]
-partialSums :: Num a => [a] -> [a]
-partialSums = scanl1 (+)

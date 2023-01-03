@@ -22,7 +22,7 @@ import Data.Coerce (coerce)
 import Data.Foldable (toList)
 import Data.IntMap (IntMap)
 import Data.IntMap qualified as IntMap
-import Data.List (foldl', inits, sortBy, tails, mapAccumL)
+import Data.List (foldl', scanl', inits, sortBy, tails, mapAccumL)
 import Data.Map (Map)
 import Data.Map.Strict qualified as SMap
 import Data.Ord (comparing)
@@ -265,3 +265,13 @@ multiline = QuasiQuoter {
           | otherwise    -> stringE (unlines (map (drop n) xs))
           where
             n = minimum (map (length . takeWhile (' '==)) xs)
+
+-- | Partial sums of a list.
+--
+-- @'partialSums' = 'map' 'sum' . 'inits'@
+--
+-- >>> partialSums [1..3]
+-- [0,1,3,6]
+partialSums :: Num a => [a] -> [a]
+partialSums = scanl' (+) 0
+{-# Inline partialSums #-}

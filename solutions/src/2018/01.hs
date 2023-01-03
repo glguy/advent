@@ -15,7 +15,7 @@ sums of the differences list.
 -}
 module Main (main) where
 
-import Advent.Format (format)
+import Advent (format, partialSums)
 import Data.Maybe (fromJust)
 import Data.Set qualified as Set
 
@@ -29,17 +29,6 @@ main =
   do inp <- [format|2018 1 ((%+|)%ld%n)*|]
      print (sum inp)
      print (part2 inp)
-
--- | Compute the partial sums of a list.
---
--- >>> partialSums [1,1,1]
--- [0,1,2,3]
--- >>> partialSums [1,-2,3]
--- [0,1,-1,2]
--- >>> partialSums []
--- [0]
-partialSums :: Num a => [a] -> [a]
-partialSums = scanl (+) 0
 
 -- | Given the list of differences, find the first partial sum
 -- that repeats when we cycle the list of differences.

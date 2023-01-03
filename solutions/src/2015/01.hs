@@ -49,9 +49,9 @@ Count open and closing parentheses.
 -}
 module Main where
 
-import Advent (format)
+import Advent (format, partialSums)
 import Data.Foldable (traverse_)
-import Data.List (elemIndex, scanl')
+import Data.List (elemIndex)
 
 -- | >>> :main
 -- 138
@@ -70,6 +70,3 @@ interpret x   = error ("No interpretation for: " ++ [x])
 
 part2 :: [Int] -> Maybe Int
 part2 = elemIndex (-1) . partialSums
-
-partialSums :: Num a => [a] -> [a]
-partialSums = scanl' (+) 0

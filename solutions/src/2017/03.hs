@@ -13,7 +13,7 @@ Day 3 asks questions about Ulam's Spiral <https://en.wikipedia.org/wiki/Ulam_spi
 -}
 module Main where
 
-import Advent (format)
+import Advent (format, partialSums)
 import Advent.Coord
 import Data.List (mapAccumL)
 import Data.Maybe (mapMaybe)
@@ -31,7 +31,7 @@ main =
 -- >>> [C 0 0,C 1 0,C 1 1,C 0 1,C (-1) 1] `Data.List.isPrefixOf` coords
 -- True
 coords :: [Coord]
-coords = scanl (+) origin movements
+coords = partialSums movements
   where
     directions = [south, east, north, west]
 

@@ -29,10 +29,10 @@ Follow up, down, left, right instructions to build a path.
 -}
 module Main where
 
-import Data.List (transpose, scanl')
+import Data.List (transpose)
 import Data.Maybe (mapMaybe)
 
-import Advent (chunks, format, counts)
+import Advent (chunks, counts, format, partialSums)
 import Advent.Coord (Coord, origin, north, east, south, west, charToVec)
 
 -- | >>> :main
@@ -47,4 +47,4 @@ main =
 
 countHouses :: Int {- ^ workers -} -> [Coord] -> Int
 countHouses n =
-  length . counts . concatMap (scanl' (+) origin) . transpose . chunks n
+  length . counts . concatMap partialSums . transpose . chunks n
