@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, NumericUnderscores, BlockArguments, BangPatterns #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, NumericUnderscores, BlockArguments, RecordWildCards #-}
 {-|
 Module      : Main
 Description : Day 20 solution
@@ -17,7 +17,7 @@ module Main where
 
 import Control.Monad (replicateM_)
 import Data.Array.IO (IOUArray, newListArray, readArray, writeArray)
-import Data.Array.Unboxed (UArray, (!), listArray)
+import Data.Array.Unboxed (UArray, (!), assocs, listArray)
 import Data.Foldable (for_)
 import Data.List (elemIndex)
 
@@ -31,29 +31,30 @@ main :: IO ()
 main = do
     input <- [format|2022 20 (%d%n)*|]
     print =<< solve 1 input
-    print =<< solve 10 (map (811_589_153*) input)
+    print =<< solve 10 (map (811_589_153 *) input)
 
 solve :: Int -> [Int] -> IO Int
 solve iterations xs =
  do let n = length xs
-    let inputArray = listArray (0, n-1) xs :: UArray Int Int
+        inputArray = listArray (0, n-1) xs :: UArray Int Int
     ring <- newRing n
 
     replicateM_ iterations $
-      for_ [0..n-1] \i ->
-       do let d = inputArray!i `mod` (n-1)
-              d' = if d > n`div`2 then d-(n-1) else d
-          a <- removeRing i ring
-          a' <- walk d' a ring
+      for_ (assocs inputArray) \(i,v) ->
+       do a <- removeRing i ring
+          a' <- walk v a ring
           insertBeforeRing i a' ring
 
-    let Just z = elemIndex 0 xs
-    i1 <- walk 1_000 z  ring
+    i0 <- case elemIndex 0 xs of
+            Nothing -> fail "bad input"
+            Just i  -> pure i
+    i1 <- walk 1_000 i0 ring
     i2 <- walk 1_000 i1 ring
     i3 <- walk 1_000 i2 ring
     pure $! sum [inputArray!i1, inputArray!i2, inputArray!i3]
 
 data Ring = Ring {
+    ringSize :: !Int,
     fwdLinks :: !(IOUArray Int Int), -- ^ forward links
     bwdLinks :: !(IOUArray Int Int)  -- ^ backward links
 }
@@ -61,19 +62,20 @@ data Ring = Ring {
 -- | Build a new circular ring of given size
 newRing :: Int {- ^ size -} -> IO Ring
 newRing n =
-    Ring <$> newListArray (0,n-1) ([1..n-1]++[0])
-         <*> newListArray (0,n-1) ((n-1):[0..n-2])
+  Ring n
+    <$> newListArray (0,n-1) ([1..n-1]++[0])
+    <*> newListArray (0,n-1) ((n-1):[0..n-2])
 
 -- | Remove a node from the ring and return the index of the node before/after it.
 removeRing ::
   Int {- ^ node to remove from ring -} ->
   Ring {- ^ ring -} ->
   IO Int {- ^ index after removed node -}
-removeRing i ring =
- do prev <- readArray (bwdLinks ring) i
-    next <- readArray (fwdLinks ring) i
-    writeArray (fwdLinks ring) prev next
-    writeArray (bwdLinks ring) next prev
+removeRing i Ring{..} =
+ do prev <- readArray bwdLinks i
+    next <- readArray fwdLinks i
+    writeArray fwdLinks prev next
+    writeArray bwdLinks next prev
     pure next
 
 insertBeforeRing ::
@@ -81,18 +83,22 @@ insertBeforeRing ::
   Int {- ^ node to insert before -} ->
   Ring {- ^ ring -} ->
   IO ()
-insertBeforeRing node next ring =
- do prev <- readArray (bwdLinks ring) next
-    writeArray (fwdLinks ring) node next
-    writeArray (bwdLinks ring) node prev
-    writeArray (fwdLinks ring) prev node
-    writeArray (bwdLinks ring) next node
+insertBeforeRing node next Ring{..} =
+ do prev <- readArray bwdLinks next
+    writeArray fwdLinks node next
+    writeArray bwdLinks node prev
+    writeArray fwdLinks prev node
+    writeArray bwdLinks next node
 
 walk ::
   Int {- ^ step count (positive for forward, negative for backward) -} ->
   Int {- ^ starting index -} ->
   Ring {- ^ ring -} ->
   IO Int {- ^ ending index -}
-walk n i !ring
-  | n < 0     = timesM (-n) (readArray (bwdLinks ring)) i
-  | otherwise = timesM   n  (readArray (fwdLinks ring)) i
+walk n start Ring{..}
+  | n' > len `div` 2 = timesM (len-n') (readArray bwdLinks) start
+  | otherwise        = timesM n'       (readArray fwdLinks) start
+  where
+    len = ringSize - 1
+    n' = n `mod` len
+    
