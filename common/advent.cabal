@@ -19,6 +19,11 @@ source-repository head
   type: git
   location: https://github.com/glguy/advent
 
+flag visualize
+  description:       Enable Advent.Visualize
+  default:           False
+  manual:            True
+
 library
   hs-source-dirs:      src
   default-language:    Haskell2010
@@ -45,7 +50,6 @@ library
     Advent.Search
     Advent.SmallSet
     Advent.Tokenize
-    Advent.Visualize
 
   other-modules:
     Advent.Format.Lexer
@@ -62,4 +66,9 @@ library
     MemoTrie         ^>= 0.6,
     transformers     ^>= 0.5 || ^>= 0.6,
     vector           ^>= 0.13,
-    JuicyPixels      ^>= 3.3.8,
+
+  if flag(visualize)
+    exposed-modules:
+      Advent.Visualize
+    build-depends:
+      JuicyPixels    ^>= 3.3.8,
