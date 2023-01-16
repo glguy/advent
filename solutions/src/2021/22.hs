@@ -56,7 +56,7 @@ applyCommand ::
   [Box n]    {- ^ pre-lit boxes  -} ->
   (C, Box n) {- ^ command        -} ->
   [Box n]    {- ^ post-lit boxes -}
-applyCommand ons (c, b) = [b | Con == c] ++ (subtractBox b =<< ons)
+applyCommand ons (c, b) = [b | Con == c] ++ concatMap (subtractBox b) ons
 
 -- * Alternative solution
 

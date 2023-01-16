@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, ViewPatterns #-}
+{-# Language QuasiQuotes, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 3 solution
@@ -14,8 +14,7 @@ Given a bunch of 2D regions find regions that do and do not overlap.
 module Main (main) where
 
 import Advent (format, pickOne)
-import Advent.Box (Box(..), size, intersectBox, subtractBox)
-import Data.Foldable (Foldable(toList))
+import Advent.Box (Box(Dim, Pt), size, unionBoxes, intersectBox)
 import Data.List (tails)
 import Data.Maybe (isNothing)
 
@@ -28,21 +27,16 @@ main :: IO ()
 main =
  do input <- [format|2018 3 (#%u %@ %u,%u: %ux%u%n)*|]
     let boxes = [(i, Dim x (x+sx) (Dim y (y+sy) Pt)) | (i,x,y,sx,sy) <- input]
-    print (regionSize (overlaps (map snd boxes)))
-    print (noOverlaps boxes)
+    print (part1 (map snd boxes))
+    print (part2 boxes)
 
--- | Determine all pair-wise overlapping regions between the list of patches.
-overlaps :: [Box n] -> [Box n]
-overlaps boxes =
-  [q | p:ps <- tails boxes, (intersectBox p -> Just q) <- ps]
+-- | Determine the size of the region covered by more than one patch
+part1 :: [Box n] -> Int
+part1 boxes =
+  sum (map size (unionBoxes
+  [q | p:ps <- tails boxes, Just q <- map (intersectBox p) ps]))
 
 -- | Determine identifier of patch with no overlaps.
-noOverlaps :: [(i, Box n)] -> i
-noOverlaps boxes =
+part2 :: [(i, Box n)] -> i
+part2 boxes =
   head [i | ((i,p),ps) <- pickOne boxes, all (isNothing . intersectBox p . snd) ps]
-
--- | Determine the size of a region covered by boxes.
-regionSize :: [Box n] -> Int
-regionSize = sum . map size . foldl addBox []
-  where
-    addBox xs box = box : (subtractBox box =<< xs)
