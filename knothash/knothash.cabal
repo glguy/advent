@@ -17,5 +17,5 @@ library
   exposed-modules:   KnotHash
   build-depends:
     advent,
-    base ^>= 4.17,
+    base ^>= 4.17 || ^>=4.18,
   default-language:  Haskell2010

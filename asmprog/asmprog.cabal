@@ -17,7 +17,7 @@ library
   hs-source-dirs:    .
   exposed-modules:   AsmProg
   build-depends:
-    base ^>= 4.17,
+    base ^>= 4.17 || ^>=4.18,
     advent,
     lens,
     mtl
