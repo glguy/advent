@@ -13,7 +13,7 @@ copyright:           2021 Eric Mertens
 homepage:            https://github.com/glguy/advent
 bug-reports:         https://github.com/glguy/advent/issues
 build-type:          Simple
-Tested-With:         GHC ==9.4.4
+Tested-With:         GHC ==9.2.8, GHC ==9.4.7, GHC ==9.6.3
 
 source-repository head
   type: git
@@ -59,9 +59,9 @@ library
   build-tool-depends: alex:alex, happy:happy
 
   build-depends:
-    base             ^>= 4.16 || ^>=4.17 || ^>=4.18,
+    base             ^>= 4.17 || ^>= 4.18 || ^>= 4.19,
     array            ^>= 0.5.4,
-    containers       ^>= 0.6,
+    containers       ^>= 0.6 || ^>= 0.7,
     template-haskell,
     MemoTrie         ^>= 0.6,
     transformers     ^>= 0.5 || ^>= 0.6,
