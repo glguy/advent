@@ -11,7 +11,7 @@ author:              Eric Mertens
 maintainer:          emertens@gmail.com
 copyright:           2021 Eric Mertens
 build-type:          Simple
-Tested-With:         GHC ==9.2.8, GHC ==9.4.7, GHC ==9.6.3
+Tested-With:         GHC ==9.4.7, GHC ==9.6.3
 
 library
   hs-source-dirs:    .
