@@ -10,12 +10,12 @@ These libraries and solutions are provided under the ISC license.
 ## Build steps
 
 1. Install [GHCUP](https://www.haskell.org/ghcup/)
-2. Install current version of GHC `ghcup install ghc 9.4.4`
+2. Install current version of GHC `ghcup install ghc 9.6.3`
 3. Update submodules `git submodule update --init`
-4. Configure to use correct GHC `cabal configure -w ghc-9.4.4`
+4. Configure to use correct GHC `cabal configure -w ghc-9.6.3`
 4. Build everything `cabal build all`
 
-GHC 9.4.4 isn't specifically required, however it's what I
+GHC 9.6.3 isn't specifically required, however it's what I
 test with and what I use in CI.
 
 ## Running solutions
