@@ -13,7 +13,7 @@ copyright:           2021 Eric Mertens
 homepage:            https://github.com/glguy/advent2021
 bug-reports:         https://github.com/glguy/advent2021/issues
 build-type:          Simple
-Tested-With:         GHC ==9.4.7, GHC ==9.6.3
+Tested-With:         GHC ==9.4.8, GHC ==9.6.3, GHC ==9.8.1
 
 source-repository head
   type: git
@@ -23,7 +23,7 @@ common day
   hs-source-dirs:      src
   build-depends:
     advent,
-    base ^>=4.17 || ^>=4.18 || ^>=4.19,
+    base ^>= {4.17, 4.18, 4.19},
   other-modules:       Dummy
   default-language:    Haskell2010
 
