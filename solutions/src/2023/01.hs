@@ -20,9 +20,8 @@ last digits on the line, then sum up all of these numbers.
 -}
 module Main where
 
-import Data.List (isPrefixOf, tails)
-
 import Advent (fromDigits, format)
+import Text.ParserCombinators.ReadP (readP_to_S, string, (<++), choice, get)
 
 -- |
 --
@@ -35,22 +34,23 @@ main =
     print (sum (map (decode part1) input))
     print (sum (map (decode part2) input))
 
-part1 :: [(String, Int)]
+part1, part2 :: [(String, Int)]
 part1 = [(show i, i) | i <- [0..9]]
-
-part2 :: [(String, Int)]
 part2 = part1 ++
    [("one"  ,1),("two"  ,2),("three",3),
     ("four" ,4),("five" ,5),("six"  ,6),
     ("seven",7),("eight",8),("nine" ,9)]
 
-earliest :: Eq k => [([k], a)] -> [k] -> a
-earliest entries haystack =
-  head [v | needle <- tails haystack, (k,v) <- entries, k `isPrefixOf` needle]
+earliest :: [(String, a)] -> String -> a
+earliest mapping str =
+  case readP_to_S p str of
+    x:_ -> fst x
+    []  -> error ("no match for: " ++ str)
+  where
+    p = choice [v <$ string k | (k,v) <- mapping] <++ (get >> p)
 
 decode :: [(String, Int)] -> String -> Int
 decode mapping str = fromDigits 10 [d1,d2]
   where
     d1 = earliest mapping str
-    d2 = earliest mapping' (reverse str)
-    mapping' = [(reverse k, v) | (k,v) <- mapping]
+    d2 = earliest [(reverse k, v) | (k,v) <- mapping] (reverse str)
