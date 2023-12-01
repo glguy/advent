@@ -986,3 +986,9 @@ executable sln_2022_24
 executable sln_2022_25
   import:              day
   main-is:             2022/25.hs
+
+-- 2023 ---------------------------------------------------------------
+
+executable sln_2023_01
+  import:              day
+  main-is:             2023/01.hs
