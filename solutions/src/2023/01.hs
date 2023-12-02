@@ -23,7 +23,7 @@ module Main where
 import Advent (fromDigits, format)
 import Text.ParserCombinators.ReadP (readP_to_S, string, (<++), choice, get)
 
--- |
+-- | Parse the input and print answers to both parts.
 --
 -- >>> :main
 -- 55123
@@ -41,6 +41,8 @@ part2 = part1 ++
     ("four" ,4),("five" ,5),("six"  ,6),
     ("seven",7),("eight",8),("nine" ,9)]
 
+-- | Lookup the earliest infix match from the key-value table in the input
+-- string.
 earliest :: [(String, a)] -> String -> a
 earliest mapping str =
   case readP_to_S p str of
@@ -49,6 +51,8 @@ earliest mapping str =
   where
     p = choice [v <$ string k | (k,v) <- mapping] <++ (get >> p)
 
+-- | Compute the calibration value for an input string using the
+-- part-specific digit assignments.
 decode :: [(String, Int)] -> String -> Int
 decode mapping str = fromDigits 10 [d1,d2]
   where
