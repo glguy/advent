@@ -40,7 +40,7 @@ main :: IO ()
 main =
  do input <- [format|2023 2 (Game %d: (%d %s)&(, )&(; )%n)*|]
     let summaries = [(i, summarizeGame rounds) | (i, rounds) <- input]
-    print (sum [i | (i, summary) <- summaries, all part1 (Map.assocs summary)])
+    print (sum [i | (i, summary) <- summaries, Map.isSubmapOfBy (<=) summary part1])
     print (sum [product m | (_, m) <- summaries])
 
 -- | Find the minimum marbles needed to play a whole game
@@ -51,9 +51,6 @@ summarizeGame = Map.unionsWith max . map summarizeRound
 summarizeRound :: [(Int, String)] -> Map String Int
 summarizeRound r = Map.fromListWith (+) [(color, count) | (count, color) <- r]
 
--- | Check if the number of marbles of a certain color is below the threshold for part 1
-part1 :: (String, Int) -> Bool
-part1 ("red"  , v) = v <= 12
-part1 ("green", v) = v <= 13
-part1 ("blue" , v) = v <= 14
-part1 _            = False
+-- | Marbles available in part 1
+part1 :: Map String Int
+part1 = Map.fromList [("red", 12), ("green", 13), ("blue", 14)]
