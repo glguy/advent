@@ -41,11 +41,11 @@ main =
  do input <- [format|2023 2 (Game %d: (%d %s)&(, )&(; )%n)*|]
     let summaries = [(i, summarizeGame rounds) | (i, rounds) <- input]
     print (sum [i | (i, summary) <- summaries, Map.isSubmapOfBy (<=) summary part1])
-    print (sum [product m | (_, m) <- summaries])
+    print (sum [product summary | (_, summary) <- summaries])
 
 -- | Find the minimum marbles needed to play a whole game
 summarizeGame :: [[(Int, String)]] -> Map String Int
-summarizeGame = Map.unionsWith max . map summarizeRound
+summarizeGame rs = Map.unionsWith max [summarizeRound r | r <- rs]
 
 -- | Find the minimum marbles needed to play round in a game
 summarizeRound :: [(Int, String)] -> Map String Int
