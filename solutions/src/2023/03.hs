@@ -8,6 +8,22 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/3>
 
+>>> :{
+:main +
+"467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598.."
+:}
+4361
+467835
+
 -}
 module Main where
 
@@ -19,7 +35,7 @@ import Data.List (find)
 import Advent (getInputMap)
 import Advent.Coord (Coord, left, neighbors, right)
 
--- |
+-- | Parse the input schematic and print answers to both parts.
 --
 -- >>> :main
 -- 527144
@@ -30,6 +46,7 @@ main =
     let 
       lkp i = Map.findWithDefault '.' i input
 
+      -- Map of each part in the schematic to the list of adjacent part numbers
       partMap :: Map Coord [Int]
       partMap = Map.fromListWith (++)
           [ (part, [read (map lkp cs)])
@@ -43,5 +60,6 @@ main =
     print (sum (fmap sum partMap))
     print (sum [a * b | (c, [a,b]) <- Map.assocs partMap, '*' == lkp c])
 
+-- | Things that aren't digits or periods.
 isSymbol :: Char -> Bool
 isSymbol x = not (isDigit x) && x /= '.'
