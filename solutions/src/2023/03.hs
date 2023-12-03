@@ -30,9 +30,8 @@ module Main where
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Char (isDigit)
-import Data.List (find)
 
-import Advent (getInputMap)
+import Advent (getInputMap, ordNub)
 import Advent.Coord (Coord, left, neighbors, right)
 
 -- | Parse the input schematic and print answers to both parts.
@@ -43,23 +42,23 @@ import Advent.Coord (Coord, left, neighbors, right)
 main :: IO ()
 main =
  do input <- getInputMap 2023 3
-    let 
+    let
       lkp i = Map.findWithDefault '.' i input
 
       -- Map of each part in the schematic to the list of adjacent part numbers
-      partMap :: Map Coord [Int]
-      partMap = Map.fromListWith (++)
+      partNumbers :: Map Coord [Int]
+      partNumbers = Map.fromListWith (++)
           [ (part, [read (map lkp cs)])
           | (c,n) <- Map.assocs input
-          , isDigit n
-          , not (isDigit (lkp (left c)))
+          , isDigit n, not (isDigit (lkp (left c))) -- left-boundary of number
           , let cs = takeWhile (isDigit . lkp) (iterate right c)
-          , Just part <- [find (isSymbol . lkp) (concatMap neighbors cs)]
+          , part <- ordNub (concatMap neighbors cs)
+          , isPart (lkp part)
           ]
 
-    print (sum (fmap sum partMap))
-    print (sum [a * b | (c, [a,b]) <- Map.assocs partMap, '*' == lkp c])
+    print (sum (fmap sum partNumbers))
+    print (sum [a * b | (c, [a,b]) <- Map.assocs partNumbers, '*' == lkp c])
 
 -- | Things that aren't digits or periods.
-isSymbol :: Char -> Bool
-isSymbol x = not (isDigit x) && x /= '.'
+isPart :: Char -> Bool
+isPart x = not (isDigit x) && x /= '.'
