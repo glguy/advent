@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost #-}
+{-# Language ImportQualifiedPost, TransformListComp #-}
 {-|
 Module      : Main
 Description : Day 3 solution
@@ -42,22 +42,38 @@ import Advent.Coord (Coord, left, neighbors, right)
 main :: IO ()
 main =
  do input <- getInputMap 2023 3
-    let
-      lkp i = Map.findWithDefault '.' i input
+    let numbers = extractNumbers input
+    print (sum [partNo | (partNo, _:_) <- numbers])
+    print (sum [a * b | [a, b] <- gearNumbers numbers])
 
-      -- Map of each part in the schematic to the list of adjacent part numbers
-      partNumbers :: Map Coord [Int]
-      partNumbers = Map.fromListWith (++)
-          [ (part, [read (map lkp cs)])
-          | (c,n) <- Map.assocs input
-          , isDigit n, not (isDigit (lkp (left c))) -- left-boundary of number
-          , let cs = takeWhile (isDigit . lkp) (iterate right c)
-          , part <- ordNub (concatMap neighbors cs)
-          , isPart (lkp part)
-          ]
+-- | Extract the numbers from the diagram and the parts adjacent to them.
+extractNumbers :: Map Coord Char -> [(Int, [(Coord, Char)])]
+extractNumbers input =
+  [ (read digits, partsNear cs)
+  | (c, digit) <- Map.assocs input
+  , isDigit digit, not (isDigit (lkp (left c))) -- left-boundary of number
+  , let (cs, digits) = unzip (numbersAfter c)
+  ]
+  where
+    lkp i = Map.findWithDefault '.' i input
+    numbersAfter c =
+      [ (c', digit)
+      | c' <- iterate right c
+      , let digit = lkp c'
+      , then takeWhile by isDigit digit
+      ]
+    partsNear cs =
+      [ (c, sym)
+      | c <- ordNub (concatMap neighbors cs)
+      , let sym = lkp c
+      , isPart sym
+      ]
 
-    print (sum (fmap sum partNumbers))
-    print (sum [a * b | (c, [a,b]) <- Map.assocs partNumbers, '*' == lkp c])
+-- | Make lists of the numbers next to each gear in the schematic
+gearNumbers :: [(Int, [(Coord, Char)])] -> [[Int]]
+gearNumbers numbers =
+  Map.elems (Map.fromListWith (++)
+    [(part, [partNo]) | (partNo, parts) <- numbers, (part, '*') <- parts])
 
 -- | Things that aren't digits or periods.
 isPart :: Char -> Bool
