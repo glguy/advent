@@ -56,10 +56,10 @@ extractNumbers input =
   ]
   where
     lkp i = Map.findWithDefault '.' i input
-    numbersAfter c =
-      [ (c', digit)
-      | c' <- iterate right c
-      , let digit = lkp c'
+    numbersAfter start =
+      [ (c, digit)
+      | c <- iterate right start
+      , let digit = lkp c
       , then takeWhile by isDigit digit
       ]
     partsNear cs =
