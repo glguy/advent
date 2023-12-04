@@ -29,11 +29,8 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 -}
 module Main where
 
-import Data.Map (Map)
-import Data.Map qualified as Map
-import Data.Set qualified as Set
-
 import Advent (format)
+import Data.List (intersect)
 
 -- |
 --
@@ -43,20 +40,21 @@ import Advent (format)
 main :: IO ()
 main =
  do input <- [format|2023 4 (Card +%d:( +%d)* %|( +%d)*%n)*|]
-    let wins = countWins input
-    let becomes =
-          Map.mapWithKey
-            (\i w -> 1 + sum [becomes Map.! j | j <- [i+1 .. i+w]] :: Int)
-            wins
-    print (sum (fmap points wins))
-    print (sum becomes)
+    let wins = toWins input    
+    print (sum (map points wins))
+    print (sum (asPart2 wins))
 
-countWins :: [(Int, [Int], [Int])] -> Map Int Int
-countWins input = Map.fromList
-  [ (i, length (Set.fromList a `Set.intersection` Set.fromList b))
-  | (i, a, b) <- input]
+toWins :: [(Int, [Int], [Int])] -> [Int]
+toWins input = [length (a `intersect` b) | (_, a, b) <- input]
 
 -- | Convert wins to points for part 1
 points :: Int -> Int
 points 0 = 0
 points n = 2 ^ (n - 1)
+
+-- | Convert a list of wins for each card into the number of cards
+-- each card turns into.
+asPart2 :: [Int] -> [Int]
+asPart2 = foldr f []
+  where
+    f wins rest = (1 + sum (take wins rest)) : rest
