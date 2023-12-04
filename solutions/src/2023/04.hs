@@ -52,4 +52,4 @@ points n = 2 ^ (n - 1)
 -- | Convert a list of wins for each card into the number of cards
 -- each card turns into.
 asPart2 :: [Int] -> [Int]
-asPart2 = foldr (\wins xs -> (1 + sum (take wins xs)) : xs) []
+asPart2 = foldr (\wins xs -> 1 + sum (take wins xs) : xs) []
