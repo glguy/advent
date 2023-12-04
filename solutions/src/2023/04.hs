@@ -32,7 +32,7 @@ module Main where
 import Advent (format)
 import Data.List (intersect)
 
--- |
+-- | Parse the input and print out the answers to both parts.
 --
 -- >>> :main
 -- 21485
@@ -40,12 +40,9 @@ import Data.List (intersect)
 main :: IO ()
 main =
  do input <- [format|2023 4 (Card +%d:( +%d)* %|( +%d)*%n)*|]
-    let wins = toWins input    
+    let wins = [length (a `intersect` b) | (_, a, b) <- input]
     print (sum (map points wins))
     print (sum (asPart2 wins))
-
-toWins :: [(Int, [Int], [Int])] -> [Int]
-toWins input = [length (a `intersect` b) | (_, a, b) <- input]
 
 -- | Convert wins to points for part 1
 points :: Int -> Int
@@ -55,6 +52,4 @@ points n = 2 ^ (n - 1)
 -- | Convert a list of wins for each card into the number of cards
 -- each card turns into.
 asPart2 :: [Int] -> [Int]
-asPart2 = foldr f []
-  where
-    f wins rest = (1 + sum (take wins rest)) : rest
+asPart2 = foldr (\wins xs -> (1 + sum (take wins xs)) : xs) []
