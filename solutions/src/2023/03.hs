@@ -25,7 +25,7 @@ Maintainer  : emertens@gmail.com
 467835
 
 -}
-module Main where
+module Main (main) where
 
 import Data.Map (Map)
 import Data.Map qualified as Map

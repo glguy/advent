@@ -24,7 +24,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 2286
 
 -}
-module Main where
+module Main (main) where
 
 import Data.Map (Map)
 import Data.Map qualified as Map

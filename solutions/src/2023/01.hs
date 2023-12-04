@@ -18,7 +18,7 @@ last digits on the line, then sum up all of these numbers.
 [29,83,13,24,42,14,76]
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (fromDigits, format)
 import Text.ParserCombinators.ReadP (readP_to_S, string, (<++), choice, get)

@@ -27,7 +27,7 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 30
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (format)
 import Data.List (intersect)
