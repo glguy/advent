@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 4 solution
