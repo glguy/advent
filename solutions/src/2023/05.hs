@@ -49,8 +49,8 @@ ranges and find the lowest bound of the output intervals.
 module Main where
 
 import Advent (format, chunks)
-
-import Advent.Box ( intersectBox, subtractBox, Box', Box(..) )
+import Advent.Box (intersectBox, subtractBox, Box', Box(..))
+import Control.Exception (assert)
 
 -- |
 --
@@ -75,15 +75,11 @@ checkMaps :: [(String, String, [(Int, Int, Int)])] -> [[(Interval, Int)]]
 checkMaps input = foldr processMap finish input "seed"
   where
     processMap (from, to, entries) continue expect =
-      check expect from (map entryToInterval entries : continue to)
+      assert (expect == from) (map entryToInterval entries : continue to)
 
-    finish final = check "location" final []
+    finish final = assert ("location" == final) []
 
     entryToInterval (dst, src, len) = (interval src len, dst - src)
-
-    check expected got x
-      | expected == got = x
-      | otherwise = error ("got " ++ got ++ " expected " ++ expected)
 
 applyMaps :: [[(Interval, Int)]] -> [Interval] -> [Interval]
 applyMaps maps xs =
