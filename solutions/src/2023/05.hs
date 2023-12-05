@@ -56,32 +56,59 @@ import Advent.Nat ( Nat(Z, S) )
 -- 41222968
 main :: IO ()
 main =
- do (seeds, maps) <- [format|2023 5 seeds:( %d)*%n(%n%s-to-%s map:%n(%d %d %d%n)*)*|]
+ do (seeds, rawMaps) <- [format|2023 5 seeds:( %d)*%n(%n%s-to-%s map:%n(%d %d %d%n)*)*|]
+    let maps = checkMaps rawMaps
     print (smallestDestination maps [interval start 1 | start     <-          seeds])
     print (smallestDestination maps [interval start n | [start,n] <- chunks 2 seeds])
 
-smallestDestination :: [(String, String, [(Int, Int, Int)])] -> [Interval] -> Int
-smallestDestination maps = lowerBound . minimum . concatMap (convertSeeds maps)
+smallestDestination :: [[(Interval, Int)]] -> [Interval] -> Int
+smallestDestination maps = lowerBound . minimum . applyMaps maps
 
--- assumes maps are in order
-convertSeeds :: [(String, String, [(Int,Int,Int)])] -> Interval -> [Interval]
-convertSeeds maps x =
-  foldl (\acc (_from,_to,ranges) -> concatMap (applyRewrites ranges) acc) [x] maps
+-- Verify that all the maps are presented in order
+-- This is technically unnecessary for the given inputs, but it feels bad to
+-- assume the order is right. Transform the (destination, source, length)
+-- parameters to a source interval and shift value.
+checkMaps :: [(String, String, [(Int, Int, Int)])] -> [[(Interval, Int)]]
+checkMaps input = foldr processMap finish input "seed"
+  where
+    processMap (from, to, entries) continue expect =
+      check from expect (map entryToInterval entries : continue to)
 
+    finish final = check final "location" []
+
+    entryToInterval (dst, src, len) = (interval src len, dst - src)
+
+    check expected got x
+      | expected == got = x
+      | otherwise = error ("got " ++ got ++ " expected " ++ expected)
+
+applyMaps :: [[(Interval, Int)]] -> [Interval] -> [Interval]
+applyMaps maps xs =
+  foldl (\acc ranges -> concatMap (applyMap ranges) acc) xs maps
+
+applyMap :: [(Interval, Int)] -> Interval -> [Interval]
+applyMap = foldr applyEntry pure
+  where
+    applyEntry (src, delta) continue box =
+      case intersectBox src box of
+        Nothing -> continue box
+        Just i  ->
+          shiftInterval delta i :
+          concatMap continue (subtractBox src box)
+
+-- Interval specialization of the Box module
+
+-- | A one-dimensional cuboid
 type Interval = Box ('S 'Z)
 
+-- | Construct an interval from a starting point and positive length
 interval :: Int {- ^ start -} -> Int {- ^ length -} -> Interval
 interval s n = Dim s (s+n) Pt
 
+-- | Modify the lower and upper bounds of an interval by a fixed amount.
+shiftInterval :: Int -> Interval -> Interval
+shiftInterval delta (Dim lo hi Pt) = Dim (lo + delta) (hi + delta) Pt
+
+-- | Retrieve the lower bound of an interval
 lowerBound :: Interval -> Int
 lowerBound (Dim x _ Pt) = x
-
-applyRewrites :: [(Int, Int, Int)] -> Interval -> [Interval]
-applyRewrites = foldr applyRewrite pure
-  where
-    applyRewrite (dst, src, len) continue seeds =
-      case intersectBox seeds (interval src len) of
-        Nothing -> continue seeds
-        Just (Dim lo hi Pt) ->
-          interval (dst + lo - src) (hi - lo) :
-          concatMap continue (subtractBox (interval src len) seeds)
