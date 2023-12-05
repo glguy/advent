@@ -63,31 +63,31 @@ import Advent.Nat ( Nat(Z, S) )
 main :: IO ()
 main =
  do (seeds, maps) <- [format|2023 5 seeds:( %d)*%n(%n%s-to-%s map:%n(%d %d %d%n)*)*|]
-    print (smallestDestination maps [rng start 1 | start     <-          seeds])
-    print (smallestDestination maps [rng start n | [start,n] <- chunks 2 seeds])
+    print (smallestDestination maps [interval start 1 | start     <-          seeds])
+    print (smallestDestination maps [interval start n | [start,n] <- chunks 2 seeds])
 
-smallestDestination :: [(String, String, [(Int, Int, Int)])] -> [Range] -> Int
+smallestDestination :: [(String, String, [(Int, Int, Int)])] -> [Interval] -> Int
 smallestDestination maps = lowerBound . minimum . concatMap (convertSeeds maps)
 
 -- assumes maps are in order
-convertSeeds :: [(String, String, [(Int,Int,Int)])] -> Range -> [Range]
+convertSeeds :: [(String, String, [(Int,Int,Int)])] -> Interval -> [Interval]
 convertSeeds maps x =
-  foldl (\acc (_from,_to,ranges) -> concatMap (applyRanges ranges) acc) [x] maps
+  foldl (\acc (_from,_to,ranges) -> concatMap (applyRewrites ranges) acc) [x] maps
 
-type Range = Box ('S 'Z)
+type Interval = Box ('S 'Z)
 
-rng :: Int {- ^ start -} -> Int {- ^ length -} -> Range
-rng s n = Dim s (s+n) Pt
+interval :: Int {- ^ start -} -> Int {- ^ length -} -> Interval
+interval s n = Dim s (s+n) Pt
 
-lowerBound :: Range -> Int
+lowerBound :: Interval -> Int
 lowerBound (Dim x _ Pt) = x
 
-applyRanges :: [(Int, Int, Int)] -> Range -> [Range]
-applyRanges = foldr applyRange pure
+applyRewrites :: [(Int, Int, Int)] -> Interval -> [Interval]
+applyRewrites = foldr applyRewrite pure
   where
-    applyRange (dst, src, len) continue seeds =
-      case intersectBox seeds (rng src len) of
+    applyRewrite (dst, src, len) continue seeds =
+      case intersectBox seeds (interval src len) of
         Nothing -> continue seeds
         Just (Dim lo hi Pt) ->
-          rng (dst + lo - src) (hi - lo) :
-          concatMap continue (subtractBox (rng src len) seeds)
+          interval (dst + lo - src) (hi - lo) :
+          concatMap continue (subtractBox (interval src len) seeds)
