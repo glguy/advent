@@ -62,34 +62,32 @@ import Advent.Nat ( Nat(Z, S) )
 -- 41222968
 main :: IO ()
 main =
- do (seeds, maps) <- [format|2023 5 seeds:( %d)*%n(%n%s map:%n(%d %d %d%n)*)*|]
+ do (seeds, maps) <- [format|2023 5 seeds:( %d)*%n(%n%s-to-%s map:%n(%d %d %d%n)*)*|]
     print (smallestDestination maps [rng start 1 | start     <-          seeds])
     print (smallestDestination maps [rng start n | [start,n] <- chunks 2 seeds])
 
-smallestDestination :: [(String, [(Int, Int, Int)])] -> [Range] -> Int
-smallestDestination maps = lo . minimum . concatMap (convertSeeds maps)
+smallestDestination :: [(String, String, [(Int, Int, Int)])] -> [Range] -> Int
+smallestDestination maps = lowerBound . minimum . concatMap (convertSeeds maps)
 
 -- assumes maps are in order
-convertSeeds :: [(String, [(Int,Int,Int)])] -> Range -> [Range]
-convertSeeds maps x = foldl (\acc (_,xs) -> applyRewrite xs =<< acc) [x] maps
+convertSeeds :: [(String, String, [(Int,Int,Int)])] -> Range -> [Range]
+convertSeeds maps x =
+  foldl (\acc (_from,_to,ranges) -> concatMap (applyRanges ranges) acc) [x] maps
 
 type Range = Box ('S 'Z)
 
 rng :: Int {- ^ start -} -> Int {- ^ length -} -> Range
 rng s n = Dim s (s+n) Pt
 
-lo :: Range -> Int
-lo (Dim x _ Pt) = x
+lowerBound :: Range -> Int
+lowerBound (Dim x _ Pt) = x
 
-applyRewrite :: [(Int, Int, Int)] -> Range -> [Range]
-applyRewrite [] seeds = [seeds]
-applyRewrite ((dst, src, len) : m) seeds =
-  case intersectBox seeds (rng src len) of
-    Nothing -> applyRewrite m seeds
-    Just (Dim a b Pt) ->
-      rng (dst + (a-src)) (b-a) :
-        [ out
-          | seeds' <- subtractBox (rng src len) seeds
-          , out <- applyRewrite m seeds'
-        ]
-  
+applyRanges :: [(Int, Int, Int)] -> Range -> [Range]
+applyRanges = foldr applyRange pure
+  where
+    applyRange (dst, src, len) continue seeds =
+      case intersectBox seeds (rng src len) of
+        Nothing -> continue seeds
+        Just (Dim lo hi Pt) ->
+          rng (dst + lo - src) (hi - lo) :
+          concatMap continue (subtractBox (rng src len) seeds)
