@@ -63,12 +63,15 @@ import Advent.Nat ( Nat(Z, S) )
 main :: IO ()
 main =
  do (seeds, maps) <- [format|2023 5 seeds:( %d)*%n(%n%s map:%n(%d %d %d%n)*)*|]
-    print (lo (minimum (concatMap (convertSeeds maps) [rng start 1 | start <- seeds])))
-    print (lo (minimum (concatMap (convertSeeds maps) [rng start n | [start,n] <- chunks 2 seeds])))
+    print (smallestDestination maps [rng start 1 | start     <-          seeds])
+    print (smallestDestination maps [rng start n | [start,n] <- chunks 2 seeds])
+
+smallestDestination :: [(String, [(Int, Int, Int)])] -> [Range] -> Int
+smallestDestination maps = lo . minimum . concatMap (convertSeeds maps)
 
 -- assumes maps are in order
 convertSeeds :: [(String, [(Int,Int,Int)])] -> Range -> [Range]
-convertSeeds maps x = foldl (\acc (_,xs) -> fuss xs =<< acc) [x] maps
+convertSeeds maps x = foldl (\acc (_,xs) -> applyRewrite xs =<< acc) [x] maps
 
 type Range = Box ('S 'Z)
 
@@ -78,15 +81,15 @@ rng s n = Dim s (s+n) Pt
 lo :: Range -> Int
 lo (Dim x _ Pt) = x
 
-fuss :: [(Int, Int, Int)] -> Range -> [Range]
-fuss [] seeds = [seeds]
-fuss ((dst, src, len) : m) seeds =
+applyRewrite :: [(Int, Int, Int)] -> Range -> [Range]
+applyRewrite [] seeds = [seeds]
+applyRewrite ((dst, src, len) : m) seeds =
   case intersectBox seeds (rng src len) of
-    Nothing -> fuss m seeds
+    Nothing -> applyRewrite m seeds
     Just (Dim a b Pt) ->
       rng (dst + (a-src)) (b-a) :
         [ out
           | seeds' <- subtractBox (rng src len) seeds
-          , out <- fuss m seeds'
+          , out <- applyRewrite m seeds'
         ]
   
