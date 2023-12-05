@@ -75,9 +75,9 @@ checkMaps :: [(String, String, [(Int, Int, Int)])] -> [[(Interval, Int)]]
 checkMaps input = foldr processMap finish input "seed"
   where
     processMap (from, to, entries) continue expect =
-      check from expect (map entryToInterval entries : continue to)
+      check expect from (map entryToInterval entries : continue to)
 
-    finish final = check final "location" []
+    finish final = check "location" final []
 
     entryToInterval (dst, src, len) = (interval src len, dst - src)
 
