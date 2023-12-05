@@ -8,6 +8,10 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/5>
 
+Given many layers of linear shifts of intervals we need
+to efficiently apply those shifts to a number of input
+ranges and find the lowest bound of the output intervals.
+
 >>> :{
 :main +
 "seeds: 79 14 55 13
@@ -46,8 +50,7 @@ module Main where
 
 import Advent (format, chunks)
 
-import Advent.Box ( intersectBox, subtractBox, Box(..) )
-import Advent.Nat ( Nat(Z, S) )
+import Advent.Box ( intersectBox, subtractBox, Box', Box(..) )
 
 -- |
 --
@@ -99,11 +102,11 @@ applyMap = foldr applyEntry pure
 -- Interval specialization of the Box module
 
 -- | A one-dimensional cuboid
-type Interval = Box ('S 'Z)
+type Interval = Box' 1
 
 -- | Construct an interval from a starting point and positive length
 interval :: Int {- ^ start -} -> Int {- ^ length -} -> Interval
-interval s n = Dim s (s+n) Pt
+interval start len = Dim start (start + len) Pt
 
 -- | Modify the lower and upper bounds of an interval by a fixed amount.
 shiftInterval :: Int -> Interval -> Interval
