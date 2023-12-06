@@ -74,14 +74,11 @@ smallestDestination maps = lowerBound . minimum . concatMap (applyMaps maps)
 -- assume the order is right. Transform the (destination, source, length)
 -- parameters to a source interval and shift value.
 checkMaps :: [(String, String, [(Int, Int, Int)])] -> [[(Interval, Int)]]
-checkMaps input = foldr processMap finish input "seed"
+checkMaps input = assert (froms == tos)
+  [[(interval src len, dst - src) | (dst, src, len) <- xs] | (_, _, xs) <- input]
   where
-    processMap (from, to, entries) continue expect =
-      assert (expect == from) (map entryToInterval entries : continue to)
-
-    finish final = assert ("location" == final) []
-
-    entryToInterval (dst, src, len) = (interval src len, dst - src)
+    froms = [x | (x, _, _) <- input] ++ ["location"]
+    tos = "seed" : [x | (_, x, _) <- input]
 
 -- | Apply the rewrite maps left to right to the input interval.
 applyMaps :: [[(Interval, Int)]] -> Interval -> [Interval]
