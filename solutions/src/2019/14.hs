@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.Format (format, binSearch)
+import Advent (format, binSearchLargest)
 import Data.List (foldl', sortOn)
 import Data.Map (Map)
 import Data.Map qualified as Map
