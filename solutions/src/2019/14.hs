@@ -11,7 +11,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent.Format (format)
+import Advent.Format (format, binSearch)
 import Data.List (foldl', sortOn)
 import Data.Map (Map)
 import Data.Map qualified as Map
@@ -81,16 +81,4 @@ expSearch p lo = go (lo+1)
   where
     go hi
       | p hi      = go (2*hi)
-      | otherwise = binSearch p lo hi
-
-binSearch ::
-  (Int -> Bool) {- ^ predicate    -} ->
-  Int           {- ^ small enough -} ->
-  Int           {- ^ too big      -} ->
-  Int
-binSearch p lo hi
-  | lo + 1 == hi = lo
-  | p mid        = binSearch p mid hi
-  | otherwise    = binSearch p lo mid
-  where
-    mid = lo + (hi - lo) `div` 2
+      | otherwise = binSearchLargest p lo hi

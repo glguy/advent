@@ -25,7 +25,7 @@ Distance:  9  40  200
 -}
 module Main where
 
-import Advent (format)
+import Advent (format, binSearchLargest)
 
 -- |
 --
@@ -47,17 +47,5 @@ ways (t, d)
   where
     valid hold = (t - hold) * hold > d
     mid = t `div` 2 -- the midpoint is the best we can get
-    tooLo = binSearch (not . valid)   0 mid
-    hi    = binSearch        valid  mid   t
-
-binSearch ::
-  (Int -> Bool) {- ^ predicate    -} ->
-  Int           {- ^ small enough -} ->
-  Int           {- ^ too big      -} ->
-  Int
-binSearch p lo hi
-  | lo + 1 == hi = lo
-  | p mid        = binSearch p mid hi
-  | otherwise    = binSearch p lo mid
-  where
-    mid = lo + (hi - lo) `div` 2
+    tooLo = binSearchLargest (not . valid)   0 mid
+    hi    = binSearchLargest        valid  mid   t

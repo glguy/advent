@@ -275,3 +275,18 @@ multiline = QuasiQuoter {
 partialSums :: Num a => [a] -> [a]
 partialSums = scanl' (+) 0
 {-# Inline partialSums #-}
+
+-- | Binary search for the largest value satisfying a predicate.
+-- Finds the largest value when the predicate switches from True
+-- to False. There should only be one such point in the range.
+binSearchLargest ::
+  (Int -> Bool) {- ^ predicate    -} ->
+  Int           {- ^ small enough -} ->
+  Int           {- ^ too big      -} ->
+  Int
+binSearchLargest p lo hi
+  | lo + 1 == hi = lo
+  | p mid        = binSearchLargest p mid hi
+  | otherwise    = binSearchLargest p lo mid
+  where
+    mid = lo + (hi - lo) `div` 2
