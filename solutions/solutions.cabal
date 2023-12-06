@@ -1010,3 +1010,7 @@ executable sln_2023_04
 executable sln_2023_05
   import:              day
   main-is:             2023/05.hs
+
+executable sln_2023_06
+  import:              day
+  main-is:             2023/06.hs
