@@ -8,6 +8,11 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/6>
 
+This problem asks us to consider the time we should spend
+charging up a toy car to beat a target distance. The distance
+the car will travel is a quadratic equation. What we end up
+doing is finding the distance between the roots of the function.
+
 -- >>> :{
 :main +
 "Time:      7  15   30
@@ -36,12 +41,14 @@ main =
     print (ways input2)
 
 ways :: (Int, Int) -> Int
-ways (t, d) = hi - lo + 1
+ways (t, d)
+  | valid mid = hi - tooLo
+  | otherwise = 0
   where
     valid hold = (t - hold) * hold > d
     mid = t `div` 2 -- the midpoint is the best we can get
-    lo = binSearch (not . valid) 0 mid + 1
-    hi = binSearch valid mid t
+    tooLo = binSearch (not . valid)   0 mid
+    hi    = binSearch        valid  mid   t
 
 binSearch ::
   (Int -> Bool) {- ^ predicate    -} ->
