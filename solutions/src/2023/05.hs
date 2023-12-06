@@ -49,8 +49,9 @@ ranges and find the lowest bound of the output intervals.
 module Main where
 
 import Advent (format, chunks)
-import Advent.Box (intersectBox, subtractBox, Box', Box(..))
+import Advent.Box (intersectBox, Box', Box(..), subtractBox')
 import Control.Exception (assert)
+import Control.Monad (foldM)
 
 -- |
 --
@@ -64,8 +65,9 @@ main =
     print (smallestDestination maps [interval start 1 | start     <-          seeds])
     print (smallestDestination maps [interval start n | [start,n] <- chunks 2 seeds])
 
+-- | Apply all the maps to all the intervals and return the smallest output
 smallestDestination :: [[(Interval, Int)]] -> [Interval] -> Int
-smallestDestination maps = lowerBound . minimum . applyMaps maps
+smallestDestination maps = lowerBound . minimum . concatMap (applyMaps maps)
 
 -- Verify that all the maps are presented in order
 -- This is technically unnecessary for the given inputs, but it feels bad to
@@ -81,19 +83,17 @@ checkMaps input = foldr processMap finish input "seed"
 
     entryToInterval (dst, src, len) = (interval src len, dst - src)
 
-applyMaps :: [[(Interval, Int)]] -> [Interval] -> [Interval]
-applyMaps maps xs =
-  foldl (\acc ranges -> concatMap (applyMap ranges) acc) xs maps
+-- | Apply the rewrite maps left to right to the input interval.
+applyMaps :: [[(Interval, Int)]] -> Interval -> [Interval]
+applyMaps = flip (foldM (flip applyMap))
 
+-- | Apply a single rewrite map to an input interval.
 applyMap :: [(Interval, Int)] -> Interval -> [Interval]
-applyMap = foldr applyEntry pure
-  where
-    applyEntry (src, delta) continue box =
-      case intersectBox src box of
-        Nothing -> continue box
-        Just i  ->
-          shiftInterval delta i :
-          concatMap continue (subtractBox src box)
+applyMap [] x = [x]
+applyMap ((s, d) : m) x =
+  case intersectBox s x of
+    Nothing -> applyMap m x
+    Just i  -> shiftInterval d i : concatMap (applyMap m) (subtractBox' i x)
 
 -- Interval specialization of the Box module
 
