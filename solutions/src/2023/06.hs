@@ -40,8 +40,8 @@ ways (t, d) = hi - lo + 1
   where
     valid hold = (t - hold) * hold > d
     mid = t `div` 2 -- the midpoint is the best we can get
-    lo = binSearch (not . valid) 0 (mid + 1) + 1
-    hi = binSearch valid lo t
+    lo = binSearch (not . valid) 0 mid + 1
+    hi = binSearch valid mid t
 
 binSearch ::
   (Int -> Bool) {- ^ predicate    -} ->
