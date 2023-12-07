@@ -50,16 +50,18 @@ strength1 hand = category hand : map val hand
     val x = fromJust (x `elemIndex` "23456789TJQKA")
 
 strength2 :: String -> [Int]
-strength2 a = maximum [category (map rpl a) : map val a
-                      | alt <- "23456789TQKA"
-                      , let rpl x = if x == 'J' then alt else x
-                      ]
+strength2 hand =
+  maximum
+    [ category (map rpl hand) : map val hand
+    | alt <- "23456789TQKA"
+    , let rpl x = if x == 'J' then alt else x
+    ]
   where
     val x = fromJust (x `elemIndex` "J23456789TQKA")
 
 category :: String -> Int
-category m =
-  case sort (toList (counts m)) of
+category hand =
+  case sort (toList (counts hand)) of
     [5]         -> 6
     [1,4]       -> 5
     [2,3]       -> 4
