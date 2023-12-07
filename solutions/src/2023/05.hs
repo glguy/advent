@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, DataKinds, GADTs #-}
+{-# Language QuasiQuotes, DataKinds, GADTs, ImportQualifiedPost, MonadComprehensions #-}
 {-|
 Module      : Main
 Description : Day 5 solution
@@ -52,7 +52,9 @@ import Advent (format, chunks)
 import Advent.Box (intersectBox, Box', Box(..), subtractBox')
 import Control.Exception (assert)
 import Control.Monad (foldM)
-
+import Data.Map (Map)
+import Data.Map qualified as Map
+import Data.Maybe (fromMaybe)
 -- |
 --
 -- >>> :main
@@ -65,32 +67,34 @@ main =
     print (smallestDestination maps [interval start 1 | start     <-          seeds])
     print (smallestDestination maps [interval start n | [start,n] <- chunks 2 seeds])
 
+-- | Map from lower-bound to (upper-bound, shift amount)
+type IntervalRewriter = Map Int (Int, Int)
+
 -- | Apply all the maps to all the intervals and return the smallest output
-smallestDestination :: [[(Interval, Int)]] -> [Interval] -> Int
+smallestDestination :: [IntervalRewriter] -> [Interval] -> Int
 smallestDestination maps = lowerBound . minimum . concatMap (applyMaps maps)
 
--- Verify that all the maps are presented in order
--- This is technically unnecessary for the given inputs, but it feels bad to
--- assume the order is right. Transform the (destination, source, length)
--- parameters to a source interval and shift value.
-checkMaps :: [(String, String, [(Int, Int, Int)])] -> [[(Interval, Int)]]
-checkMaps input = assert (froms == tos)
-  [[(interval src len, dst - src) | (dst, src, len) <- xs] | (_, _, xs) <- input]
+-- Verify that all the maps are presented in order.
+-- Construct an interval rewriter from each sublist of entries
+checkMaps :: [(String, String, [(Int, Int, Int)])] -> [IntervalRewriter]
+checkMaps input = assert (froms ++ ["location"] == "seed" : tos) (map toRewriter maps)
   where
-    froms = [x | (x, _, _) <- input] ++ ["location"]
-    tos = "seed" : [x | (_, x, _) <- input]
+    (froms, tos, maps) = unzip3 input
+    toRewriter xs = Map.fromList [(src,  (src + len, dst - src)) | (dst, src, len) <- xs]
 
 -- | Apply the rewrite maps left to right to the input interval.
-applyMaps :: [[(Interval, Int)]] -> Interval -> [Interval]
+applyMaps :: [IntervalRewriter] -> Interval -> [Interval]
 applyMaps = flip (foldM (flip applyMap))
 
 -- | Apply a single rewrite map to an input interval.
-applyMap :: [(Interval, Int)] -> Interval -> [Interval]
-applyMap [] x = [x]
-applyMap ((s, d) : m) x =
-  case intersectBox s x of
-    Nothing -> applyMap m x
-    Just i  -> shiftInterval d i : concatMap (applyMap m) (subtractBox' i x)
+applyMap :: IntervalRewriter -> Interval -> [Interval]
+applyMap intervals x =
+  fromMaybe [x]
+  [ shiftInterval d overlap
+  : concatMap (applyMap intervals) (subtractBox' overlap x)
+  | (lo, (hi, d)) <- Map.lookupLT (upperBound x) intervals
+  , overlap       <- intersectBox (Dim lo hi Pt) x
+  ]
 
 -- Interval specialization of the Box module
 
@@ -105,6 +109,10 @@ interval start len = Dim start (start + len) Pt
 shiftInterval :: Int -> Interval -> Interval
 shiftInterval delta (Dim lo hi Pt) = Dim (lo + delta) (hi + delta) Pt
 
--- | Retrieve the lower bound of an interval
+-- | Retrieve the inclusive lower-bound of an interval
 lowerBound :: Interval -> Int
 lowerBound (Dim x _ Pt) = x
+
+-- | Retrieve the exclusive upper-bound of an interval
+upperBound :: Interval -> Int
+upperBound (Dim _ x Pt) = x
