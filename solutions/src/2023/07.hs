@@ -50,12 +50,12 @@ strength1 hand = category hand : map val hand
     val x = fromJust (x `elemIndex` "23456789TJQKA")
 
 strength2 :: String -> [Int]
-strength2 a = maximum [category xs : map val a | xs <- traverse rpl a]
+strength2 a = maximum [category (map rpl a) : map val a
+                      | alt <- "23456789TQKA"
+                      , let rpl x = if x == 'J' then alt else x
+                      ]
   where
-  rpl 'J' = "23456789TQKA"
-  rpl x   = [x]
-
-  val x = fromJust (x `elemIndex` "J23456789TQKA")
+    val x = fromJust (x `elemIndex` "J23456789TQKA")
 
 category :: String -> Int
 category m =
