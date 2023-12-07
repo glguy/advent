@@ -24,7 +24,7 @@ QQQJA 483
 module Main where
 
 import Advent (format, counts)
-import Data.List (sortOn, sort, elemIndex)
+import Data.List (sortOn, sort, elemIndex, nub)
 import Data.Foldable (toList)
 import Data.Maybe (fromJust)
 
@@ -53,7 +53,7 @@ strength2 :: String -> [Int]
 strength2 hand =
   maximum
     [ category (map rpl hand) : map val hand
-    | alt <- "23456789TQKA"
+    | alt <- nub hand
     , let rpl x = if x == 'J' then alt else x
     ]
   where
