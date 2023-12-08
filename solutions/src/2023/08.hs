@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost, BlockArguments #-}
+{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost, LambdaCase #-}
 {-|
 Module      : Main
 Description : Day 8 solution
@@ -12,8 +12,10 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format, stageTH)
-import Data.Map (Map)
 import Data.Map qualified as Map
+import Data.Maybe (fromJust)
+import Data.List (findIndex)
+import Control.Monad (unless)
 
 data D = DL | DR
 
@@ -27,23 +29,33 @@ stageTH
 main :: IO ()
 main =
  do (steps, nodes) <- [format|2023 8 @D*%n%n(%s = %(%s, %s%)%n)*|]
-    let steps' = cycle steps
-    let nodes' = Map.fromList [(k,(a,b)) | (k,a,b) <- nodes]
-    print (pathLength part1 nodes' steps' "AAA")
-    print (foldl1 lcm [ pathLength part2 nodes' steps' start
-                      | start <- Map.keys nodes', last start == 'A'])
+    let nodes' = Map.fromList [(k, \case DL -> a; DR -> b) | (k,a,b) <- nodes]
+    let mkPath start = scanl (nodes' Map.!) start (cycle steps)
+
+    let path1  = mkPath "AAA"
+    let paths2 = [mkPath start | (start, _, _) <- nodes, last start == 'A']
+
+    unless (all (isTrivial part2 (length steps)) paths2) (fail "input not trivial")
+
+    print (findIndex' part1 path1)
+    print (foldl1 lcm (map (findIndex' part2) paths2))
 
 part1, part2 :: String -> Bool
 part1 x = "ZZZ" == x
 part2 x = 'Z' == last x
 
-pathLength :: Ord a => (a -> Bool) -> Map a (a, a) -> [D] -> a -> Int
-pathLength p nodes = go 0
-  where
-    go n (dir : dirs) here
-      | p here = n
-      | otherwise =
-        go (n + 1) dirs
-          case (dir, nodes Map.! here) of
-            (DL, (l, _)) -> l
-            (DR, (_, r)) -> r
+-- Verifies that we actually got one of the trivial input files.
+-- * The goal must be reached after a number of cycles that is a multiple of the steps
+-- * The next goal must be the same as the previous and must be reachable in the
+--   same number of steps
+--
+-- This guarantees that the path must actually cycle infinitely and that
+-- there is exactly one goal state in the cycle.
+isTrivial :: Eq a => (a -> Bool) -> Int -> [a] -> Bool
+isTrivial p n xs =
+  case [ (i,x) | (i, x) <- zip [0..] xs, p x ] of
+    (i1,g1) : (i2,g2) : _ -> i1 `rem` n == 0 && 2 * i1 == i2 && g1 == g2
+    _ -> False
+
+findIndex' :: (a -> Bool) -> [a] -> Int
+findIndex' p = fromJust . findIndex p
