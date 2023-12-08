@@ -78,10 +78,10 @@ strength1 hand = category hand : map val hand
 strength2 :: String -> [Int]
 strength2 hand =
   maximum
-    [ category (map rpl hand) : map val hand
+    [ category (map rpl hand)
     | alt <- nub hand
     , let rpl x = if x == 'J' then alt else x
-    ]
+    ] : map val hand
   where
     val x = fromJust (x `elemIndex` "J23456789TQKA")
 
