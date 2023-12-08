@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 8 solution
@@ -9,9 +9,9 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2023/day/8>
 
 -}
-module Main where
+module Main (main) where
 
-import Advent
+import Advent (format, stageTH)
 import Data.Map (Map)
 import Data.Map qualified as Map
 
@@ -43,6 +43,7 @@ pathLength p nodes = go 0
     go n (dir : dirs) here
       | p here = n
       | otherwise =
-      case (dir, nodes Map.! here) of
-        (DL, (l, _)) -> go (n + 1) dirs l
-        (DR, (_, r)) -> go (n + 1) dirs r
+        go (n + 1) dirs
+          case (dir, nodes Map.! here) of
+            (DL, (l, _)) -> l
+            (DR, (_, r)) -> r
