@@ -9,7 +9,8 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/9>
 
-Extend an 
+Interpolate a polynomial sequence to find the next and previous
+elements of the sequence.
 
 >>> :{
 :main +
@@ -22,7 +23,7 @@ Extend an
 2
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (format)
 
