@@ -41,4 +41,4 @@ nextInSequence :: [Int] -> Int
 nextInSequence = sum . map last . takeWhile (any (0 /=)) . iterate differences
 
 differences :: [Int] -> [Int]
-differences xs = zipWith (-) (tail xs) xs
+differences xs = zipWith subtract xs (tail xs)
