@@ -9,6 +9,16 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/9>
 
+>>> :{
+:main +
+"0 3 6 9 12 15
+1 3 6 10 15 21
+10 13 16 21 30 45
+"
+:}
+114
+2
+
 -}
 module Main where
 
@@ -29,7 +39,7 @@ nextInSequence :: [Int] -> Int
 nextInSequence = sum . map last . allDifferences
 
 prevInSequence :: [Int] -> Int
-prevInSequence = foldr (\x acc -> x - acc) 0 . map head . allDifferences
+prevInSequence = foldr (-) 0 . map head . allDifferences
 
 allDifferences :: [Int] -> [[Int]]
 allDifferences = takeWhile (any (0 /=)) . iterate differences
