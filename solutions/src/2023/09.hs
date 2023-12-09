@@ -9,6 +9,8 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/9>
 
+Extend an 
+
 >>> :{
 :main +
 "0 3 6 9 12 15
@@ -24,22 +26,19 @@ module Main where
 
 import Advent (format)
 
--- |
+-- | Parse the input and print out answers to both parts.
 --
 -- >>> :main
 -- 1762065988
 -- 1066
 main :: IO ()
 main =
- do input <- [format|2023 9 ((%d)& %n)*|]
+ do input <- [format|2023 9 (%d& %n)*|]
     print (sum (map nextInSequence input))
-    print (sum (map prevInSequence input))
+    print (sum (map (nextInSequence . reverse) input))
 
 nextInSequence :: [Int] -> Int
 nextInSequence = sum . map last . allDifferences
-
-prevInSequence :: [Int] -> Int
-prevInSequence = foldr (-) 0 . map head . allDifferences
 
 allDifferences :: [Int] -> [[Int]]
 allDifferences = takeWhile (any (0 /=)) . iterate differences
