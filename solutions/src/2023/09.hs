@@ -38,10 +38,7 @@ main =
     print (sum (map (nextInSequence . reverse) input))
 
 nextInSequence :: [Int] -> Int
-nextInSequence = sum . map last . allDifferences
-
-allDifferences :: [Int] -> [[Int]]
-allDifferences = takeWhile (any (0 /=)) . iterate differences
+nextInSequence = sum . map last . takeWhile (any (0 /=)) . iterate differences
 
 differences :: [Int] -> [Int]
 differences xs = zipWith (-) (tail xs) xs
