@@ -12,10 +12,10 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format, stageTH)
+import Control.Monad (unless)
+import Data.List (findIndex)
 import Data.Map qualified as Map
 import Data.Maybe (fromJust)
-import Data.List (findIndex)
-import Control.Monad (unless)
 
 data D = DL | DR
 
