@@ -13,9 +13,9 @@ module Main where
 
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Data.List ( findIndices, tails, transpose )
-
-import Advent (getInputLines)
+import Data.List
+import Data.Map qualified as Map
+import Advent
 import Advent.Coord (coordLines, Coord(C))
 
 -- |
@@ -26,20 +26,19 @@ import Advent.Coord (coordLines, Coord(C))
 main :: IO ()
 main =
  do input <- getInputLines 2023 11
-    let galaxies = Set.fromList [c | (c,'#') <- coordLines input]
-    let bigrows = Set.fromList (findIndices (all ('.'==)) input)
-    let bigcols = Set.fromList (findIndices (all ('.'==)) (transpose input))
-    let solve n = sum [width n bigrows y1 y2 + width n bigcols x1 x2
-                      | (C y1 x1, C y2 x2) <- pairs (Set.toList galaxies)]
+    let galaxies = [c | (c,'#') <- coordLines input]
+    let rows = Map.assocs (counts [y | C y _ <- galaxies])
+    let cols = Map.assocs (counts [x | C _ x <- galaxies])
+
+    let solve1 n xs =
+          sum
+          [ (fst (head r) - fst (last l) - 1) * n * (sum (map snd l) * sum (map snd r))
+          | (l,r) <- zip (inits xs) (tails xs), not (null l), not (null r)]
+          + sum
+          [ sum (map snd l) * sum (map snd r)
+          | (l,r) <- zip (inits xs) (tails xs)]
+
+    let solve n = solve1 n rows + solve1 n cols
+
     print (solve 2)
     print (solve 1_000_000)
-
-pairs :: [a] -> [(a, a)]
-pairs xs = [(x,y) | x:ys <- tails xs, y <- ys]
-
-width :: Int -> Set Int -> Int -> Int -> Int
-width expansion set x y = (expansion-1) * expands + hi - lo
-  where
-    lo = min x y
-    hi = max x y
-    expands = length (fst (Set.split hi (snd (Set.split lo set))))
