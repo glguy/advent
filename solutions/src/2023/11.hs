@@ -30,7 +30,6 @@ module Main where
 
 import Advent (getInputLines, counts)
 import Advent.Coord (coordLines, Coord(C))
-import Data.List (inits, tails)
 import Data.Map (Map)
 import Data.Map qualified as Map
 
@@ -68,7 +67,7 @@ solve1' ::
   Int         {- ^ current location               -} ->
   [(Int,Int)] {- ^ remaining locations and counts -} ->
   Int         {- ^ total distances traveled       -}
-solve1' ex _ _ acc _ [] = acc
+solve1' _ _ _ acc _ [] = acc
 solve1' ex l r acc here ((there,m):xs) =
   solve1' ex (l+m) (r-m) (acc + crossings * distance) there xs
   where
