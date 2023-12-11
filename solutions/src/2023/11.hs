@@ -1,5 +1,4 @@
 {-# Language QuasiQuotes, NumericUnderscores, ImportQualifiedPost #-}
-{-# OPTIONS_GHC -Wall -Wno-x-partial #-}
 {-|
 Module      : Main
 Description : Day 11 solution
@@ -9,13 +8,30 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/11>
 
+>>> :{
+:main +
+"...#......
+.......#..
+#.........
+..........
+......#...
+.#........
+.........#
+..........
+.......#..
+#...#.....
+"
+:}
+374
+82000210
+
 -}
 module Main where
 
+import Advent (getInputLines, counts)
+import Advent.Coord (coordLines, Coord(C))
 import Data.List (inits, tails)
 import Data.Map qualified as Map
-import Advent
-import Advent.Coord (coordLines, Coord(C))
 
 -- |
 --
