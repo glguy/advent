@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, NumericUnderscores, ImportQualifiedPost #-}
+{-# Language NumericUnderscores, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 11 solution
@@ -7,6 +7,15 @@ License     : ISC
 Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/11>
+
+We're given a map of galaxies and need to find the
+sum of all distances between the pairs of galaxies.
+The twist is that empty rows and columns are expanded.
+
+We can simplify this problem by solving the X and Y
+axes separately. We can collapse the input down to
+a count of how many galaxies exist at each location
+on a single axis.
 
 >>> :{
 :main +
@@ -29,7 +38,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (getInputLines, counts)
-import Advent.Coord (coordLines, Coord(C))
+import Advent.Coord (Coord(C), coordLines)
 import Data.Map (Map)
 import Data.Map qualified as Map
 
@@ -41,35 +50,27 @@ import Data.Map qualified as Map
 main :: IO ()
 main =
  do input <- getInputLines 2023 11
-    let galaxies = [c | (c,'#') <- coordLines input]
-        rows     = counts [y | C y _ <- galaxies]
-        cols     = counts [x | C _ x <- galaxies]
-        solve n  = solve1 n rows + solve1 n cols
+    let (rows, cols) = unzip [(y, x) | (C y x, '#') <- coordLines input]
+        solve n      = solve1 n rows + solve1 n cols
     print (solve 2)
     print (solve 1_000_000)
 
 -- | Solve the travel problem along a single axis
 solve1 ::
-  Int         {- ^ expansion factor                        -} ->
-  Map Int Int {- ^ map from location to number of galaxies -} ->
-  Int         {- ^ total distance traveled                 -}
-solve1 ex m =
-  let total = sum m in
-  case Map.assocs m of
-    [] -> 0
-    (here,n):xs -> solve1' ex n (total - n) 0 here xs
-
-solve1' ::
-  Int         {- ^ expandsion factor              -} ->
-  Int         {- ^ galaxies to the left           -} ->
-  Int         {- ^ galaxies to the right          -} ->
-  Int         {- ^ accumulator                    -} ->
-  Int         {- ^ current location               -} ->
-  [(Int,Int)] {- ^ remaining locations and counts -} ->
-  Int         {- ^ total distances traveled       -}
-solve1' _ _ _ acc _ [] = acc
-solve1' ex l r acc here ((there,m):xs) =
-  solve1' ex (l+m) (r-m) (acc + crossings * distance) there xs
+  Int   {- ^ expansion factor        -} ->
+  [Int] {- ^ galaxy positions        -} ->
+  Int   {- ^ total distance traveled -}
+solve1 ex positions =
+  case Map.assocs counted of
+    []             -> 0
+    (here, n) : xs -> go xs n here 0
   where
-    crossings = l * r
-    distance = (there - here - 1) * ex + 1
+    counted = counts positions
+    total   = sum counted
+
+    go []                _ _    acc = acc
+    go ((there, m) : xs) n here acc = go xs (n + m) there acc'
+      where
+        crossings = n * (total - n)
+        distance  = (there - here - 1) * ex + 1
+        acc'      = acc + crossings * distance
