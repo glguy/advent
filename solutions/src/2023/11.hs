@@ -45,10 +45,13 @@ main =
     let rows = Map.assocs (counts [y | C y _ <- galaxies])
     let cols = Map.assocs (counts [x | C _ x <- galaxies])
 
-    let solve1 n xs
+    let solve1 expansion xs
           = sum
-          [ ((fst (head r) - fst (last l) - 1) * n + 1) * sum (map snd l) * sum (map snd r)
-          | (l,r) <- zip (inits xs) (tails xs), not (null l), not (null r)]
+          [ (emptygap * expansion + 1) * crossings
+          | (l,r) <- zip (inits xs) (tails xs)
+          , not (null l), not (null r)
+          , let emptygap = fst (head r) - fst (last l) - 1
+          , let crossings = sum (map snd l) * sum (map snd r)]
 
     let solve n = solve1 n rows + solve1 n cols
 
