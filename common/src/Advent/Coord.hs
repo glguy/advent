@@ -65,7 +65,7 @@ right (C y x) = C y (x+1)
 invert :: Coord -> Coord
 invert (C y x) = C x y
 
--- | Swap x and y coordinates
+-- | Negate and swap x and y coordinates
 invert' :: Coord -> Coord
 invert' (C y x) = C (-x) (-y)
 

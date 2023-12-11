@@ -1,4 +1,4 @@
-{-# Language LambdaCase, ImportQualifiedPost, TransformListComp #-}
+{-# Language LambdaCase, ImportQualifiedPost, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 10 solution
@@ -46,13 +46,16 @@ L7JLJL-JLJLJL--JLJ.L
 module Main (main) where
 
 import Advent (getInputMap)
-import Advent.Coord (cardinal, invert, invert', south, north, west, turnRight, Coord)
+import Advent.Coord (cardinal, invert, invert', south, north, west, turnRight, Coord, drawPicture)
 import Advent.Search (dfsN, dfsOn)
-import Data.List (nub, (\\))
+import Control.Monad (when)
+import Data.List (nub)
 import Data.Map (Map)
 import Data.Map qualified as Map
+import Data.Maybe (isJust)
 import Data.Set (Set)
 import Data.Set qualified as Set
+import System.Environment (lookupEnv)
 
 -- | Parse the input and print out answers to both parts.
 --
@@ -72,6 +75,15 @@ main =
 
     print (length route `quot` 2)
     print (length contained)
+
+    visualize <- isJust <$> lookupEnv "VISUALIZE"
+    when visualize
+     do putStr (drawPicture (fmap pretty input `Map.restrictKeys` pipe <>
+                             Map.fromSet (const '╳') (Set.fromList contained)))
+
+pretty :: Char -> Char
+pretty = \case
+  '7' -> '┐'; 'J' -> '┘'; 'F' -> '┌'; 'L' -> '└'; '-' -> '─'; '|' -> '│'; _ -> ' '
 
 pickStart :: Map Coord Char -> (Coord, Coord)
 pickStart input = head $
