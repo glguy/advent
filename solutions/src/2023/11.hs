@@ -39,7 +39,6 @@ module Main where
 
 import Advent (getInputLines, counts)
 import Advent.Coord (Coord(C), coordLines)
-import Data.Map (Map)
 import Data.Map qualified as Map
 
 -- |
