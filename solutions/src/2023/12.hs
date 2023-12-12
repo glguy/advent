@@ -55,24 +55,27 @@ ways groups springs = answersA ! (0,0)
     answersA = listArray answersB [go i j | (i,j) <- range answersB]
 
     go groupI springI =
-      case arrIx springsA springI of
-        Just '.' -> answersA ! (groupI, springI + 1)
-        Just '#' -> startGroup groupI (springI + 1)
-        Just '?' -> startGroup groupI (springI + 1)
-                  + answersA ! (groupI, springI + 1)
-        _ | groupI == groupsN -> 1
-          | otherwise         -> 0
+      let dotCase  = answersA ! (groupI, springI + 1)
+          hashCase = startGroup groupI (springI + 1) 
+      in case arrIx springsA springI of
+        Just '.' -> dotCase
+        Just '#' -> hashCase
+        Just '?' -> dotCase + hashCase
+        Nothing | groupI == groupsN -> 1
+        _                           -> 0
 
     startGroup groupI springI =
       case arrIx groupsA groupI of
+        Just n  -> goGroup (groupI + 1) (n - 1) springI
         Nothing -> 0
-        Just n -> goGroup (groupI + 1) (n - 1) springI
 
     goGroup groupI n springI =
-      case arrIx springsA springI of
+      let doneCase = answersA ! (groupI, springI + 1)
+          moreCase = goGroup groupI (n-1) (springI + 1)
+      in case arrIx springsA springI of
+        Just '.' | n == 0    -> doneCase
+        Just '#' | n >  0    -> moreCase
+        Just '?' | n == 0    -> doneCase
+                 | otherwise -> moreCase
         Nothing  | n == 0, groupI == groupsN -> 1
-        Just '.' | n == 0 -> answersA ! (groupI, springI + 1)
-        Just '?' | n == 0 -> answersA ! (groupI, springI + 1)
-                 | otherwise -> goGroup groupI (n-1) (springI + 1)
-        Just '#' | n > 0     -> goGroup groupI (n-1) (springI + 1)
-        _ -> 0
+        _                                    -> 0
