@@ -50,26 +50,30 @@ main :: IO ()
 main =
  do input <- getInputLines 2023 11
     let (rows, cols) = unzip [(y, x) | (C y x, '#') <- coordLines input]
-        solve n      = solve1 n rows + solve1 n cols
+        (r1, rWide) = solve1 rows
+        (c1, cWide) = solve1 cols
+        solve n     = r1 + c1 + (rWide + cWide) * n
     print (solve 2)
     print (solve 1_000_000)
 
--- | Solve the travel problem along a single axis
+-- | Solve the travel problem along a single axis.
+-- The result is how many normal steps and how many
+-- expanded steps were taken.
 solve1 ::
-  Int   {- ^ expansion factor        -} ->
-  [Int] {- ^ galaxy positions        -} ->
-  Int   {- ^ total distance traveled -}
-solve1 ex positions =
+  [Int]     {- ^ galaxy positions               -} ->
+  (Int,Int) {- ^ regular and expanded distances -}
+solve1 positions =
   case Map.assocs counted of
-    []             -> 0
-    (here, n) : xs -> go xs n here 0
+    []             -> (0, 0)
+    (here, n) : xs -> go xs n here 0 0
   where
     counted = counts positions
     total   = sum counted
 
-    go []                _ _    acc = acc
-    go ((there, m) : xs) n here acc = go xs (n + m) there acc'
+    go []                _ _    reg gap = ((,) $! reg) $! gap
+    go ((there, m) : xs) n here reg gap = go xs (n + m) there reg' gap'
       where
         crossings = n * (total - n)
-        distance  = (there - here - 1) * ex + 1
-        acc'      = acc + crossings * distance
+        width = there - here - 1
+        reg' = reg + crossings
+        gap' = gap + crossings * width
