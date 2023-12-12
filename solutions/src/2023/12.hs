@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes #-}
+{-# Language QuasiQuotes, NPlusKPatterns #-}
 {-|
 Module      : Main
 Description : Day 12 solution
@@ -51,33 +51,35 @@ ways groups springs = answersA ! (0,0)
     springsN = length springs
     springsA = listArray (0, springsN - 1) springs
 
-    answersB = ((0,0),(groupsN,springsN))
+    answersB = ((0, 0), (groupsN, springsN))
     answersA = listArray answersB [go i j | (i,j) <- range answersB]
 
+    -- recusive calls to go are memoized via the array
+    rec groupI springI = answersA ! (groupI, springI)
+
     go groupI springI =
-      let dotCase  = answersA ! (groupI, springI + 1)
+      let dotCase  = rec groupI (springI + 1)
           hashCase = startGroup groupI (springI + 1)
-          {-# Inline hashCase #-}
-      in case arrIx springsA springI of
-        Just '.' -> dotCase
-        Just '#' -> hashCase
-        Just '?' -> hashCase + dotCase
-        Nothing | groupI == groupsN -> 1
-        _                           -> 0
+          {-# Inline hashCase #-} in
+      case arrIx springsA springI of
+        Just '.'   -> dotCase
+        Just '#'   -> hashCase
+        Just '?'   -> hashCase + dotCase
+        _          -> if groupI == groupsN then 1 else 0
 
     startGroup groupI springI =
       case arrIx groupsA groupI of
-        Just n  -> goGroup (groupI + 1) (n - 1) springI
-        Nothing -> 0
+        Just n     -> loopGroup (groupI + 1) springI (n - 1)
+        Nothing    -> 0
 
-    goGroup groupI n springI =
-      let doneCase = answersA ! (groupI, springI + 1)
-          moreCase = goGroup groupI (n-1) (springI + 1)
-          {-# Inline moreCase #-}
-      in case arrIx springsA springI of
-        Just '.' | n == 0    -> doneCase
-        Just '#' | n >  0    -> moreCase
-        Just '?' | n == 0    -> doneCase
-                 | otherwise -> moreCase
-        Nothing  | n == 0, groupI == groupsN -> 1
-        _                                    -> 0
+    loopGroup groupI springI 0 =
+      case arrIx springsA springI of
+        Nothing    -> if groupI == groupsN then 1 else 0
+        Just '#'   -> 0
+        _          -> rec groupI (springI + 1)
+
+    loopGroup groupI springI (n + 1) =
+      case arrIx springsA springI of
+        Just '.'   -> 0
+        Nothing    -> 0
+        _          -> loopGroup groupI (springI + 1) n
