@@ -42,7 +42,7 @@ main =
 unfoldSprings :: String -> String
 unfoldSprings = intercalate "?" . replicate 5
 
-ways :: [Int] -> [Char] -> Int
+ways :: [Int] -> String -> Int
 ways groups springs = answersA ! (0,0)
   where
     groupsN = length groups
@@ -70,16 +70,16 @@ ways groups springs = answersA ! (0,0)
     startGroup groupI springI =
       case arrIx groupsA groupI of
         Just n     -> loopGroup (groupI + 1) springI (n - 1)
-        Nothing    -> 0
+        Nothing    -> 0 -- no group available to start
 
-    loopGroup groupI springI 0 =
+    loopGroup groupI springI (n + 1) = -- middle of group
+      case arrIx springsA springI of
+        Just '.'   -> 0 -- group too short
+        Nothing    -> 0 -- group too short
+        _          -> loopGroup groupI (springI + 1) n
+
+    loopGroup groupI springI 0 = -- end of group
       case arrIx springsA springI of
         Nothing    -> if groupI == groupsN then 1 else 0
-        Just '#'   -> 0
+        Just '#'   -> 0 -- group too long
         _          -> rec groupI (springI + 1)
-
-    loopGroup groupI springI (n + 1) =
-      case arrIx springsA springI of
-        Just '.'   -> 0
-        Nothing    -> 0
-        _          -> loopGroup groupI (springI + 1) n
