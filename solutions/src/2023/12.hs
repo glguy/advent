@@ -56,11 +56,12 @@ ways groups springs = answersA ! (0,0)
 
     go groupI springI =
       let dotCase  = answersA ! (groupI, springI + 1)
-          hashCase = startGroup groupI (springI + 1) 
+          hashCase = startGroup groupI (springI + 1)
+          {-# Inline hashCase #-}
       in case arrIx springsA springI of
         Just '.' -> dotCase
         Just '#' -> hashCase
-        Just '?' -> dotCase + hashCase
+        Just '?' -> hashCase + dotCase
         Nothing | groupI == groupsN -> 1
         _                           -> 0
 
@@ -72,6 +73,7 @@ ways groups springs = answersA ! (0,0)
     goGroup groupI n springI =
       let doneCase = answersA ! (groupI, springI + 1)
           moreCase = goGroup groupI (n-1) (springI + 1)
+          {-# Inline moreCase #-}
       in case arrIx springsA springI of
         Just '.' | n == 0    -> doneCase
         Just '#' | n >  0    -> moreCase
