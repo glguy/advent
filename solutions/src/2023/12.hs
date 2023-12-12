@@ -1,5 +1,4 @@
 {-# Language QuasiQuotes #-}
-{-# OPTIONS_GHC -w #-}
 {-|
 Module      : Main
 Description : Day 12 solution
@@ -9,12 +8,25 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/12>
 
--}
-module Main where
+>>> :{
+:main +
+"???.### 1,1,3
+.??..??...?##. 1,1,3
+?#?#?#?#?#?#?#? 1,3,1,6
+????.#...#... 4,1,1
+????.######..#####. 1,6,5
+?###???????? 3,2,1
+"
+:}
+21
+525152
 
-import Advent (format)
+-}
+module Main (main) where
+
+import Advent (format, arrIx)
+import Data.Array (Ix(range), (!), listArray)
 import Data.List (intercalate)
-import Data.Array
 
 -- |
 --
@@ -42,24 +54,25 @@ ways groups springs = answersA ! (0,0)
     answersB = ((0,0),(groupsN,springsN))
     answersA = listArray answersB [go i j | (i,j) <- range answersB]
 
-    go groupI springI
-      | groupI == groupsN =
-        if all (\i -> springsA ! i `elem` ".?") [springI .. springsN - 1]
-          then 1 else 0
+    go groupI springI =
+      case arrIx springsA springI of
+        Just '.' -> answersA ! (groupI, springI + 1)
+        Just '#' -> startGroup groupI (springI + 1)
+        Just '?' -> startGroup groupI (springI + 1)
+                  + answersA ! (groupI, springI + 1)
+        _ | groupI == groupsN -> 1
+          | otherwise         -> 0
 
-      | springI == springsN = 0
+    startGroup groupI springI =
+      case arrIx groupsA groupI of
+        Nothing -> 0
+        Just n -> goGroup (groupI + 1) (n - 1) springI
 
-      | otherwise =
-        case springsA ! springI of
-          '.' -> answersA ! (groupI, springI + 1)
-          '#' -> startGroup (groupI + 1) ((groupsA ! groupI) - 1) (springI + 1)
-          '?' -> startGroup (groupI + 1) ((groupsA ! groupI) - 1) (springI + 1)
-               + answersA ! (groupI, springI + 1)
-          _ -> error "bad diagram"
-
-    startGroup groupI n springI
-      | springI == springsN = if n == 0 && groupI == groupsN then 1 else 0
-      | n == 0, springsA ! springI `elem` ".?" = answersA ! (groupI, springI + 1)
-      | n == 0 = 0
-      | '.' == springsA ! springI = 0
-      | otherwise = startGroup groupI (n-1) (springI + 1)
+    goGroup groupI n springI =
+      case arrIx springsA springI of
+        Nothing  | n == 0, groupI == groupsN -> 1
+        Just '.' | n == 0 -> answersA ! (groupI, springI + 1)
+        Just '?' | n == 0 -> answersA ! (groupI, springI + 1)
+                 | otherwise -> goGroup groupI (n-1) (springI + 1)
+        Just '#' | n > 0     -> goGroup groupI (n-1) (springI + 1)
+        _ -> 0
