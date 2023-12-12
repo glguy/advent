@@ -1,4 +1,5 @@
 {-# Language QuasiQuotes #-}
+{-# OPTIONS_GHC -w #-}
 {-|
 Module      : Main
 Description : Day 12 solution
@@ -12,8 +13,8 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (format)
-import Advent.Memo (memo2)
 import Data.List (intercalate)
+import Data.Array
 
 -- |
 --
@@ -23,25 +24,42 @@ import Data.List (intercalate)
 main :: IO ()
 main =
  do input <- [format|2023 12 (%s %d&,%n)*|]
-    print (sum [match g s | (s,g) <- input])
-    print (sum [match (concat (replicate 5 g)) (unfoldSprings s) | (s,g) <- input])
+    print (sum [ways g s | (s,g) <- input])
+    print (sum [ways (concat (replicate 5 g)) (unfoldSprings s) | (s,g) <- input])
 
 unfoldSprings :: String -> String
 unfoldSprings = intercalate "?" . replicate 5
 
-match :: [Int] -> [Char] -> Int
-match = memo2 match'
+ways :: [Int] -> [Char] -> Int
+ways groups springs = answersA ! (0,0)
   where
-    match' [] xs
-      | all (`elem` ".?") xs = 1
-      | otherwise = 0
-    match' _ [] = 0
+    groupsN = length groups
+    groupsA = listArray (0, groupsN - 1) groups
 
-    match' (n:ns) ('.':xs) = match (n:ns) xs
-    match' (n:ns) ('#':xs) =
-      case splitAt (n-1) xs of
-        (a,x:b) | length a == (n-1), all (`elem` "#?") a, x `elem` "?." -> match ns b
-        (a,[]) | length a == (n-1), all (`elem` "#?") a -> match ns []
-        _ -> 0
-    match' (n:ns) ('?':xs) = match (n:ns) ('.':xs) + match (n:ns) ('#':xs)
-    match' a b = error (show (a,b))
+    springsN = length springs
+    springsA = listArray (0, springsN - 1) springs
+
+    answersB = ((0,0),(groupsN,springsN))
+    answersA = listArray answersB [go i j | (i,j) <- range answersB]
+
+    go groupI springI
+      | groupI == groupsN =
+        if all (\i -> springsA ! i `elem` ".?") [springI .. springsN - 1]
+          then 1 else 0
+
+      | springI == springsN = 0
+
+      | otherwise =
+        case springsA ! springI of
+          '.' -> answersA ! (groupI, springI + 1)
+          '#' -> startGroup (groupI + 1) ((groupsA ! groupI) - 1) (springI + 1)
+          '?' -> startGroup (groupI + 1) ((groupsA ! groupI) - 1) (springI + 1)
+               + answersA ! (groupI, springI + 1)
+          _ -> error "bad diagram"
+
+    startGroup groupI n springI
+      | springI == springsN = if n == 0 && groupI == groupsN then 1 else 0
+      | n == 0, springsA ! springI `elem` ".?" = answersA ! (groupI, springI + 1)
+      | n == 0 = 0
+      | '.' == springsA ! springI = 0
+      | otherwise = startGroup groupI (n-1) (springI + 1)
