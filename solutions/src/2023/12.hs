@@ -25,7 +25,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format, arrIx)
-import Data.Array (Ix(range), (!), listArray)
+import Data.Array (range, (!), listArray)
 import Data.List (intercalate)
 
 -- |
