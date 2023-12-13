@@ -46,13 +46,13 @@ main =
     print (sum (map (solver 0) input))
     print (sum (map (solver 1) input))
 
-findReflection :: Int {- ^ differences -} -> [String] -> [Int]
-findReflection target xs =
+findReflection :: Int -> [String] -> [Int]
+findReflection differences xs =
   [ i
   | (i, l, r) <- zip3 [0..] (inits xs) (tails xs)
   , not (null l), not (null r)
   , let diff x y = if x == y then 0 else 1
-  , target == sum2 (sum2 diff) (reverse l) r
+  , differences == sum2 (sum2 diff) (reverse l) r
   ]
 
 sum2 :: Num c => (a -> b -> c) -> [a] -> [b] -> c
