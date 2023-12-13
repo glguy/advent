@@ -51,12 +51,11 @@ findReflection target xs =
   [ i
   | (i,l,r) <- zip3 [0..] (inits xs) (tails xs)
   , not (null l), not (null r)
-  , target == sum (zipWith (\x y -> sum (zipWith val x y)) (reverse l) r)
+  , let val x y = if x == y then 0 else 1
+  , let differences x y = sum (zipWith val x y)
+  , target == sum (zipWith differences (reverse l) r)
   ]
 
 solver :: Int -> [String] -> [Int]
 solver target xs = findReflection target (transpose xs)
                 ++ map (100*) (findReflection target xs)
-
-val :: Char -> Char -> Int
-val x y = if x == y then 0 else 1
