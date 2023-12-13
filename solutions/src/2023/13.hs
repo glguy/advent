@@ -44,7 +44,7 @@ main :: IO ()
 main =
  do input <- [format|2023 13 (%s%n)*&%n|]
     print (sum (concatMap (solver 0) input))
-    print (sum (concatMap solver' input))
+    print (sum (concatMap (solver 1) input))
 
 findReflection :: Int {- ^ differences -} -> [String] -> [Int]
 findReflection target xs =
@@ -55,16 +55,8 @@ findReflection target xs =
   ]
 
 solver :: Int -> [String] -> [Int]
-solver target xs = findReflection target (transpose xs) ++ map (100*) (findReflection target xs)
-
-solver' :: [String] -> [Int]
-solver' xs =
-  take 1
-  [ new
-  | old <- solver 0 xs
-  , new <- solver 1 xs
-  , new /= old
-  ]
+solver target xs = findReflection target (transpose xs)
+                ++ map (100*) (findReflection target xs)
 
 val :: Char -> Char -> Int
 val x y = if x == y then 0 else 1
