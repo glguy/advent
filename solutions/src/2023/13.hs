@@ -43,19 +43,21 @@ import Data.List (inits, tails, transpose)
 main :: IO ()
 main =
  do input <- [format|2023 13 (%s%n)*&%n|]
-    print (sum (concatMap (solver 0) input))
-    print (sum (concatMap (solver 1) input))
+    print (sum (map (solver 0) input))
+    print (sum (map (solver 1) input))
 
 findReflection :: Int {- ^ differences -} -> [String] -> [Int]
 findReflection target xs =
   [ i
-  | (i,l,r) <- zip3 [0..] (inits xs) (tails xs)
+  | (i, l, r) <- zip3 [0..] (inits xs) (tails xs)
   , not (null l), not (null r)
-  , let val x y = if x == y then 0 else 1
-  , let differences x y = sum (zipWith val x y)
-  , target == sum (zipWith differences (reverse l) r)
+  , let diff x y = if x == y then 0 else 1
+  , target == sum2 (sum2 diff) (reverse l) r
   ]
 
-solver :: Int -> [String] -> [Int]
-solver target xs = findReflection target (transpose xs)
-                ++ map (100*) (findReflection target xs)
+sum2 :: Num c => (a -> b -> c) -> [a] -> [b] -> c
+sum2 f xs ys = sum (zipWith f xs ys)
+
+solver :: Int -> [String] -> Int
+solver n xs =
+  head (findReflection n (transpose xs) ++ map (100 *) (findReflection n xs))
