@@ -1049,3 +1049,8 @@ executable sln_2023_12
 executable sln_2023_13
   import:              day
   main-is:             2023/13.hs
+
+executable sln_2023_14
+  import:              day
+  main-is:             2023/14.hs
+  build-depends:       containers
