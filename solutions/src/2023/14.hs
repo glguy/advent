@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, NumericUnderscores, ImportQualifiedPost #-}
+{-# Language NumericUnderscores, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 14 solution
@@ -28,10 +28,9 @@ O.#..O.#.#
 -}
 module Main (main) where
 
-import Data.Map qualified as Map
+import Advent (getInputLines, times)
 import Data.List (elemIndices, transpose)
-
-import Advent (getInputLines)
+import Data.Map qualified as Map
 
 -- |
 --
@@ -40,11 +39,11 @@ import Advent (getInputLines)
 -- 96105
 main :: IO ()
 main =
- do input <- getInputLines 2023 14
+ do input <- transpose <$> getInputLines 2023 14
 
-    print (load (north input))
+    print (load (map shift input))
 
-    let process = east . south . west . north
+    let process = times 4 (transpose . map (reverse . shift))
         outs = iterate process input
         (start, next) = findCycle outs
         i = start + (1_000_000_000 - start) `rem` (next - start)
@@ -52,18 +51,11 @@ main =
 
 -- | Compute the load on the north support beams
 load :: [String] -> Int
-load = sum . map weight . transpose
+load = sum . map weight
   where
     weight xs = sum [n - w | w <- elemIndices 'O' xs]
       where
         n = length xs
-
--- | Shift the rocks
-north, south, east, west :: [String] -> [String]
-west  = map shift
-east  = map (reverse . shift . reverse)
-north = transpose . west . transpose
-south = transpose . east . transpose
 
 -- | Shift the rocks on a single row to the left
 shift :: String -> String
@@ -76,11 +68,11 @@ shift = go 0
 
 -- | Report the first and second index a duplicate element
 -- is found in the list.
-findCycle :: Ord a => [a] -> (Int,Int)
+findCycle :: Ord a => [a] -> (Int, Int)
 findCycle = go Map.empty 0
   where
     go _ _ [] = error "no cycle"
     go seen i (x:xs) =
       case Map.lookup x seen of
-        Nothing -> go (Map.insert x i seen)(i+1) xs
-        Just j -> (j,i)
+        Nothing -> go (Map.insert x i seen) (i + 1) xs
+        Just j  -> (j, i)
