@@ -16,7 +16,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (format)
-import Data.Array ( accumArray, assocs )
+import Data.Array (accumArray, assocs)
 import Data.Char (ord)
 
 -- |
@@ -27,7 +27,7 @@ import Data.Char (ord)
 main :: IO ()
 main =
  do input <- [format|2023 15 (%a+(-|=%d))!&,%n|]
-    print (sum (map (hasher . fst) input))
+    print (sum [hasher raw | (raw, _) <- input])
 
     let boxes = accumArray apply [] (0, 255)
                   [(hasher lbl, (lbl, cmd)) | (_, (lbl, cmd)) <- input]
@@ -37,7 +37,7 @@ main =
                , (i, (_, len)) <- zip [1..] xs])
 
 hasher :: String -> Int
-hasher = foldl (\acc x -> 17 * (ord x + acc) `rem` 256) 0
+hasher str = foldl (\acc x -> 17 * (ord x + acc)) 0 str `rem` 256
 
 apply :: [(String, Int)] -> (String, Maybe Int) -> [(String, Int)]
 apply prev (lbl, Nothing) = filter ((lbl /=) . fst) prev

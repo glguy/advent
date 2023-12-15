@@ -43,8 +43,8 @@ main =
 
     print (load (map shift input))
 
-    let process = times 4 (transpose . map (reverse . shift))
-        outs = iterate process input
+    let process       = times 4 (transpose . map (reverse . shift))
+        outs          = iterate process input
         (start, next) = findCycle outs
         i = start + (1_000_000_000 - start) `rem` (next - start)
     print (load (outs !! i))
