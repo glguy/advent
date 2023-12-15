@@ -34,9 +34,9 @@ import Advent (format, binSearchLargest)
 -- 33875953
 main :: IO ()
 main =
- do (times, distances) <- [format|2023 6 Time:( +%s)*%nDistance:( +%s)*%n|]
-    let input1 = zip (map read times) (map read distances)
-        input2 = (read (concat times), read (concat distances))
+ do (times, distances) <- [format|2023 6 Time:( +%d!)*%nDistance:( +%d!)*%n|]
+    let input1 = zip (map snd times) (map snd distances)
+        input2 = (read (concatMap fst times), read (concatMap fst distances))
     print (product (map ways input1))
     print (ways input2)
 
