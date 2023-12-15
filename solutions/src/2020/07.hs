@@ -22,8 +22,8 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Maybe (fromMaybe)
 
-type Bag = String
-type Rule = (String, Maybe [(Integer, String)])
+type Bag = (String, String)
+type Rule = (Bag, Maybe [(Integer, Bag)])
 
 ------------------------------------------------------------------------
 
@@ -33,9 +33,9 @@ type Rule = (String, Maybe [(Integer, String)])
 -- 7867
 main :: IO ()
 main =
-  do rules <- [format|2020 7 ((%s %s)! bags contain (no other bags|(%lu (%s %s)! bag(|s))&(, )).%n)*|]
+  do rules <- [format|2020 7 ((%s %s) bags contain (no other bags|(%lu (%s %s) bag(|s))&(, )).%n)*|]
      let tc = transClosBags rules
-         k = "shiny gold"
+         k = ("shiny", "gold")
      print (countBy (Map.member k) tc)
      print (sum (tc Map.! k))
 

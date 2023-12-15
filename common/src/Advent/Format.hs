@@ -122,7 +122,9 @@ toReadP s =
   case s of
     Literal xs -> [| void (string xs) |]
 
-    Gather p -> [| fst <$> gather $(toReadP p) |]
+    Gather p
+      | interesting p -> [|         gather $(toReadP p) |]
+      | otherwise     -> [| fst <$> gather $(toReadP p) |]
 
     Named n
       | isUpper (head n) -> enumParser n
@@ -191,7 +193,9 @@ toType fmt =
   case fmt of
     Literal _ -> [t| () |]
 
-    Gather _ -> [t| String |]
+    Gather x
+      | interesting x -> [t| (String, $(toType x)) |]
+      | otherwise     -> [t| String |]
 
     Named n
       | isUpper (head n) -> conT (mkName n)

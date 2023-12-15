@@ -26,17 +26,15 @@ import Data.Char (ord)
 -- 261505
 main :: IO ()
 main =
- do input <- [format|2023 15 (%a+(-|=%d))&,%n|]
-    print (sum (map (hasher . unparse) input))
+ do input <- [format|2023 15 (%a+(-|=%d))!&,%n|]
+    print (sum (map (hasher . fst) input))
 
-    let boxes = accumArray apply [] (0, 255) [(hasher lbl, (lbl, cmd)) | (lbl, cmd) <- input]
-    print (sum [ (1+box) * i * len | (box, xs) <- assocs boxes, (i, (_ ,len)) <- zip [1..] xs ])
+    let boxes = accumArray apply [] (0, 255)
+                  [(hasher lbl, (lbl, cmd)) | (_, (lbl, cmd)) <- input]
 
--- I don't have a nice way to both get the input unparsed and also parsed
--- without doing a second pass of parsing - this seemed easier
-unparse :: (String, Maybe Int) -> String
-unparse (lbl, Nothing) = lbl ++ "-"
-unparse (lbl, Just n ) = lbl ++ "=" ++ show n
+    print (sum [ (1+box) * i * len
+               | (box, xs)     <- assocs boxes
+               , (i, (_, len)) <- zip [1..] xs])
 
 hasher :: String -> Int
 hasher = foldl (\acc x -> 17 * (ord x + acc) `rem` 256) 0
@@ -45,6 +43,6 @@ apply :: [(String, Int)] -> (String, Maybe Int) -> [(String, Int)]
 apply prev (lbl, Nothing) = filter ((lbl /=) . fst) prev
 apply prev (lbl, Just n ) = go prev
   where
-    go [] = [(lbl, n)]
     go ((k,_) : xs) | lbl == k = (lbl, n) : xs
-    go (x : xs) = x : go xs
+    go (x     : xs)            = x : go xs
+    go []                      = [(lbl, n)]
