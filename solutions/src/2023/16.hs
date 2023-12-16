@@ -36,7 +36,8 @@ module Main (main) where
 
 import Advent (getInputArray, arrIx, ordNub)
 import Advent.Coord (east, invert, invert', north, origin, south, west, coordCol, coordRow, Coord(C))
-import Advent.Search (bfs)
+import Advent.Search (bfsOn)
+import Control.Parallel.Strategies (parMap, rpar)
 import Data.Array.Unboxed (inRange, bounds, UArray )
 
 -- | Parse the input grid and print answers to both parts.
@@ -48,11 +49,16 @@ main :: IO ()
 main =
  do input <- getInputArray 2023 16
     print (solve input (origin, east))
-    print (maximum (map (solve input) (edges (bounds input))))
+    print (maximum (parMap rpar (solve input) (edges (bounds input))))
 
 -- | Count the number of energized tiles given an input beam.
 solve :: UArray Coord Char -> (Coord, Coord) -> Int
-solve input = length . ordNub . map fst . bfs (step input)
+solve input = length . ordNub . map fst . bfsOn rep (step input)
+
+-- | Use a more compact representative of the state space to speed
+-- up the visited test. This saves about a 3rd of the runtime as without.
+rep :: (Coord, Coord) -> Int
+rep (C y x, C dy dx) = y * 4096 + x * 16 + (dy+1) * 2 + (dx+1)
 
 -- | Find all the incoming light possibilities for part 2
 edges :: (Coord, Coord) -> [(Coord, Coord)]
