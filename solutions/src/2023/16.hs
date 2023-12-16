@@ -1,4 +1,5 @@
 {-# Language QuasiQuotes, ImportQualifiedPost, BangPatterns, LambdaCase #-}
+{-# OPTIONS_GHC -funbox-strict-fields #-} -- makes Photon more efficient
 {-|
 Module      : Main
 Description : Day 16 solution
@@ -8,7 +9,7 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/16>
 
-This is a pretty straight forward breadth-first traversal of the 
+This is a pretty straight forward breadth-first traversal of the
 state space. I represent nodes of the "graph" being searched
 as pairs of a location and a direction vector. At each step
 the location is used to look up the tile and the direction
@@ -41,13 +42,14 @@ Optimizations:
 -}
 module Main (main) where
 
-import Advent (getInputArray, arrIx, countBy)
+import Advent (getInputArray, countBy)
 import Advent.Coord (east, invert, invert', north, origin, south, west, coordCol, coordRow, Coord(C))
 import Control.Parallel.Strategies (parMap, rpar)
 import Data.Array.Unboxed (inRange, bounds, UArray, (!), accumArray, elems)
 import Data.IntSet qualified as IntSet
 
-type Photon = (Coord, Coord) -- location, velocity
+-- | A single photon's location and velocity.
+data Photon = P !Coord !Coord -- ^ location velocity
 
 -- | Parse the input grid and print answers to both parts.
 --
@@ -57,7 +59,7 @@ type Photon = (Coord, Coord) -- location, velocity
 main :: IO ()
 main =
  do input <- getInputArray 2023 16
-    print (solve input (origin, east))
+    print (solve input (P origin east))
     print (maximum (parMap rpar (solve input) (edges (bounds input))))
 
 -- | Count the number of energized tiles given an input beam.
@@ -65,35 +67,38 @@ solve :: UArray Coord Char -> Photon -> Int
 solve input = coverage (bounds input) . dfsOn isSplitter photonRep (step input)
   where
     -- branching only happens at splitters, so only bother avoiding
-    -- duplication of work when leaving them
-    isSplitter (here, _) = case input!here of '-' -> True; '|' -> True; _ -> False
+    -- duplication of work when visiting them
+    isSplitter (P here _) =
+      case input ! here of
+        '-' -> True
+        '|' -> True
+        _   -> False
 
 -- | Use a more compact representative of the state space to speed
 -- up the visited test. This saves about a 3rd of the runtime as without.
 photonRep :: Photon -> Int
-photonRep (C y x, C dy dx) = y * 4096 + x * 16 + (dy+1) * 2 + (dx+1)
+photonRep (P (C y x) (C dy dx)) = y * 4096 + x * 16 + (dy+1) * 4 + (dx+1)
 
 -- | Find all the incoming light possibilities for part 2
 edges :: (Coord, Coord) {- ^ bounds -} -> [Photon]
 edges (C y1 x1, C y2 x2) =
-  [(C y1 x, south) | x <- [x1..x2]] ++
-  [(C y2 x, north) | x <- [x1..x2]] ++
-  [(C y x1, east ) | y <- [y1..y2]] ++
-  [(C y x2, west ) | y <- [y1..y2]]
+  [P (C y1 x) south | x <- [x1..x2]] ++
+  [P (C y2 x) north | x <- [x1..x2]] ++
+  [P (C y x1) east  | y <- [y1..y2]] ++
+  [P (C y x2) west  | y <- [y1..y2]]
 
--- | Advance a light beam once cell forward and track its
--- resulting outgoing beams.
+-- | Advance a photon once cell forward and track its
+-- resulting outgoing photons.
 step :: UArray Coord Char -> Photon -> [Photon]
-step input (here, dir) =
-  [ (here', dir')
+step input (P here dir) =
+  [ P here' dir'
   | dir' <-
-    case arrIx input here of
-      Nothing                      -> []
-      Just '\\'                    -> [invert dir]
-      Just '/'                     -> [invert' dir]
-      Just '|' | coordRow dir == 0 -> [north, south]
-      Just '-' | coordCol dir == 0 -> [east, west]
-      _                            -> [dir]
+      case input ! here of
+        '\\'                    -> [invert dir]
+        '/'                     -> [invert' dir]
+        '|' | coordRow dir == 0 -> [north, south]
+        '-' | coordCol dir == 0 -> [east, west]
+        _                       -> [dir]
   , let here' = here + dir'
   , inRange (bounds input) here'
   ]
@@ -121,4 +126,4 @@ coverage :: (Coord, Coord) {- ^ bounds -} -> [Photon] -> Int
 coverage bnds path = countBy id (elems a)
   where
     a :: UArray Coord Bool
-    a = accumArray (\_ _ -> True) False bnds [(p, ()) | (p, _v) <- path]
+    a = accumArray (\_ _ -> True) False bnds [(p, ()) | P p _v <- path]
