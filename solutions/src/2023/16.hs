@@ -35,7 +35,7 @@ vector is used to compute reflections and splits.
 module Main (main) where
 
 import Advent (getInputArray, arrIx, ordNub)
-import Advent.Coord (east, invert, invert', north, origin, south, west, Coord(C))
+import Advent.Coord (east, invert, invert', north, origin, south, west, coordCol, coordRow, Coord(C))
 import Advent.Search (bfs)
 import Data.Array.Unboxed (inRange, bounds, UArray )
 
@@ -69,14 +69,12 @@ step input (here, dir) =
   [ (here', dir')
   | dir' <-
     case arrIx input here of
-      Just '\\'                           -> [invert dir]
-      Just '/'                            -> [invert' dir]
-      Just '.'                            -> [dir]
-      Just '|' | dir `elem` [north,south] -> [dir]
-               | otherwise                -> [north,south]
-      Just '-' | dir `elem` [east,west]   -> [dir]
-               | otherwise                -> [east, west]
-      _                                   -> []
+      Nothing                      -> []
+      Just '\\'                    -> [invert dir]
+      Just '/'                     -> [invert' dir]
+      Just '|' | coordRow dir == 0 -> [north, south]
+      Just '-' | coordCol dir == 0 -> [east, west]
+      _                            -> [dir]
   , let here' = here + dir'
   , inRange (bounds input) here'
   ]
