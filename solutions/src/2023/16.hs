@@ -107,11 +107,12 @@ dfsOn p rep next start = loop IntSet.empty [start]
     loop !seen = \case
       [] -> []
       x : q
-        | IntSet.member r seen ->     loop seen  q
-        | otherwise            -> x : loop seen' q'
+        | slow, IntSet.member r seen ->     loop seen  q
+        | otherwise                  -> x : loop seen' q'
         where
+          slow  = p x
           r     = rep x
-          seen' = if p x then IntSet.insert r seen else seen
+          seen' = if slow then IntSet.insert r seen else seen
           q'    = next x ++ q
 
 -- A more efficient way to count the number of unique coordinates
