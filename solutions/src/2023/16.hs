@@ -66,7 +66,7 @@ solve input = coverage (bounds input) . dfsOn isSplitter photonRep (step input)
   where
     -- branching only happens at splitters, so only bother avoiding
     -- duplication of work when leaving them
-    isSplitter (here, _) = input!here `elem` "-|"
+    isSplitter (here, _) = case input!here of '-' -> True; '|' -> True; _ -> False
 
 -- | Use a more compact representative of the state space to speed
 -- up the visited test. This saves about a 3rd of the runtime as without.
