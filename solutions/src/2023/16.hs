@@ -8,6 +8,12 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/16>
 
+This is a pretty straight forward depth-first traversal of the 
+state space. I represent nodes of the "graph" being searched
+as pairs of a location and a direction vector. At each step
+the location is used to look up the tile and the direction
+vector is used to compute reflections and splits.
+
 >>> :{
 :main +
 ".|...\\....
