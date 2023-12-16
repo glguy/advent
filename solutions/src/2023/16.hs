@@ -8,7 +8,7 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/16>
 
-This is a pretty straight forward depth-first traversal of the 
+This is a pretty straight forward breadth-first traversal of the 
 state space. I represent nodes of the "graph" being searched
 as pairs of a location and a direction vector. At each step
 the location is used to look up the tile and the direction
@@ -36,7 +36,7 @@ module Main (main) where
 
 import Advent (getInputArray, arrIx, ordNub)
 import Advent.Coord (east, invert, invert', north, origin, south, west, Coord(C))
-import Advent.Search (dfs)
+import Advent.Search (bfs)
 import Data.Array.Unboxed (inRange, bounds, UArray )
 
 -- | Parse the input grid and print answers to both parts.
@@ -52,7 +52,7 @@ main =
 
 -- | Count the number of energized tiles given an input beam.
 solve :: UArray Coord Char -> (Coord, Coord) -> Int
-solve input = length . ordNub . map fst . dfs (step input)
+solve input = length . ordNub . map fst . bfs (step input)
 
 -- | Find all the incoming light possibilities for part 2
 edges :: (Coord, Coord) -> [(Coord, Coord)]
