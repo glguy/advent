@@ -61,7 +61,7 @@ import Data.Char (digitToInt)
 main :: IO ()
 main =
  do input <- amap digitToInt <$> getInputArray 2023 17
-    print (solve 0  3 input)
+    print (solve 1  3 input)
     print (solve 4 10 input)
 
 solve :: Int -> Int -> UArray Coord Int -> Int
@@ -84,8 +84,9 @@ step lo hi input (S here dir dist) =
       astepCost      = cost,
       astepHeuristic = 0}
   | (dir', dist') <-
-    [(dir, dist + 1) | dist < hi] ++
-    if dist < lo then [] else [(turnLeft dir, 1), (turnRight dir, 1)]
+      [(dir, dist + 1)    | dist <  hi] ++
+      [(turnLeft  dir, 1) | dist >= lo] ++
+      [(turnRight dir, 1) | dist >= lo]
   , let here' = here + dir'
   , cost <- arrIx input here'
   ]
