@@ -1,4 +1,5 @@
 {-# Language QuasiQuotes #-}
+{-# OPTIONS_GHC -funbox-strict-fields #-}
 {-|
 Module      : Main
 Description : Day 17 solution
@@ -45,7 +46,7 @@ module Main where
 
 import Advent (getInputArray, arrIx)
 import Advent.Coord (east, south, turnLeft, turnRight, Coord)
-import Advent.Search (astarOnN, AStep(..))
+import Advent.Search (astarN, AStep(..))
 import Data.Array.Unboxed (amap, bounds, UArray)
 import Data.Char (digitToInt)
 
@@ -62,23 +63,26 @@ main =
 
 solve :: Int -> Int -> UArray Coord Int -> Int
 solve lo hi input =
-  head [cost | ((loc, _, dist), cost) <- astarOnN id (step lo hi input) begin, loc == end, dist >= lo]
+  head [cost | (S loc _ dist, cost) <- astarN (step lo hi input) begin
+             , loc == end -- at the end
+             , lo <= dist -- able to stop
+             ]
   where
     (start, end) = bounds input
-    begin = [(start, east, 0),(start, south, 0)]
+    begin = [S start east 0, S start south 0]
 
-type S = (Coord, Coord, Int) -- location, direction, distance in direction
+data S = S !Coord !Coord !Int -- ^ location, direction, distance
+  deriving (Eq, Ord)
 
 step :: Int -> Int -> UArray Coord Int -> S -> [AStep S]
-step lo hi input (here, dir, fuel) =
+step lo hi input (S here dir dist) =
   [ AStep {
-      astepCost      = val,
-      astepHeuristic = 0,
-      astepNext      = (next, dir', fuel')
-    }
-  | dir' <- if fuel < lo then [dir] else [dir, turnLeft dir, turnRight dir]
+      astepNext      = S next dir' dist',
+      astepCost      = cost,
+      astepHeuristic = 0}
+  | (dir', dist') <-
+    [(dir, dist + 1) | dist < hi] ++
+    if dist < lo then [] else [(turnLeft dir, 1), (turnRight dir, 1)]
   , let next = here + dir'
-  , val <- arrIx input next
-  , let fuel' = if dir == dir' then fuel + 1 else 1
-  , fuel' <= hi
+  , cost <- arrIx input next
   ]
