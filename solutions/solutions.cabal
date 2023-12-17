@@ -1065,3 +1065,8 @@ executable sln_2023_16
   main-is:             2023/16.hs
   build-depends:       array, parallel, containers
   ghc-options:         -threaded
+
+executable sln_2023_17
+  import:              day
+  main-is:             2023/17.hs
+  build-depends:       array
