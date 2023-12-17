@@ -9,6 +9,9 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/17>
 
+Shortest-path graph search where the graph states are the triple of
+a location, direction, and distance traveled in that direction.
+
 >>> :{
 :main +
 "2413432311323
@@ -24,7 +27,7 @@ Maintainer  : emertens@gmail.com
 1224686865563
 2546548887735
 4322674655533
-" 
+"
 :}
 102
 94
@@ -77,12 +80,12 @@ data S = S !Coord !Coord !Int -- ^ location, direction, distance
 step :: Int -> Int -> UArray Coord Int -> S -> [AStep S]
 step lo hi input (S here dir dist) =
   [ AStep {
-      astepNext      = S next dir' dist',
+      astepNext      = S here' dir' dist',
       astepCost      = cost,
       astepHeuristic = 0}
   | (dir', dist') <-
     [(dir, dist + 1) | dist < hi] ++
     if dist < lo then [] else [(turnLeft dir, 1), (turnRight dir, 1)]
-  , let next = here + dir'
-  , cost <- arrIx input next
+  , let here' = here + dir'
+  , cost <- arrIx input here'
   ]
