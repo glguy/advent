@@ -58,6 +58,8 @@ main =
     print (area [scaleCoord n ([east, south, west, north] !! d) | (_,_,x) <- input, let (n,d) = x `quotRem` 16])
 
 -- | Computes the area of a path including the 1x1 square of the boundary.
+-- The path is given as a list of cardinal direction movement vectors that
+-- make up the trench instructions.
 area :: [Coord] -> Int
 area input = abs (polyareaRect path) + perimeter `quot` 2 + 1
   where

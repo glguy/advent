@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, BangPatterns, LambdaCase #-}
+{-# Language ImportQualifiedPost, BangPatterns, LambdaCase #-}
 {-# OPTIONS_GHC -funbox-strict-fields #-} -- makes Photon more efficient
 {-|
 Module      : Main
@@ -9,7 +9,7 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/16>
 
-This is a pretty straight forward breadth-first traversal of the
+This is a pretty straight forward graph traversal of the
 state space. I represent nodes of the "graph" being searched
 as pairs of a location and a direction vector. At each step
 the location is used to look up the tile and the direction
