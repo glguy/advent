@@ -8,6 +8,21 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/10>
 
+This solution finds the contained area using
+<https://en.wikipedia.org/wiki/Shoelace_formula>.
+
+>>> :{
+:main +
+".....
+.S-7.
+.|.|.
+.L-J.
+.....
+"
+:}
+4
+1
+
 >>> :{
 :main +
 ".F----7F7F7F7F-7....
@@ -46,16 +61,10 @@ L7JLJL-JLJLJL--JLJ.L
 module Main (main) where
 
 import Advent (getInputMap)
-import Advent.Coord (cardinal, invert, invert', south, north, west, turnRight, Coord, drawPicture)
-import Advent.Search (dfsN, dfsOn)
-import Control.Monad (when)
-import Data.List (nub)
+import Advent.Coord (invert, invert', south, north, west, Coord(C))
+import Advent.Search (dfsOn)
 import Data.Map (Map)
 import Data.Map qualified as Map
-import Data.Maybe (isJust)
-import Data.Set (Set)
-import Data.Set qualified as Set
-import System.Environment (lookupEnv)
 
 -- | Parse the input and print out answers to both parts.
 --
@@ -66,52 +75,38 @@ main :: IO ()
 main =
  do input <- getInputMap 2023 10
     let (start, dir0) = pickStart input
-    let route = [(here,dir) | (dir,here) <- dfsOn snd (step input) (dir0, dir0+start)]
-
-    let pipe = Set.fromList (map fst route)
-    let containable = Map.keysSet input `Set.difference` pipe
-    let candidates = Set.fromList (concatMap (rightof input) route) `Set.difference` pipe
-    let contained = dfsN (openNeighbors containable) (Set.toList candidates)
-
-    print (length route `quot` 2)
-    print (length contained)
-
-    visualize <- isJust <$> lookupEnv "VISUALIZE"
-    when visualize
-     do putStr (drawPicture (fmap pretty input `Map.restrictKeys` pipe <>
-                             Map.fromSet (const '╳') (Set.fromList contained)))
-
-pretty :: Char -> Char
-pretty = \case
-  '7' -> '┐'; 'J' -> '┘'; 'F' -> '┌'; 'L' -> '└'; '-' -> '─'; '|' -> '│'; _ -> ' '
+        route = getLoop (map fst (iterate (step input) (start, dir0)))
+        perimeter = length route
+    print (perimeter `quot` 2)
+    print (abs (polyareaRect route) - perimeter `quot` 2 + 1)
 
 pickStart :: Map Coord Char -> (Coord, Coord)
 pickStart input = head $
   [ (k, dir)
   | (k, 'S') <- Map.assocs input
   , (dir, ok) <- [(south, "L|J"), (north, "F|7"), (west,"7-J")]
-  , let next = Map.findWithDefault '.' (k+dir) input
+  , let next = Map.findWithDefault '.' (k + dir) input
   , next `elem` ok
   ]
 
-openNeighbors :: Set Coord -> Coord -> [Coord]
-openNeighbors input x = [y | y <- cardinal x, Set.member y input]
+getLoop :: Eq a => [a] -> [a]
+getLoop (x:xs) = x : takeWhile (x /=) xs
 
-step :: Map Coord Char -> (Coord, Coord) -> [(Coord, Coord)]
-step inp (dir, here) =
-  [(dir', here + dir') | let dir' = pipeEffect (inp Map.! here) dir]
-
-rightof :: Map Coord Char -> (Coord, Coord) -> [Coord]
-rightof input (here, dir) =
-  nub [turnRight d + here | d <- [dir, pipeEffect (input Map.! here) dir]]
+step :: Map Coord Char -> (Coord, Coord) -> (Coord, Coord)
+step inp (here, dir) =
+  let here' = here + dir in
+  (here', pipeEffect (inp Map.! here') dir)
 
 pipeEffect :: Char -> Coord -> Coord
 pipeEffect = \case
-  'S' -> id
-  '-' -> id
-  '|' -> id
-  '7' -> invert
-  'L' -> invert
-  'J' -> invert'
-  'F' -> invert'
-  _   -> error "bad pipe character"
+  '-' -> id; '|' -> id
+  '7' -> invert ; 'L' -> invert
+  'J' -> invert'; 'F' -> invert'
+  c   -> error ("bad pipe character: " ++ show c)
+
+-- | Area of a polygon using Shoelace formula.
+polyareaRect :: [Coord] -> Int
+polyareaRect xs = f 0 (xs ++ take 1 xs)
+  where
+    f acc (C y1 x1 : cs@(C y2 x2 : _)) = f (acc + x1 * y2 - x2 * y1) cs
+    f acc _ = acc `quot` 2
