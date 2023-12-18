@@ -45,12 +45,8 @@ U 2 (#7a21e3)
 -}
 module Main (main) where
 
-import Advent (format, stageTH)
-import Advent.Box (coverBoxes, intersectBox, size, subtractBox, Box(Pt, Dim), Box')
+import Advent (format)
 import Advent.Coord (east, north, origin, scaleCoord, south, west, Coord(..), norm1)
-import Control.Monad (foldM)
-import Advent.Search (bfs)
-import Data.Maybe (isJust)
 import Numeric (readHex)
 
 -- | Parse the input and print the answers to both parts.
@@ -65,9 +61,9 @@ main =
     print (solve [scaleCoord (fst (head (readHex n))) (asUnitVec d) | (_,_,n,d) <- input])
 
 solve :: [Coord] -> Int
-solve input = polyareaRect path + perimeter `quot` 2 + 1
+solve input = abs (polyareaRect path) + perimeter `quot` 2 + 1
   where
-    path      = scanl1 (+) input
+    path      = scanl (+) origin input
     perimeter = sum [norm1 n | n <- input]
 
 asUnitVec :: Char -> Coord
@@ -78,9 +74,10 @@ asUnitVec = \case
   '3' -> north; 'U' -> north 
   _   -> error "bad direction digit"
 
--- | Area of a polygon using Shoelace formula.
+-- | Area of a polygon using Shoelace formula
+-- over a closed loop.
 polyareaRect :: [Coord] -> Int
-polyareaRect xs = f 0 (xs ++ take 1 xs)
+polyareaRect = f 0
   where
     f acc (C y1 x1 : xs@(C y2 x2 : _)) = f (acc + x1 * y2 - x2 * y1) xs
     f acc _ = acc `quot` 2
