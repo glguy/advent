@@ -11,15 +11,12 @@ Maintainer  : emertens@gmail.com
 Computes the area of the described polynomial using the
 <https://en.wikipedia.org/wiki/Shoelace_formula>.
 
-The extra perimeter factor accounts for the path that
-is being described as having its own area. Each unit of
-the path is a 1x1 square. There will always been as many
-top and left perimeter edges as bottom and right edges,
-but only (for example) the top and left edges will be
-contained in the polygon. Half the perimeter accounts for
-the squares that hang off the bottom and right. An extra
-one unit accounts for either the bottom-left or top-right
-corner that gets excluded.
+The extra perimeter factor accounts for the path that is being described as
+having its own area. Each unit of the path is a 1x1 square. There will always
+been as many top and left perimeter edges as bottom and right edges, but only
+(for example) the top and left edges will be contained in the polygon. Half the
+perimeter accounts for the squares that hang off the bottom and right. An extra
+one unit accounts for the missed square at the bottom-right of the polygon.
 
 >>> :{
 :main +
@@ -58,15 +55,17 @@ import Numeric (readHex)
 main :: IO ()
 main =
  do input <- [format|2023 18 (%c %d %(#%s%c%)%n)*|]
-    print (solve [scaleCoord n (asUnitVec d)                        | (d,n,_,_) <- input])
-    print (solve [scaleCoord (fst (head (readHex n))) (asUnitVec d) | (_,_,n,d) <- input])
+    print (area [scaleCoord n (asUnitVec d)                        | (d,n,_,_) <- input])
+    print (area [scaleCoord (fst (head (readHex n))) (asUnitVec d) | (_,_,n,d) <- input])
 
-solve :: [Coord] -> Int
-solve input = abs (polyareaRect path) + perimeter `quot` 2 + 1
+-- | Computes the area of a path including the 1x1 square of the boundary.
+area :: [Coord] -> Int
+area input = abs (polyareaRect path) + perimeter `quot` 2 + 1
   where
     path      = scanl (+) origin input
     perimeter = sum [norm1 n | n <- input]
 
+-- | Convert the input character to a unit vector.
 asUnitVec :: Char -> Coord
 asUnitVec = \case 
   '0' -> east ; 'R' -> east
