@@ -21,8 +21,10 @@ import Advent.Format.Lexer (AlexPosn(..))
 '%s'                            { (_, TAnyWord)         }
 '%u'                            { (_, TUnsignedInt)     }
 '%d'                            { (_, TSignedInt)       }
+'%x'                            { (_, THexInt)          }
 '%lu'                           { (_, TUnsignedInteger) }
 '%ld'                           { (_, TSignedInteger)   }
+'%lx'                           { (_, THexInteger)      }
 LIT                             { (_, TLiteral $$)      }
 NAME                            { (_, TAt $$)           }
 
@@ -48,8 +50,10 @@ atom
   | '(' format error            {% Left (Unclosed $1)   }
   | '%u'                        { UnsignedInt           }
   | '%d'                        { SignedInt             }
+  | '%x'                        { HexInt                }
   | '%lu'                       { UnsignedInteger       }
   | '%ld'                       { SignedInteger         }
+  | '%lx'                       { HexInteger            }
   | '%s'                        { Word                  }
   | '%c'                        { Char                  }
   | '%a'                        { Letter                }

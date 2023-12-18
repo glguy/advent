@@ -32,8 +32,10 @@ Patterns:
 
     * @%u@ unsigned integer as 'Int'
     * @%d@ signed integer as 'Int'
+    * @%x@ unsigned hexadecimal as 'Int'
     * @%lu@ unsigned integer as 'Integer'
     * @%ld@ signed integer as 'Integer'
+    * @%lx@ unsigned hexadecimal as 'Integer'
     * @%s@ non-empty list of non-space characters as 'String'
     * @%c@ single, non-newline character as 'Char'
     * @%a@ single ASCII letter as 'Char'
@@ -61,10 +63,11 @@ import Advent.Format.Parser (parseFormat, ParseError(..))
 import Advent.Format.Types
 import Control.Applicative ((<|>), some)
 import Control.Monad ((<=<), void)
-import Data.Char (isDigit, isSpace, isUpper, isAsciiLower, isAsciiUpper)
-import Data.Maybe ( listToMaybe )
+import Data.Char (isDigit, isSpace, isUpper, isAsciiLower, isAsciiUpper, isHexDigit)
+import Data.Maybe (listToMaybe)
 import Language.Haskell.TH
 import Language.Haskell.TH.Quote (QuasiQuoter(..))
+import Numeric (readHex)
 import Text.ParserCombinators.ReadP
 
 parse :: String -> Q Format
@@ -135,6 +138,9 @@ toReadP s =
     UnsignedInt     -> [| (read :: String -> Int    ) <$>                                      munch1 isDigit  |]
     SignedInt       -> [| (read :: String -> Int    ) <$> ((++) <$> option "" (string "-") <*> munch1 isDigit) |]
 
+    HexInteger      -> [| (fst . head . readHex :: String -> Integer) <$> munch1 isHexDigit |]
+    HexInt          -> [| (fst . head . readHex :: String -> Int    ) <$> munch1 isHexDigit |]
+
     Char      -> [| satisfy ('\n' /=) |]
     Letter    -> [| satisfy (\x -> isAsciiLower x || isAsciiUpper x) |]
     Word      -> [| some (satisfy (not . isSpace)) |]
@@ -170,7 +176,7 @@ toReadP s =
         yi = interesting y
         xp = toReadP x
         yp = toReadP y
-    
+
     Group x -> toReadP x
 
     _ ->
@@ -203,8 +209,10 @@ toType fmt =
 
     UnsignedInteger -> [t| Integer |]
     SignedInteger   -> [t| Integer |]
+    HexInteger      -> [t| Integer |]
     UnsignedInt     -> [t| Int |]
     SignedInt       -> [t| Int |]
+    HexInt          -> [t| Int |]
 
     Char      -> [t| Char |]
     Letter    -> [t| Char |]
@@ -241,7 +249,7 @@ toType fmt =
         yi = interesting y
         xt = toType x
         yt = toType y
-    
+
     Group x -> toType x
 
     _ ->

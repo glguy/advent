@@ -15,8 +15,10 @@ data Token
   | TAnyWord
   | TUnsignedInteger
   | TSignedInteger
+  | THexInteger
   | TUnsignedInt
   | TSignedInt
+  | THexInt
   | TMany
   | TSome
   | TSepBy
@@ -44,8 +46,10 @@ data Format
   | Literal String
   | UnsignedInteger
   | SignedInteger
+  | HexInteger
   | UnsignedInt
   | SignedInt
+  | HexInt
   | Word
   | Char
   | Letter
@@ -63,8 +67,10 @@ interesting s =
     Empty               -> False
     UnsignedInteger     -> True
     SignedInteger       -> True
+    HexInteger          -> True
     UnsignedInt         -> True
     SignedInt           -> True
+    HexInt              -> True
     Word                -> True
     Char                -> True
     Letter              -> True
@@ -83,8 +89,10 @@ acceptsEmpty fmt =
     Empty               -> pure True
     UnsignedInteger     -> pure False
     SignedInteger       -> pure False
+    HexInteger          -> pure False
     UnsignedInt         -> pure False
     SignedInt           -> pure False
+    HexInt              -> pure False
     Word                -> pure False
     Char                -> pure False
     Letter              -> pure False
@@ -121,8 +129,10 @@ showFormat p fmt =
     Group x             -> showFormat 3 x
     UnsignedInteger     -> showString "%lu"
     SignedInteger       -> showString "%ld"
+    HexInteger          -> showString "%lx"
     UnsignedInt         -> showString "%u"
     SignedInt           -> showString "%d"
+    HexInt              -> showString "%x"
     Word                -> showString "%s"
     Char                -> showString "%c"
     Letter              -> showString "%a"
@@ -146,8 +156,10 @@ showToken t =
     TAnyWord          -> "%s"
     TUnsignedInteger  -> "%lu"
     TSignedInteger    -> "%ld"
+    THexInteger       -> "%lx"
     TUnsignedInt      -> "%u"
     TSignedInt        -> "%d"
+    THexInt           -> "%x"
     TMany             -> "*"
     TSome             -> "+"
     TSepBy            -> "&"

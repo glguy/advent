@@ -45,7 +45,6 @@ module Main (main) where
 import Advent (format)
 import Advent.Coord (east, north, origin, scaleCoord, south, west, Coord(..), norm1)
 import Data.List (tails)
-import Numeric (readHex)
 
 -- | Parse the input and print the answers to both parts.
 --
@@ -54,9 +53,9 @@ import Numeric (readHex)
 -- 96116995735219
 main :: IO ()
 main =
- do input <- [format|2023 18 (%c %d %(#%s%c%)%n)*|]
-    print (area [scaleCoord n (asUnitVec d)                        | (d,n,_,_) <- input])
-    print (area [scaleCoord (fst (head (readHex n))) (asUnitVec d) | (_,_,n,d) <- input])
+ do input <- [format|2023 18 (%c %d %(#%x%)%n)*|]
+    print (area [scaleCoord n (asUnitVec d) | (d,n,_) <- input])
+    print (area [scaleCoord n ([east, south, west, north] !! d) | (_,_,x) <- input, let (n,d) = x `quotRem` 16])
 
 -- | Computes the area of a path including the 1x1 square of the boundary.
 area :: [Coord] -> Int
@@ -68,10 +67,10 @@ area input = abs (polyareaRect path) + perimeter `quot` 2 + 1
 -- | Convert the input character to a unit vector.
 asUnitVec :: Char -> Coord
 asUnitVec = \case
-  '0' -> east ; 'R' -> east
-  '1' -> south; 'D' -> south
-  '2' -> west ; 'L' -> west
-  '3' -> north; 'U' -> north
+  'R' -> east
+  'D' -> south
+  'L' -> west
+  'U' -> north
   _   -> error "bad direction digit"
 
 -- | Area of a polygon using Shoelace formula

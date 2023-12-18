@@ -15,8 +15,10 @@ tokens :-
 "%t"    { token_ (TLiteral '\t')        }
 "%u"    { token_ TUnsignedInt           }
 "%d"    { token_ TSignedInt             }
+"%x"    { token_ THexInt                }
 "%lu"   { token_ TUnsignedInteger       }
 "%ld"   { token_ TSignedInteger         }
+"%lx"   { token_ THexInteger            }
 "*"     { token_ TMany                  }
 "+"     { token_ TSome                  }
 "&"     { token_ TSepBy                 }
