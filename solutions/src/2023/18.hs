@@ -35,6 +35,7 @@ module Main (main) where
 import Advent (format, stageTH)
 import Advent.Box (coverBoxes, intersectBox, size, subtractBox, Box(Pt, Dim), Box')
 import Advent.Coord (east, north, origin, scaleCoord, south, west, Coord(..))
+import Control.Monad (foldM)
 import Advent.Search (bfs)
 import Data.Maybe (isJust)
 import Numeric (readHex)
@@ -62,7 +63,7 @@ solve input = sum (map size ditches) + sum (map size reachable)
     ditches = makePath origin input
     everything = coverBoxes ditches
 
-    noDitch = foldl (\remain next -> concatMap (subtractBox next) remain) [everything] ditches
+    noDitch = foldM (flip subtractBox) everything ditches
     neighbors region = [x | x <- noDitch, touch x region]
     reachable = drop 1 (bfs neighbors (Dim 1 2 (Dim 1 2 Pt)))
 
