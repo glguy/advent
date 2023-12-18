@@ -1070,3 +1070,7 @@ executable sln_2023_17
   import:              day
   main-is:             2023/17.hs
   build-depends:       array
+
+executable sln_2023_18
+  import:              day
+  main-is:             2023/18.hs
