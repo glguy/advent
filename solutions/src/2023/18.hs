@@ -47,6 +47,7 @@ module Main (main) where
 
 import Advent (format)
 import Advent.Coord (east, north, origin, scaleCoord, south, west, Coord(..), norm1)
+import Data.List (tails)
 import Numeric (readHex)
 
 -- | Parse the input and print the answers to both parts.
@@ -77,7 +78,4 @@ asUnitVec = \case
 -- | Area of a polygon using Shoelace formula
 -- over a closed loop.
 polyareaRect :: [Coord] -> Int
-polyareaRect = f 0
-  where
-    f acc (C y1 x1 : xs@(C y2 x2 : _)) = f (acc + x1 * y2 - x2 * y1) xs
-    f acc _ = acc `quot` 2
+polyareaRect xs = sum [x1 * y2 - x2 * y1 | C y1 x1 : C y2 x2 : _ <- tails xs] `quot` 2
