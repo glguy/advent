@@ -67,11 +67,11 @@ area input = abs (polyareaRect path) + perimeter `quot` 2 + 1
 
 -- | Convert the input character to a unit vector.
 asUnitVec :: Char -> Coord
-asUnitVec = \case 
+asUnitVec = \case
   '0' -> east ; 'R' -> east
-  '1' -> south; 'D' -> south 
-  '2' -> west ; 'L' -> west 
-  '3' -> north; 'U' -> north 
+  '1' -> south; 'D' -> south
+  '2' -> west ; 'L' -> west
+  '3' -> north; 'U' -> north
   _   -> error "bad direction digit"
 
 -- | Area of a polygon using Shoelace formula
