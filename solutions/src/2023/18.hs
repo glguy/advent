@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, DataKinds, TemplateHaskell, ImportQualifiedPost, GADTs #-}
+{-# Language QuasiQuotes, LambdaCase #-}
 {-|
 Module      : Main
 Description : Day 18 solution
@@ -7,6 +7,19 @@ License     : ISC
 Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2023/day/18>
+
+Computes the area of the described polynomial using the
+<https://en.wikipedia.org/wiki/Shoelace_formula>.
+
+The extra perimeter factor accounts for the path that
+is being described as having its own area. Each unit of
+the path is a 1x1 square. There will always been as many
+top and left perimeter edges as bottom and right edges,
+but only (for example) the top and left edges will be
+contained in the polygon. Half the perimeter accounts for
+the squares that hang off the bottom and right. An extra
+one unit accounts for either the bottom-left or top-right
+corner that gets excluded.
 
 >>> :{
 :main +
@@ -34,62 +47,40 @@ module Main (main) where
 
 import Advent (format, stageTH)
 import Advent.Box (coverBoxes, intersectBox, size, subtractBox, Box(Pt, Dim), Box')
-import Advent.Coord (east, north, origin, scaleCoord, south, west, Coord(..))
+import Advent.Coord (east, north, origin, scaleCoord, south, west, Coord(..), norm1)
 import Control.Monad (foldM)
 import Advent.Search (bfs)
 import Data.Maybe (isJust)
 import Numeric (readHex)
 
-data D = DD | DU | DL | DR
-
-stageTH
-
--- |
+-- | Parse the input and print the answers to both parts.
 --
 -- >>> :main
 -- 41019
 -- 96116995735219
 main :: IO ()
 main =
- do input <- [format|2023 18 (@D %d %(#%s%c%)%n)*|]
-    let part1 = [(n, d) | (d,n,_,_) <- input]
-    let part2 = [(fst (head (readHex str)), dir2 d) | (_,_,str,d) <- input]
-    print (solve part1)
-    print (solve part2)
-    
-solve :: [(Int, D)] -> Int
-solve input = sum (map size ditches) + sum (map size reachable)
+ do input <- [format|2023 18 (%c %d %(#%s%c%)%n)*|]
+    print (solve [scaleCoord n (asUnitVec d)                        | (d,n,_,_) <- input])
+    print (solve [scaleCoord (fst (head (readHex n))) (asUnitVec d) | (_,_,n,d) <- input])
+
+solve :: [Coord] -> Int
+solve input = polyareaRect path + perimeter `quot` 2 + 1
   where
-    ditches = makePath origin input
-    everything = coverBoxes ditches
+    path      = scanl1 (+) input
+    perimeter = sum [norm1 n | n <- input]
 
-    noDitch = foldM (flip subtractBox) everything ditches
-    neighbors region = [x | x <- noDitch, touch x region]
-    reachable = drop 1 (bfs neighbors (Dim 1 2 (Dim 1 2 Pt)))
+asUnitVec :: Char -> Coord
+asUnitVec = \case 
+  '0' -> east ; 'R' -> east
+  '1' -> south; 'D' -> south 
+  '2' -> west ; 'L' -> west 
+  '3' -> north; 'U' -> north 
+  _   -> error "bad direction digit"
 
-touch :: Box' 2 -> Box' 2 -> Bool
-touch (Dim y1 y2 (Dim x1 x2 Pt)) other =
-  isJust (intersectBox (Dim (y1-1) (y2+1) (Dim (x1-1) (x2+1) Pt)) other)
-
-dir2 :: Char -> D
-dir2 '0' = DR
-dir2 '1' = DD
-dir2 '2' = DL
-dir2 '3' = DU
-dir2 _   = error "bad direction digit"
-
-makePath :: Coord -> [(Int, D)] -> [Box' 2]
-makePath _ [] = []
-makePath here ((n, d) : xs) = toBox here n d : makePath (here + scaleCoord n (toVec d)) xs
-
-toVec :: D -> Coord
-toVec DD = south
-toVec DL = west
-toVec DR = east
-toVec DU = north
-
-toBox :: Coord -> Int -> D -> Box' 2
-toBox (C y x) n DD = Dim y (y + n) (Dim x (x + 1) Pt)
-toBox (C y x) n DR = Dim y (y + 1) (Dim x (x + n) Pt)
-toBox (C y x) n DU = Dim (y - n + 1) (y+1) (Dim x (x + 1) Pt)
-toBox (C y x) n DL = Dim y (y + 1) (Dim (x - n + 1) (x+1) Pt)
+-- | Area of a polygon using Shoelace formula.
+polyareaRect :: [Coord] -> Int
+polyareaRect xs = f 0 (xs ++ take 1 xs)
+  where
+    f acc (C y1 x1 : xs@(C y2 x2 : _)) = f (acc + x1 * y2 - x2 * y1) xs
+    f acc _ = acc `quot` 2
