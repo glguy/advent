@@ -81,8 +81,8 @@ accepted workflows xmas = 0 /= acceptedCount workflows (fmap one xmas)
 acceptedCount :: Map String ([Rule], String) -> Part Ints -> Int
 acceptedCount workflows = jump "in"
   where
-    jump "A"                             = product . fmap size
-    jump "R"                             = const 0
+    jump "A"                {- accept -} = product . fmap size
+    jump "R"                {- reject -} = const 0
     jump ((workflows Map.!) -> (rs, el)) = foldr rule (jump el) rs
 
     rule (var, O_GT, n, tgt) continue p =

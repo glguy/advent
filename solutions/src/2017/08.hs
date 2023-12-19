@@ -32,6 +32,7 @@ import Data.Maybe (fromMaybe)
 import Advent (format, maximumMaybe, stageTH)
 
 data C = Cinc | Cdec deriving Show
+data O = O_LT | O_GT | O_BANG_EQ | O_EQ_EQ | O_LT_EQ | O_GT_EQ
 
 stageTH
 
@@ -43,7 +44,7 @@ stageTH
 -- 5347
 main :: IO ()
 main =
- do input <- [format|2017 8 (%s @C %d if %s %s %d%n)*|]
+ do input <- [format|2017 8 (%s @C %d if %s @O %d%n)*|]
     let regmaxes = map (fromMaybe 0 . maximumMaybe) (scanl interpret mempty input)
     print (last regmaxes)
     print (maximum regmaxes)
@@ -51,7 +52,7 @@ main =
 -- | Given registers and a statement, compute the resulting registers.
 interpret ::
   Map String Int {- ^ incoming registers -} ->
-  (String, C, Int, String, String, Int) {- ^ statement -} ->
+  (String, C, Int, String, O, Int) {- ^ statement -} ->
   Map String Int {- ^ outgoing registers -}
 interpret regs (r1,op1,n1,r2,op2,n2)
   | toCompare op2 (Map.findWithDefault 0 r2 regs) n2 =
@@ -59,20 +60,15 @@ interpret regs (r1,op1,n1,r2,op2,n2)
   | otherwise = regs
 
 -- | Convert the string representation of a comparison to a function.
-toCompare ::
-  String               {- ^ name     -} ->
-  (Int -> Int -> Bool) {- ^ function -}
-toCompare "<"  = (< )
-toCompare ">"  = (> )
-toCompare ">=" = (>=)
-toCompare "<=" = (<=)
-toCompare "!=" = (/=)
-toCompare "==" = (==)
-toCompare name = error ("Bad comparison function: " ++ name)
+toCompare :: O -> Int -> Int -> Bool
+toCompare O_LT      = (< )
+toCompare O_GT      = (> )
+toCompare O_GT_EQ   = (>=)
+toCompare O_LT_EQ   = (<=)
+toCompare O_BANG_EQ = (/=)
+toCompare O_EQ_EQ   = (==)
 
 -- | Convert the string representation of an arithmetic operation to a function.
-toArith ::
-  C                   {- ^ name     -} ->
-  (Int -> Int -> Int) {- ^ function -}
+toArith :: C -> Int -> Int -> Int
 toArith Cinc = (+)
 toArith Cdec = subtract
