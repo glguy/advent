@@ -10,7 +10,11 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2023/day/17>
 
 Shortest-path graph search where the graph states are the triple of
-a location, direction, and distance traveled in that direction.
+a location, direction.
+
+Distance traveled doesn't need to be stored because all of the distances
+that can be traveled from a starting location are added to the work
+queue at the same time for each starting point.
 
 >>> :{
 :main +
@@ -48,7 +52,7 @@ a location, direction, and distance traveled in that direction.
 module Main where
 
 import Advent (getInputArray, arrIx)
-import Advent.Coord (east, south, turnLeft, turnRight, scaleCoord, Coord)
+import Advent.Coord (east, south, turnLeft, turnRight, Coord)
 import Advent.Search (astarN, AStep(..))
 import Data.Array.Unboxed (amap, bounds, UArray)
 import Data.Char (digitToInt)
@@ -79,10 +83,20 @@ data S = S !Coord !Coord -- ^ location, direction
 step :: Int -> Int -> UArray Coord Int -> S -> [AStep S]
 step lo hi input (S here dir) =
   [ AStep {
-      astepNext      = S (scaleCoord n dir' + here) dir',
+      astepNext      = S here' dir',
       astepCost      = cost,
       astepHeuristic = 0}
-  | dir' <- [turnLeft  dir, turnRight dir]
-  , n    <- [lo .. hi]
-  , cost <- sum <$> traverse (arrIx input) [here + scaleCoord d dir' | d <- [1..n] ]
+  | dir' <- [turnLeft dir, turnRight dir]
+  , (here', cost) <- take (hi - lo + 1) (drop (lo - 1) (costs input dir' here))
   ]
+
+-- lazy lists of the locations and costs to get there in order of distance
+-- starting at 1 away
+costs :: UArray Coord Int -> Coord -> Coord -> [(Coord, Int)]
+costs input v = go 0
+  where
+    go acc l =
+     do let l' = l + v
+        c <- arrIx input l'
+        let acc' = acc + c
+        (l', acc') : go acc' l'
