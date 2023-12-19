@@ -67,6 +67,7 @@ main =
  do (workflows_, parts_) <- [format|2023 19 (%a+{(@V@O%u:%a+,)*%a+}%n)*%n({x=%u,m=%u,a=%u,s=%u}%n)*|]
     let workflows = Map.fromList [(k, (rs, e)) | (k, rs, e) <- workflows_]
         parts = [Part x m a s | (x, m, a, s) <- parts_]
+
     print (sum [sum p | p <- parts, accepted workflows p])
     let full = 1 :> 4001
     print (acceptedCount workflows (Part full full full full))
