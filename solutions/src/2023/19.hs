@@ -1,4 +1,4 @@
-{-# Language DataKinds, DeriveTraversable, GADTs, ImportQualifiedPost, PatternSynonyms, QuasiQuotes, TemplateHaskell, ViewPatterns #-}
+{-# Language DataKinds, DeriveTraversable, GADTs, ImportQualifiedPost, LambdaCase, PatternSynonyms, QuasiQuotes, TemplateHaskell, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 19 solution
@@ -86,16 +86,16 @@ acceptedCount workflows = jump "in"
     jump ((workflows Map.!) -> (rs, el)) = foldr rule (jump el) rs
 
     rule (var, O_GT, n, tgt) continue p =
-      case split (n + 1) (lkp p var) of
-        (lo, hi) ->
-          maybe 0 (continue . set p var) lo +
-          maybe 0 (jump tgt . set p var) hi
+      case split (n + 1) <$> part p var of
+        (mk, (lo, hi)) ->
+          maybe 0 (continue . mk) lo +
+          maybe 0 (jump tgt . mk) hi
 
     rule (var, O_LT, n, tgt) continue p =
-      case split n (lkp p var) of
-        (lo, hi) ->
-          maybe 0 (jump tgt . set p var) lo +
-          maybe 0 (continue . set p var) hi
+      case split n <$> part p var of
+        (mk, (lo, hi)) ->
+          maybe 0 (jump tgt . mk) lo +
+          maybe 0 (continue . mk) hi
 
 -- | Divide an interval into a region below and at a split.
 split :: Int -> Ints -> (Maybe Ints, Maybe Ints)
@@ -104,19 +104,13 @@ split n r@(lo :> hi)
   | n >= hi   = (Just r        , Nothing       )
   | otherwise = (Just (lo :> n), Just (n :> hi))
 
--- | Field accessor for 'Part'
-lkp :: Part a -> V -> a
-lkp (Part x _ _ _) Vx = x
-lkp (Part _ m _ _) Vm = m
-lkp (Part _ _ a _) Va = a
-lkp (Part _ _ _ s) Vs = s
-
--- | Field updater for 'Part'
-set :: Part a -> V -> a -> Part a
-set (Part _ m a s) Vx x = Part x m a s
-set (Part x _ a s) Vm m = Part x m a s
-set (Part x m _ s) Va a = Part x m a s
-set (Part x m a _) Vs s = Part x m a s
+-- | Factor a part into one of its parameters and a way to put that parameter back.
+part :: Part a -> V -> (a -> Part a, a)
+part (Part x m a s) = \case
+  Vx -> (\o -> Part o m a s, x)
+  Vm -> (\o -> Part x o a s, m)
+  Va -> (\o -> Part x m o s, a)
+  Vs -> (\o -> Part x m a o, s)
 
 -- | Interval constructor: inclusive lower-bound, exclusive upper-bound.
 -- Invariant: lower-bound < upper-bound
