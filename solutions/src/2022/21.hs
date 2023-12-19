@@ -1,4 +1,4 @@
-{-# Language PatternSynonyms, DeriveTraversable, QuasiQuotes, BlockArguments, LambdaCase, ImportQualifiedPost #-}
+{-# Language PatternSynonyms, TemplateHaskell, DeriveTraversable, QuasiQuotes, BlockArguments, LambdaCase, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -36,8 +36,12 @@ import Data.Functor ((<&>))
 import Data.Map (Map)
 import Data.Map qualified as Map
 
-import Advent (format)
+import Advent (format, stageTH)
 import Advent.Fix (Fix(Fix))
+
+data O = O_STAR | O_PLUS | O_SLASH | O_DASH
+
+stageTH
 
 -- |
 -- >>> :main
@@ -45,7 +49,7 @@ import Advent.Fix (Fix(Fix))
 -- 3721298272959
 main :: IO ()
 main =
- do input <- buildMap <$> [format|2022 21 (%s: (%d|%s %c %s)%n)*|]
+ do input <- buildMap <$> [format|2022 21 (%s: (%d|%s @O %s)%n)*|]
 
     -- part 1
     case evalRoot input of
@@ -64,32 +68,31 @@ evalRoot env = env' Map.! "root"
 tie :: (Functor f, Ord a) => Map a (Fix f) -> f a -> Fix f
 tie m e = Fix (fmap (m Map.!) e)
 
-buildMap :: [(String, Either Int (String, Char, String))] -> Map String (Expr String)
+buildMap :: [(String, Either Int (String, O, String))] -> Map String (Expr String)
 buildMap xs =
   Map.fromList xs <&> \case
-    Left i          -> Lit i
-    Right (a,'*',b) -> Mul a b
-    Right (a,'+',b) -> Add a b
-    Right (a,'/',b) -> Div a b
-    Right (a,'-',b) -> Sub a b
-    _               -> error "bad expression"
+    Left i                -> Lit i
+    Right (a, O_STAR , b) -> Mul a b
+    Right (a, O_PLUS , b) -> Add a b
+    Right (a, O_SLASH, b) -> Div a b
+    Right (a, O_DASH , b) -> Sub a b
 
 constProp :: Fix Expr -> Fix Expr
 constProp = \case
-  Fix (Add (I x) (I y)) -> I (x+y)
-  Fix (Sub (I x) (I y)) -> I (x-y)
-  Fix (Mul (I x) (I y)) -> I (x*y)
+  Fix (Add (I x) (I y)) -> I (x + y)
+  Fix (Sub (I x) (I y)) -> I (x - y)
+  Fix (Mul (I x) (I y)) -> I (x * y)
   Fix (Div (I x) (I y)) | (z,0) <- x `quotRem` y -> I z
   e -> e
 
 equal :: Fix Expr -> Int -> Int
-equal (Fix (Div x (I y))) z = equal x (y*z)
-equal (Fix (Add (I x) y)) z = equal y (z-x)
-equal (Fix (Add x (I y))) z = equal x (z-y)
-equal (Fix (Mul (I x) y)) z | (z',0) <- z `quotRem` x = equal y z'
-equal (Fix (Mul x (I y))) z | (z',0) <- z `quotRem` y = equal x z'
-equal (Fix (Sub (I x) y)) z = equal y (x-z)
-equal (Fix (Sub x (I y))) z = equal x (y+z)
+equal (Fix (Div x (I y))) z = equal x (y * z)
+equal (Fix (Add (I x) y)) z = equal y (z - x)
+equal (Fix (Add x (I y))) z = equal x (z - y)
+equal (Fix (Mul (I x) y)) z | (z', 0) <- z `quotRem` x = equal y z'
+equal (Fix (Mul x (I y))) z | (z', 0) <- z `quotRem` y = equal x z'
+equal (Fix (Sub (I x) y)) z = equal y (x - z)
+equal (Fix (Sub x (I y))) z = equal x (y + z)
 equal (Fix Answer) x = x
 equal _ _ = error "stuck"
 
