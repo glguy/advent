@@ -48,7 +48,7 @@ a location, direction, and distance traveled in that direction.
 module Main where
 
 import Advent (getInputArray, arrIx)
-import Advent.Coord (east, south, turnLeft, turnRight, Coord)
+import Advent.Coord (east, south, turnLeft, turnRight, scaleCoord, Coord)
 import Advent.Search (astarN, AStep(..))
 import Data.Array.Unboxed (amap, bounds, UArray)
 import Data.Char (digitToInt)
@@ -66,27 +66,23 @@ main =
 
 solve :: Int -> Int -> UArray Coord Int -> Int
 solve lo hi input =
-  head [cost | (S loc _ dist, cost) <- astarN (step lo hi input) begin
+  head [cost | (S loc _, cost) <- astarN (step lo hi input) begin
              , loc == end -- at the end
-             , lo <= dist -- able to stop
              ]
   where
     (start, end) = bounds input
-    begin = [S start east 0, S start south 0]
+    begin = [S start east, S start south]
 
-data S = S !Coord !Coord !Int -- ^ location, direction, distance
-  deriving (Eq, Ord)
+data S = S !Coord !Coord -- ^ location, direction
+  deriving (Eq, Ord, Show)
 
 step :: Int -> Int -> UArray Coord Int -> S -> [AStep S]
-step lo hi input (S here dir dist) =
+step lo hi input (S here dir) =
   [ AStep {
-      astepNext      = S here' dir' dist',
+      astepNext      = S (scaleCoord n dir' + here) dir',
       astepCost      = cost,
       astepHeuristic = 0}
-  | (dir', dist') <-
-      [(dir, dist + 1)    | dist <  hi] ++
-      [(turnLeft  dir, 1) | dist >= lo] ++
-      [(turnRight dir, 1) | dist >= lo]
-  , let here' = here + dir'
-  , cost <- arrIx input here'
+  | dir' <- [turnLeft  dir, turnRight dir]
+  , n    <- [lo .. hi]
+  , cost <- sum <$> traverse (arrIx input) [here + scaleCoord d dir' | d <- [1..n] ]
   ]
