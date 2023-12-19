@@ -63,7 +63,7 @@ stageTH
 -- 127517902575337
 main :: IO ()
 main =
- do (workflows_, parts_) <- [format|2023 19 (%a+{((@V@O%d:%a+),)*%a+}%n)*%n({x=%d,m=%d,a=%d,s=%d}%n)*|]
+ do (workflows_, parts_) <- [format|2023 19 (%a+{(@V@O%u:%a+,)*%a+}%n)*%n({x=%u,m=%u,a=%u,s=%u}%n)*|]
     let workflows = Map.fromList [(k, (rs, e)) | (k, rs, e) <- workflows_]
         parts = [Part x m a s | (x, m, a, s) <- parts_]
     print (sum [sum p | p <- parts, accepted workflows p])
