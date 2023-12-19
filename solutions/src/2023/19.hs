@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell, GADTs, DataKinds, ImportQualifiedPost #-}
+{-# Language DataKinds, DeriveTraversable, GADTs, ImportQualifiedPost, PatternSynonyms, QuasiQuotes, TemplateHaskell, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 19 solution
@@ -39,7 +39,20 @@ import Advent.Box (size, Box(Pt, Dim), Box')
 import Data.Map (Map)
 import Data.Map qualified as Map
 
+-- | A part is a quadruple of parameters indexed by 'V'
+data Part a = Part a a a a
+  deriving (Functor, Foldable, Traversable)
+
+-- | 'V' is an index into a field of a 'Part'
 data V = Vx | Vm | Va | Vs
+
+-- | 'Ints' is a range of 'Int' with an inclusive lower bound and exclusive upper bound.
+type Ints = Box' 1
+
+-- | Workflow rule determine an action to take based on parameter value.
+data Rule
+   = LessThan    V Int String -- ^ Action when variable less-than bound
+   | GreaterThan V Int String -- ^ Action when variable greater-than bound
 
 stageTH
 
@@ -50,59 +63,68 @@ stageTH
 -- 127517902575337
 main :: IO ()
 main =
- do (workflows, parts) <- [format|2023 19 (%a+{((@V>%d:%a+|@V<%d:%a+),)*%a+}%n)*%n({x=%d,m=%d,a=%d,s=%d}%n)*|]
-    let workflowMap = Map.fromList [(k, (map toRule rs, e)) | (k, rs, e) <- workflows]
-    print (sum [rating1 workflowMap "in" p | p <- parts])
-    let full = Dim 1 4001 Pt
-    print (rating2 workflowMap "in" (full,full,full,full))
+ do (workflows_, parts_) <- [format|2023 19 (%a+{((@V(<|>)!%d:%a+),)*%a+}%n)*%n({x=%d,m=%d,a=%d,s=%d}%n)*|]
+    let workflows = Map.fromList [(k, (map toRule rs, e)) | (k, rs, e) <- workflows_]
+        parts = [Part x m a s | (x, m, a, s) <- parts_]
+    print (sum [sum p | p <- parts, accepted workflows p])
+    let full = 1 :> 4001
+    print (acceptedCount workflows (Part full full full full))
 
-data Rule = LessThan V Int String | GreaterThan V Int String
+-- | Convert parsed syntax to semantic representation
+toRule :: (V, String, Int, String) -> Rule
+toRule (v, ">", n, lbl) = GreaterThan v n lbl
+toRule (v, _  , n, lbl) = LessThan    v n lbl
 
-toRule :: Either (V, Int, String) (V, Int, String) -> Rule
-toRule (Left  (v, n, lbl)) = GreaterThan v n lbl
-toRule (Right (v, n, lbl)) = LessThan    v n lbl
-
-rating1 :: Map String ([Rule], String) -> String -> (Int, Int, Int, Int) -> Int
-rating1 _ "A" (x, m, a, s) = x + m + a + s
-rating1 _ "R" _ = 0
-rating1 workflows k p =
-  case workflows Map.! k of
-    (rs, el) -> foldr process (rating1 workflows el p) rs
+-- | Predicate for parts that will be accepted by the workflow.
+accepted :: Map String ([Rule], String) -> Part Int -> Bool
+accepted workflows xmas = 0 /= acceptedCount workflows (fmap one xmas)
   where
-    process (GreaterThan var n tgt) rest
-       | lkp p var > n = rating1 workflows tgt p
-       | otherwise     = rest
-    process (LessThan var n tgt) rest
-       | lkp p var < n = rating1 workflows tgt p
-       | otherwise     = rest
+    one i = i :> i + 1 -- single-element interval
 
-rating2 :: Map String ([Rule], String) -> String -> (Box' 1, Box' 1, Box' 1, Box' 1) -> Int
-rating2 _ "A" (x,m,a,s) = size x * size m * size a * size s
-rating2 _ "R" _ = 0
-rating2 workflows k p0 = process (workflows Map.! k) p0
+-- | Count of the number of distinct parts that are accepted by the workflow.
+acceptedCount :: Map String ([Rule], String) -> Part Ints -> Int
+acceptedCount workflows = jump "in"
   where
-    process (GreaterThan var n tgt : rest, el) p =
-      case lkp p var of
-        Dim lo hi Pt ->
-          (if lo < n+1 then process (rest, el) (set p var (Dim lo (n+1) Pt)) else 0) +
-          (if n+1 < hi then rating2 workflows tgt (set p var (Dim (n+1) hi Pt)) else 0)
+    jump "A"                             = product . fmap size
+    jump "R"                             = const 0
+    jump ((workflows Map.!) -> (rs, el)) = foldr rule (jump el) rs
 
-    process (LessThan var n tgt : rest, el) p =
-      case lkp p var of
-        Dim lo hi Pt ->
-          (if lo < n then rating2 workflows tgt (set p var (Dim lo n Pt) ) else 0) +
-          (if n < hi then process (rest, el) (set p var (Dim n hi Pt)) else 0)
+    rule (GreaterThan var n tgt) continue p =
+      case split (n + 1) (lkp p var) of
+        (lo, hi) ->
+          maybe 0 (continue . set p var) lo +
+          maybe 0 (jump tgt . set p var) hi
 
-    process ([], el) p = rating2 workflows el p
+    rule (LessThan var n tgt) continue p =
+      case split n (lkp p var) of
+        (lo, hi) ->
+          maybe 0 (jump tgt . set p var) lo +
+          maybe 0 (continue . set p var) hi
 
-lkp :: (a, a, a, a) -> V -> a
-lkp (x,_,_,_) Vx = x
-lkp (_,m,_,_) Vm = m
-lkp (_,_,a,_) Va = a
-lkp (_,_,_,s) Vs = s
+-- | Divide an interval into a region below and at a split.
+split :: Int -> Ints -> (Maybe Ints, Maybe Ints)
+split n r@(lo :> hi)
+  | n <= lo   = (Nothing       , Just r        )
+  | n >= hi   = (Just r        , Nothing       )
+  | otherwise = (Just (lo :> n), Just (n :> hi))
 
-set :: (d, d, d, d) -> V -> d -> (d, d, d, d)
-set (_,m,a,s) Vx x = (x,m,a,s)
-set (x,_,a,s) Vm m = (x,m,a,s)
-set (x,m,_,s) Va a = (x,m,a,s)
-set (x,m,a,_) Vs s = (x,m,a,s)
+-- | Field accessor for 'Part'
+lkp :: Part a -> V -> a
+lkp (Part x _ _ _) Vx = x
+lkp (Part _ m _ _) Vm = m
+lkp (Part _ _ a _) Va = a
+lkp (Part _ _ _ s) Vs = s
+
+-- | Field updater for 'Part'
+set :: Part a -> V -> a -> Part a
+set (Part _ m a s) Vx x = Part x m a s
+set (Part x _ a s) Vm m = Part x m a s
+set (Part x m _ s) Va a = Part x m a s
+set (Part x m a _) Vs s = Part x m a s
+
+-- | Interval constructor: inclusive lower-bound, exclusive upper-bound.
+-- Invariant: lower-bound < upper-bound
+pattern (:>) :: Int -> Int -> Ints
+pattern lo :> hi = Dim lo hi Pt
+infix 4 :>
+{-# COMPLETE (:>) #-}
