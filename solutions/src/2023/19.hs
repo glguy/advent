@@ -41,11 +41,12 @@ import Data.Map qualified as Map
 
 -- | A part is a quadruple of parameters indexed by 'V'
 data Part a = Part a a a a
-  deriving (Functor, Foldable, Traversable)
+  deriving (Functor, Foldable, Traversable, Show)
 
 -- | 'V' is an index into a field of a 'Part'
 data V = Vx | Vm | Va | Vs
 
+-- | Less-than and greater-than comparison operators for the workflow rules.
 data O = O_LT | O_GT
 
 -- | 'Ints' is a range of 'Int' with an inclusive lower bound and exclusive upper bound.
