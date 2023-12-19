@@ -46,13 +46,13 @@ data Part a = Part a a a a
 -- | 'V' is an index into a field of a 'Part'
 data V = Vx | Vm | Va | Vs
 
+data O = O_LT | O_GT
+
 -- | 'Ints' is a range of 'Int' with an inclusive lower bound and exclusive upper bound.
 type Ints = Box' 1
 
--- | Workflow rule determine an action to take based on parameter value.
-data Rule
-   = LessThan    V Int String -- ^ Action when variable less-than bound
-   | GreaterThan V Int String -- ^ Action when variable greater-than bound
+-- | A rule is a part field, an operator, a bound, and a jump target
+type Rule = (V, O, Int, String)
 
 stageTH
 
@@ -63,17 +63,12 @@ stageTH
 -- 127517902575337
 main :: IO ()
 main =
- do (workflows_, parts_) <- [format|2023 19 (%a+{((@V(<|>)!%d:%a+),)*%a+}%n)*%n({x=%d,m=%d,a=%d,s=%d}%n)*|]
-    let workflows = Map.fromList [(k, (map toRule rs, e)) | (k, rs, e) <- workflows_]
+ do (workflows_, parts_) <- [format|2023 19 (%a+{((@V@O%d:%a+),)*%a+}%n)*%n({x=%d,m=%d,a=%d,s=%d}%n)*|]
+    let workflows = Map.fromList [(k, (rs, e)) | (k, rs, e) <- workflows_]
         parts = [Part x m a s | (x, m, a, s) <- parts_]
     print (sum [sum p | p <- parts, accepted workflows p])
     let full = 1 :> 4001
     print (acceptedCount workflows (Part full full full full))
-
--- | Convert parsed syntax to semantic representation
-toRule :: (V, String, Int, String) -> Rule
-toRule (v, ">", n, lbl) = GreaterThan v n lbl
-toRule (v, _  , n, lbl) = LessThan    v n lbl
 
 -- | Predicate for parts that will be accepted by the workflow.
 accepted :: Map String ([Rule], String) -> Part Int -> Bool
@@ -89,13 +84,13 @@ acceptedCount workflows = jump "in"
     jump "R"                             = const 0
     jump ((workflows Map.!) -> (rs, el)) = foldr rule (jump el) rs
 
-    rule (GreaterThan var n tgt) continue p =
+    rule (var, O_GT, n, tgt) continue p =
       case split (n + 1) (lkp p var) of
         (lo, hi) ->
           maybe 0 (continue . set p var) lo +
           maybe 0 (jump tgt . set p var) hi
 
-    rule (LessThan var n tgt) continue p =
+    rule (var, O_LT, n, tgt) continue p =
       case split n (lkp p var) of
         (lo, hi) ->
           maybe 0 (jump tgt . set p var) lo +

@@ -188,5 +188,53 @@ enumCases nameStr =
       case con of
         NormalC name []
           | Just str <- stripPrefix nameStr (nameBase name) ->
-            pure (name, str)
+            case str of
+              '_' : symbolName ->
+                do symbol <- processSymbolName symbolName
+                   pure (name, symbol)
+              _ -> pure (name, str)
         _ -> fail ("Unsupported constructor: " ++ show con)
+
+processSymbolName :: String -> Q String
+processSymbolName str =
+  case break ('_' ==) str of
+    (name, rest) ->
+      case lookup name symbolNames of
+        Nothing -> fail ("Unknown symbol name: " ++ name)
+        Just symbol ->
+          case rest of
+            [] -> pure [symbol]
+            _:str' -> (symbol:) <$> processSymbolName str'
+
+symbolNames :: [(String, Char)]
+symbolNames =
+  [ ("LT", '<')
+  , ("GT", '>')
+  , ("EQ", '=')
+  , ("BANG", '!')
+  , ("AT" , '@')
+  , ("HASH", '#')
+  , ("DOLLAR", '$')
+  , ("PERCENT", '%')
+  , ("CARET", '^')
+  , ("AMPERSAND", '&')
+  , ("STAR", '*')
+  , ("PIPE", '|')
+  , ("LPAREN", '(')
+  , ("RPAREN", ')')
+  , ("LBRACE", '{')
+  , ("RBRACE", '}')
+  , ("LBRACK", '[')
+  , ("RBRACK", ']')
+  , ("COLON", ':')
+  , ("SEMI", ';')
+  , ("QUESTION", '?')
+  , ("SLASH", '/')
+  , ("BACKSLASH", '\\')
+  , ("UNDERSCORE", '_')
+  , ("DASH", '-')
+  , ("DOT", '.')
+  , ("COMMA", ',')
+  , ("PLUS", '+')
+  , ("TILDE", '~')
+  ]
