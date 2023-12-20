@@ -28,10 +28,10 @@ import Data.Set qualified as Set
 data K = K | K_PERCENT | K_AMPERSAND
   deriving (Eq, Ord, Show)
 
-data Kind
-  = Broadcast                -- ^ broadcast node
-  | Flipflop                 -- ^ flip-flop
-  | Conjunction (Set String) -- ^ conjunction gate
+data Node
+  = Broadcast                      [String] -- ^ broadcast node
+  | FlipFlop !Bool                 [String] -- ^ flip-flop
+  | Conjunction !Int !(Set String) [String] -- ^ conjunction gate
 
 data Stream a = a :| Stream a
 
@@ -46,16 +46,16 @@ main :: IO ()
 main =
  do input <- [format|2023 20 (@K%a+ -> %a+&(, )%n)*|]
     let incoming = Map.fromListWith (++) [(k, [v]) | (_, v, ks) <- input, k <- ks]
-    let nodes = Map.fromList [(name, (mkKind incoming name kind, conns)) | (kind, name, conns) <- input]
+    let nodes = Map.fromList [(name, node incoming name kind conns) | (kind, name, conns) <- input]
 
     print (part1 0 0 0 (sim nodes))
     print (part2 incoming (sim nodes))
 
-mkKind :: Map String [String] -> String -> K -> Kind
-mkKind incoming name = \case
+node :: Map String [String] -> String -> K -> [String] -> Node
+node incoming name = \case
   K           -> Broadcast
-  K_AMPERSAND -> Conjunction (Set.fromList [name ++ " " ++ x | x <- incoming Map.! name])
-  K_PERCENT   -> Flipflop
+  K_AMPERSAND -> Conjunction (length (incoming Map.! name)) Set.empty
+  K_PERCENT   -> FlipFlop False
 
 part1 :: Int -> Int -> Int -> Stream (String, a, Bool) -> Int
 part1 n l h ((src,_,sig) :| xs)
@@ -75,23 +75,26 @@ part2 incoming msgs = foldl1 lcm [buttonsFor 0 gate msgs | gate <- incoming Map.
       | msg, src == gate, dst == specialConj = n
     buttonsFor n gate (_ :| xs) = buttonsFor n gate xs
 
-sim :: Map String (Kind, [String]) -> Stream (String, String, Bool)
-sim fwd = go Set.empty Queue.Empty
+sim :: Map String Node -> Stream (String, String, Bool)
+sim fwd = go fwd Queue.Empty
   where
-    go st Queue.Empty = go st (Queue.singleton ("button", "broadcaster", False))
-    go st ((src, dst, msg) Queue.:<| q') =
+    go st (x Queue.:<| q') = dispatch st x q'
+    go st q = dispatch st ("button", "broadcaster", False) q
+    
+    dispatch st (src, dst, msg) q' =
       (src, dst, msg) :|
-      case Map.lookup dst fwd of
-        Just (Broadcast, next) -> continue st msg next -- forward message
-        Just (Flipflop, next)
+      case Map.lookup dst st of
+        Just (Broadcast next) -> continue st msg next -- forward message
+        Just (FlipFlop mode next)
           | not msg -> continue st' out next -- was on sends low
           where
-            st' = mark dst out st
-            out = not (Set.member dst st)
-        Just (Conjunction incoming, next) -> continue st' out next
+            st' = Map.insert dst (FlipFlop out next) st
+            out = not mode
+        Just (Conjunction sz inc next) -> continue st' out next
           where
-            st' = mark (dst ++ " " ++ src) msg st
-            out = not (incoming `Set.isSubsetOf` st')
+            inc' = mark src msg inc
+            st' = Map.insert dst (Conjunction sz inc' next) st
+            out = sz /= length inc'
         _ -> go st q' -- ignored
       where
         continue st' msg' next = go st' (Queue.appendList q' [(dst, t, msg') | t <- next])
