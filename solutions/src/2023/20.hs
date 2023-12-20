@@ -24,11 +24,14 @@ import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 
-data K = K_PERCENT | K_AMPERSAND deriving (Eq, Ord, Show)
+-- | Kind of node in the graph
+data K
+  = K           -- ^ broadcast node
+  | K_PERCENT   -- ^ flip-flop
+  | K_AMPERSAND -- ^ conjunction gate
+  deriving (Eq, Ord, Show)
 
 stageTH
-
-data Kind = Broad | Conj | Flip
 
 -- | Parse the input and print both parts.
 --
@@ -37,9 +40,9 @@ data Kind = Broad | Conj | Flip
 -- 225514321828633
 main :: IO ()
 main =
- do input <- [format|2023 20 ((broadcaster|@K%s) -> %s&(, )%n)*|]
-    let nodes = Map.fromList [matchKind kind conns | (kind, conns) <- input]
-    let conj = Map.fromListWith (++) [(v, [k]) | (k, (_,vs)) <- Map.assocs nodes, v <- vs]    
+ do input <- [format|2023 20 (@K%a+ -> %a+&(, )%n)*|]
+    let nodes = Map.fromList [(name, (kind, conns)) | (kind, name, conns) <- input]
+    let conj = Map.fromListWith (++) [(v, [k]) | (k, (_, vs)) <- Map.assocs nodes, v <- vs]    
     
     let part1 !n !l !h (("button",_,_):_) | n == (1000 :: Int) = l * h :: Int
         part1 n l h ((src,_,sig):xs) =
@@ -64,12 +67,7 @@ part2 incoming msgs = foldl1 lcm [buttonsFor 0 dude msgs | dude <- incoming Map.
     buttonsFor n gate (_:xs) = buttonsFor n gate xs
     buttonsFor _ _ _ = undefined
 
-matchKind :: Maybe (K, String) -> a -> (String, (Kind, a))
-matchKind Nothing xs = ("broadcaster", (Broad, xs))
-matchKind (Just (K_PERCENT, name)) xs = (name, (Flip, xs))
-matchKind (Just (K_AMPERSAND, name)) xs = (name, (Conj, xs))
-
-sim :: Map String [String] -> Map String (Kind, [String]) -> [(String, String, Bool)]
+sim :: Map String [String] -> Map String (K, [String]) -> [(String, String, Bool)]
 sim conj conns = go Set.empty Queue.Empty
   where
     go st q =
@@ -79,15 +77,15 @@ sim conj conns = go Set.empty Queue.Empty
           (src, dst, msg) :
           case Map.lookup dst conns of
             Nothing -> go st q' -- output node, keep going
-            Just (Broad, next) ->
+            Just (K, next) ->
               go st (appendList q' [(dst, t, msg) | t <- next])
-            Just (Flip, next)
+            Just (K_PERCENT, next)
               | msg -> go st q' -- ignored
               | otherwise -> -- was on sends low
                   let active = not (Set.member dst st)
                       outmsgs = [(dst, t, active) | t <- next]
                   in go (mark dst active st) (appendList q' outmsgs)
-            Just (Conj, next) ->
+            Just (K_AMPERSAND, next) ->
               let st1 = mark (src ++ " " ++ dst) msg st
                   out = not (and [Set.member (inp ++ " " ++ dst) st1 | inp <- conj Map.! dst])
                   outmsgs = [(dst, t, out) | t <- next]
