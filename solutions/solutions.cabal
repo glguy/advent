@@ -1084,3 +1084,8 @@ executable sln_2023_20
   import:              day
   main-is:             2023/20.hs
   build-depends:       containers
+
+executable sln_2023_21
+  import:              day
+  main-is:             2023/21.hs
+  build-depends:       array
