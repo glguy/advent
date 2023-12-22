@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, MonadComprehensions, ImportQualifiedPost, DataKinds, GADTs #-}
+{-# Language QuasiQuotes, MonadComprehensions, DataKinds, GADTs #-}
 {-|
 Module      : Main
 Description : Day 22 solution
@@ -25,11 +25,10 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (format, count, countBy)
+import Advent (format, count, countBy, pickOne)
 import Advent.Box (intersectBox, Box(Pt, Dim), Box')
-import Control.Parallel.Strategies (parMap, rseq)
+import Control.Parallel.Strategies (parList, rseq, runEval)
 import Data.List (delete, sort)
-import Data.Map qualified as Map
 import Data.Maybe (isNothing)
 import Data.Ord (comparing)
 
@@ -43,15 +42,12 @@ main =
  do input <- [format|2023 22 (%d,%d,%d~%d,%d,%d%n)*|]
     let bricks = map toBrick input
     let sunk = lowerAll bricks
-    let support = parMap rseq (countSupported sunk) sunk
+    let support = runEval (parList rseq [countFalls xs | (_,xs) <- pickOne sunk])
     print (count 0 support)
     print (sum support)
 
 countSupported :: [Box' 3] -> Box' 3 -> Int
-countSupported bricks brick =
-  let bricks' = delete brick bricks in
-    length bricks' -
-  length (lowerOnes bricks')
+countSupported bricks brick = countFalls (delete brick bricks)
 
 lowerAll :: [Box' 3] -> [Box' 3]
 lowerAll = foldl lowerOne [] . sort
@@ -63,21 +59,20 @@ lowerAll = foldl lowerOne [] . sort
 
       | otherwise = x:xs
 
-lowerOnes :: [Box' 3] -> [Box' 3]
-lowerOnes = foldl lowerOne [] . sort
+countFalls :: [Box' 3] -> Int
+countFalls = fst . foldl lowerOne (0, []) . sort
   where
-    lowerOne xs x
+    lowerOne (n, xs) x
       | Just x' <- lower x
       , all (isNothing . intersectBox x') xs
-      = xs
+      = (n + 1, xs)
 
-      | otherwise = x:xs
+      | otherwise = (n, x:xs)
 
 lower :: Box' 3 -> Maybe (Box' 3)
-lower (Dim z1 z2 (Dim x1 x2 (Dim y1 y2 Pt))) =
-  [Dim (z1-1) (z2-1) (Dim x1 x2 (Dim y1 y2 Pt)) | z1 > 1]
+lower (Dim z1 z2 box) = [Dim (z1 - 1) (z2 - 1) box | z1 > 1]
 
-toBrick :: (Int,Int,Int,Int,Int,Int) -> Box' 3
+toBrick :: (Int, Int, Int, Int, Int, Int) -> Box' 3
 toBrick (x1,y1,z1,x2,y2,z2) = dim z1 z2 (dim x1 x2 (dim y1 y2 Pt))
   where
     dim a b = Dim (min a b) (max a b + 1)
