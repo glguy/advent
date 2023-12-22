@@ -28,7 +28,7 @@ module Main (main) where
 import Advent (format, count, pickOne)
 import Advent.Box (intersectBox, Box(Pt, Dim), Box')
 import Control.Parallel.Strategies (parList, rseq, runEval)
-import Data.List (sort)
+import Data.List (sort, tails, inits)
 import Data.Maybe (isNothing)
 
 -- | Parse the input boxes and print answers to both parts.
@@ -39,8 +39,8 @@ import Data.Maybe (isNothing)
 main :: IO ()
 main =
  do input <- [format|2023 22 (%d,%d,%d~%d,%d,%d%n)*|]
-    let sunk = lowerAll (map toBrick input)
-        falls = runEval (parList rseq [countFalls xs | (_,xs) <- pickOne sunk])
+    let sunk = sort (lowerAll (map toBrick input))
+        falls = runEval (parList rseq [countFalls xs ys | (xs, _:ys) <- zip (inits sunk) (tails sunk)])
     print (count 0 falls)
     print (sum falls)
 
@@ -54,8 +54,8 @@ lowerAll = foldl lowerOne [] . sort
 
       | otherwise = x:xs
 
-countFalls :: [Box' 3] -> Int
-countFalls = fst . foldl lowerOne (0, []) . sort
+countFalls :: [Box' 3] -> [Box' 3] -> Int
+countFalls bot = fst . foldl lowerOne (0, bot)
   where
     lowerOne (n, xs) x
       | Just x' <- lower x
