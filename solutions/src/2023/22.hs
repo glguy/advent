@@ -40,14 +40,10 @@ import Data.Ord (comparing)
 main :: IO ()
 main =
  do input <- [format|2023 22 (%d,%d,%d~%d,%d,%d%n)*|]
-    let bricks = map toBrick input
-    let sunk = lowerAll bricks
-    let support = runEval (parList rseq [countFalls xs | (_,xs) <- pickOne sunk])
-    print (count 0 support)
-    print (sum support)
-
-countSupported :: [Box' 3] -> Box' 3 -> Int
-countSupported bricks brick = countFalls (delete brick bricks)
+    let sunk = lowerAll (map toBrick input)
+        falls = runEval (parList rseq [countFalls xs | (_,xs) <- pickOne sunk])
+    print (count 0 falls)
+    print (sum falls)
 
 lowerAll :: [Box' 3] -> [Box' 3]
 lowerAll = foldl lowerOne [] . sort
