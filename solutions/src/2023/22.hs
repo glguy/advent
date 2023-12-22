@@ -25,7 +25,7 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (format, count, pickOne)
+import Advent (format, count)
 import Advent.Box (intersectBox, Box(Pt, Dim), Box')
 import Control.Parallel.Strategies (parList, rseq, runEval)
 import Data.List (sort, tails, inits)
