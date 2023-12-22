@@ -28,7 +28,7 @@ module Main (main) where
 import Advent (format, count, countBy)
 import Advent.Box (intersectBox, Box(Pt, Dim), Box')
 import Control.Parallel.Strategies (parMap, rseq)
-import Data.List (delete, sortBy)
+import Data.List (delete, sort)
 import Data.Map qualified as Map
 import Data.Maybe (isNothing)
 import Data.Ord (comparing)
@@ -42,28 +42,36 @@ main :: IO ()
 main =
  do input <- [format|2023 22 (%d,%d,%d~%d,%d,%d%n)*|]
     let bricks = map toBrick input
-    let sunk = lowerAll (zip [0..] bricks)
+    let sunk = lowerAll bricks
     let support = parMap rseq (countSupported sunk) sunk
     print (count 0 support)
     print (sum support)
 
-countSupported :: [(Int, Box' 3)] -> (Int, Box' 3) -> Int
+countSupported :: [Box' 3] -> Box' 3 -> Int
 countSupported bricks brick =
   let bricks' = delete brick bricks in
-  countBy id $
-  Map.intersectionWith (/=) 
-    (Map.fromList bricks')
-    (Map.fromList (lowerAll bricks'))
+    length bricks' -
+  length (lowerOnes bricks')
 
-lowerAll :: [(Int, Box' 3)] -> [(Int, Box' 3)]
-lowerAll = foldl lowerOne [] . sortBy (comparing snd)
+lowerAll :: [Box' 3] -> [Box' 3]
+lowerAll = foldl lowerOne [] . sort
   where
-    lowerOne xs (i,x)
+    lowerOne xs x
       | Just x' <- lower x
-      , all (\(_,y) -> isNothing (intersectBox x' y)) xs
-      = lowerOne xs (i,x')
-      
-      | otherwise = (i,x):xs
+      , all (isNothing . intersectBox x') xs
+      = lowerOne xs x'
+
+      | otherwise = x:xs
+
+lowerOnes :: [Box' 3] -> [Box' 3]
+lowerOnes = foldl lowerOne [] . sort
+  where
+    lowerOne xs x
+      | Just x' <- lower x
+      , all (isNothing . intersectBox x') xs
+      = xs
+
+      | otherwise = x:xs
 
 lower :: Box' 3 -> Maybe (Box' 3)
 lower (Dim z1 z2 (Dim x1 x2 (Dim y1 y2 Pt))) =
