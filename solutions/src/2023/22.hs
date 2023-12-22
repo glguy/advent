@@ -25,12 +25,11 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (format, count, countBy, pickOne)
+import Advent (format, count, pickOne)
 import Advent.Box (intersectBox, Box(Pt, Dim), Box')
 import Control.Parallel.Strategies (parList, rseq, runEval)
-import Data.List (delete, sort)
+import Data.List (sort)
 import Data.Maybe (isNothing)
-import Data.Ord (comparing)
 
 -- | Parse the input boxes and print answers to both parts.
 --
