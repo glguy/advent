@@ -48,13 +48,11 @@ buildPaths input isOpen = go [C 0 1] Map.empty
   where
     (_, C ymax _) = bounds input
 
-    exits here there =
-      [
-        next
-        | next <- cardinal here
-        , next /= there
-        , cell <- arrIx input next
-        , isOpen cell (next - here)
+    adj here =
+      [ next
+      | next <- cardinal here
+      , cell <- arrIx input next
+      , isOpen cell (next - here)
       ]
 
     go [] acc = acc
@@ -63,15 +61,11 @@ buildPaths input isOpen = go [C 0 1] Map.empty
       | otherwise = go (map fst nodes ++ xs) (Map.insert x nodes acc)
       where
         nodes =
-          [ out
-            | c <- cardinal x
-            , cell <- arrIx input c
-            , isOpen cell (c - x)
-            , out <- walk c x 1
-          ]
+         do c <- adj x
+            walk c x 1
 
     walk here there dist =
-      case exits here there of
+      case filter (there /=) (adj here) of
         [next] | coordRow next /= ymax -> walk next here (dist+1)
         _ -> [(here, dist)]
 
