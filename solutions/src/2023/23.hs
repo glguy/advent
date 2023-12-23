@@ -46,9 +46,7 @@ buildPaths ::
   Map Coord [(Coord, Int)]
 buildPaths input isOpen = go [C 0 1] Map.empty
   where
-    isIntersection c there =
-      1 < length (exits c there) || coordRow c == ymax
-    (_,C ymax _) = bounds input
+    (_, C ymax _) = bounds input
 
     exits here there =
       [
@@ -71,12 +69,11 @@ buildPaths input isOpen = go [C 0 1] Map.empty
             , isOpen cell (c - x)
             , out <- walk c x 1
           ]
-        walk here there dist
-          | isIntersection here there = [(here, dist)]
-          | otherwise =
-            case exits here there of
-              [] -> []
-              next:_ -> walk next here (dist+1)
+
+    walk here there dist =
+      case exits here there of
+        [next] | coordRow next /= ymax -> walk next here (dist+1)
+        _ -> [(here, dist)]
 
 part1 :: Char -> Coord -> Bool
 part1 c dir =
