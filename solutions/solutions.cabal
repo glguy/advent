@@ -1100,3 +1100,8 @@ executable sln_2023_23
   import:              day
   main-is:             2023/23.hs
   build-depends:       containers, array
+
+executable sln_2023_24
+  import:              day
+  main-is:             2023/24.hs
+  build-depends:       hmatrix
