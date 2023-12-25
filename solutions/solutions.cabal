@@ -1105,3 +1105,8 @@ executable sln_2023_24
   import:              day
   main-is:             2023/24.hs
   build-depends:       hmatrix
+
+executable sln_2023_25
+  import:              day
+  main-is:             2023/25.hs
+  build-depends:       random, fgl
