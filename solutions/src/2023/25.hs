@@ -1,5 +1,4 @@
-{-# Language QuasiQuotes #-}
-{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
+{-# Language QuasiQuotes, BangPatterns #-}
 {-|
 Module      : Main
 Description : Day 25 solution
@@ -46,16 +45,18 @@ module Main (main) where
 import Advent (format, ordNub)
 import Advent.Tokenize (autoTokenize)
 import Data.Graph.Inductive (Gr, UGr, insert, match, size, labNodes, edges, nmap, mkUGraph, noNodes)
-import System.Random (randomRIO)
+import System.Random
 
 main :: IO ()
 main =
  do input <- [format|2023 25 (%s:( %s)*%n)*|]
     let g = nmap (const 1) (simpleGraph (autoTokenize input))
-        loop =
-         do g' <- fastmincut g
-            if size g' == 3 then pure g' else loop
-    g' <- loop
+        loop gen =
+          case fastmincut g gen of
+            (g', gen')
+              | size g' == 3 -> (g', gen')
+              | otherwise    -> loop gen'
+    g' <- getStdRandom loop
     print (product [sz | (_, sz) <- labNodes g'])
 
 -- Transform the input format into an fgl unlabeled graph
@@ -66,30 +67,33 @@ simpleGraph input =
     [(k,v) | (k,vs) <- input, v <- vs]
 
 -- Karger–Stein algorithm (specialized to find mincuts of size 3)
-fastmincut :: Gr Int e -> IO (Gr Int e)
-fastmincut g
-  | n <= 6 = contract 2 g
+fastmincut :: Gr Int e -> StdGen -> (Gr Int e, StdGen)
+fastmincut g gen
+  | n <= 6    = contract 2 g gen
   | otherwise =
-   do let t = ceiling (1 + fromIntegral n / sqrt 2 :: Double)
-          attempt = fastmincut =<< contract t g
-      g' <- attempt
-      if size g' == 3 then pure g' else attempt
+      case rec gen of
+        (g', gen') | size g' == 3 -> (g', gen')
+                   | otherwise    -> rec gen'
   where
-    n = noNodes g
+    n   = noNodes g
+    t   = ceiling (1 + fromIntegral n / sqrt 2 :: Double)
+    rec = uncurry fastmincut . contract t g
 
 -- Karger algorithm parameterized by stop condition
-contract :: Int -> Gr Int e -> IO (Gr Int e)
-contract t g
-  | noNodes g <= t = pure g
-  | otherwise =
-   do (l, r) <- pick (edges g)
-      let (Just (li, _, szl, lo), g1) = match l g
-          (Just (ri, _, szr, ro), g2) = match r g1
-          adj = [a | a@(_,n) <- li ++ lo, n /= r] ++ ri ++ ro
-      contract t (insert ([], l, szl + szr, adj) g2)
+contract :: RandomGen g => Int -> Gr Int e -> g -> (Gr Int e, g)
+contract t g gen
+  | noNodes g > t
+  , ((l, r), gen')               <- pick (edges g) gen
+  , (Just (li, _, !szl, lo), g1) <- match l g
+  , (Just (ri, _, !szr, ro), g2) <- match r g1
+  , let adj = [a | a <- li ++ lo, snd a /= r] ++ ri ++ ro
+  , let g3 = insert ([], l, szl + szr, adj) g2
+  = contract t g3 gen'
+  
+  | otherwise = (g, gen)
 
 -- Selet a random element from a list
-pick :: [a] -> IO a
-pick xs =
- do i <- randomRIO (0, length xs - 1)
-    pure $! xs !! i
+pick :: RandomGen g => [a] -> g -> (a, g)
+pick xs gen =
+  case randomR (0, length xs - 1) gen of
+    (i, gen') -> (xs !! i, gen')
