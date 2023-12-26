@@ -45,7 +45,7 @@ module Main (main) where
 import Advent (format, ordNub)
 import Advent.Tokenize (autoTokenize)
 import Data.Graph.Inductive (Gr, UGr, insert, match, size, labNodes, edges, nmap, mkUGraph, noNodes)
-import System.Random
+import System.Random (getStdRandom, randomR, RandomGen, StdGen)
 
 main :: IO ()
 main =
@@ -89,7 +89,7 @@ contract t g gen
   , let adj = [a | a <- li ++ lo, snd a /= r] ++ ri ++ ro
   , let g3 = insert ([], l, szl + szr, adj) g2
   = contract t g3 gen'
-  
+
   | otherwise = (g, gen)
 
 -- Selet a random element from a list
