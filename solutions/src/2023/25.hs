@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes #-}
+{-# Language QuasiQuotes, BangPatterns #-}
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 {-|
 Module      : Main
@@ -15,43 +15,42 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format, ordNub)
-import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.NodeMap (mkEdges, mkNodes, new, NodeMap)
-import Data.Graph.Inductive.PatriciaTree (Gr)
+import Advent.Tokenize (autoTokenize)
+import Data.Graph.Inductive (Gr, UGr, (&), match, labNodes, edges, nmap, mkUGraph, noNodes)
 import Data.Maybe (fromJust)
+import System.IO (hFlush, stdout)
 import System.Random (randomRIO)
 
 main :: IO ()
 main =
  do input <- [format|2023 25 (%s:( %s)*%n)*|]
-    let nodeMap :: NodeMap String
-        (ns, nodeMap) = mkNodes new (ordNub [n | (k,vs) <- input, n <- k:vs ])
-    let g :: Gr Int ()
-        g = mkGraph [(n,1) | (n,_) <- ns]
-                    (fromJust $ mkEdges nodeMap
-                    [(k,v,())
-                        | (k,vs) <- input
-                        , v <- vs
-                        ])
-
-    let loop =
+    let g = nmap (const 1) (simpleGraph (autoTokenize input))
+        loop (x:xs) =
          do g' <- contract (+) g
             if length (edges g') == 3 then
-              print (product [sz | (_, sz) <- labNodes g'])
-            else putStrLn "retry" >> loop
-    loop
+                print (product [sz | (_, sz) <- labNodes g'])
+            else
+             do putChar x
+                putChar '\^H'
+                hFlush stdout
+                loop xs
+    loop (cycle "←↖↑→↘↓↙")
+
+simpleGraph :: [(Int, [Int])] -> UGr
+simpleGraph input =
+  mkUGraph
+    (ordNub [n | (k,vs) <- input, n <- k:vs])
+    [(k,v) | (k,vs) <- input, v <- vs]
 
 contract :: (a -> a -> a) -> Gr a b -> IO (Gr a b)
-contract f g
+contract combineNodeLabels g
   | noNodes g <= 2 = pure g
   | otherwise =
    do let es = edges g
-          n = length es
-      i <- randomRIO (0, n-1)
+      i <- randomRIO (0, length es - 1)
       let (l,r) = es !! i -- pick a random edge to contract
-          g1 = delEdge (r,l) (delEdge (l,r) g)
-          nei = lneighbors g1 l ++ lneighbors g1 r
-          Just sza = lab g l
-          Just szb = lab g r
-          g2 = insNode (l, f sza szb) (delNodes [l,r] g1)
-      contract f (insEdges [(bb,l,aa) | (aa,bb) <- nei] g2)
+          (Just (li, _, !szl, lo), g1) = match l g
+          (Just (ri, _, !szr, ro), g2) = match r g1
+          adj = [a | a@(_,n) <- li ++ lo ++ ri ++ ro, n /= l, n /= r]
+          g3 = ([], l, combineNodeLabels szl szr, adj) & g2
+      contract combineNodeLabels g3
