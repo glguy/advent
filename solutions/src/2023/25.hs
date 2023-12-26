@@ -51,6 +51,7 @@ contract combineNodeLabels g
       let (l,r) = es !! i -- pick a random edge to contract
           (Just (li, _, !szl, lo), g1) = match l g
           (Just (ri, _, !szr, ro), g2) = match r g1
-          adj = [a | a@(_,n) <- li ++ lo ++ ri ++ ro, n /= l, n /= r]
+          adj = [a | a@(_,n) <- li ++ lo, n /= r]
+             ++ [a | a@(_,n) <- ri ++ ro]
           g3 = ([], l, combineNodeLabels szl szr, adj) & g2
       contract combineNodeLabels g3
