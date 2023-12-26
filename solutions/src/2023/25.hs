@@ -34,7 +34,7 @@ main =
                 putChar '\^H'
                 hFlush stdout
                 loop xs
-    loop (cycle "←↖↑→↘↓↙")
+    loop (cycle "←↖↑↗︎→↘↓↙")
 
 simpleGraph :: [(Int, [Int])] -> UGr
 simpleGraph input =
