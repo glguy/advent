@@ -16,25 +16,18 @@ module Main (main) where
 
 import Advent (format, ordNub)
 import Advent.Tokenize (autoTokenize)
-import Data.Graph.Inductive (Gr, UGr, (&), match, labNodes, edges, nmap, mkUGraph, noNodes)
-import Data.Maybe (fromJust)
-import System.IO (hFlush, stdout)
+import Data.Graph.Inductive (Gr, UGr, (&), match, size, labNodes, edges, nmap, mkUGraph, noNodes)
 import System.Random (randomRIO)
 
 main :: IO ()
 main =
  do input <- [format|2023 25 (%s:( %s)*%n)*|]
     let g = nmap (const 1) (simpleGraph (autoTokenize input))
-        loop (x:xs) =
-         do g' <- contract (+) g
-            if length (edges g') == 3 then
-                print (product [sz | (_, sz) <- labNodes g'])
-            else
-             do putChar x
-                putChar '\^H'
-                hFlush stdout
-                loop xs
-    loop (cycle "←↖↑↗︎→↘↓↙")
+        loop =
+         do g' <- fastmincut g
+            if size g' == 3 then pure g' else loop
+    g' <- loop
+    print (product [sz | (_, sz) <- labNodes g'])
 
 simpleGraph :: [(Int, [Int])] -> UGr
 simpleGraph input =
@@ -42,16 +35,33 @@ simpleGraph input =
     (ordNub [n | (k,vs) <- input, n <- k:vs])
     [(k,v) | (k,vs) <- input, v <- vs]
 
-contract :: (a -> a -> a) -> Gr a b -> IO (Gr a b)
-contract combineNodeLabels g
-  | noNodes g <= 2 = pure g
+-- Karger–Stein algorithm (specialized to find mincuts of size 3)
+fastmincut :: Gr Int b -> IO (Gr Int b)
+fastmincut g
+  | n <= 6 = contract 2 g
   | otherwise =
-   do let es = edges g
-      i <- randomRIO (0, length es - 1)
-      let (l,r) = es !! i -- pick a random edge to contract
-          (Just (li, _, !szl, lo), g1) = match l g
+   do let t = ceiling (1 + fromIntegral n / sqrt 2 :: Double)
+          attempt = fastmincut =<< contract t g
+      g' <- attempt
+      if size g' == 3 then pure g' else attempt
+  where
+    n = noNodes g
+
+-- Karger algorithm parameterized by stop condition
+contract :: Int -> Gr Int b -> IO (Gr Int b)
+contract t g
+  | noNodes g <= t = pure g
+  | otherwise =
+   do (l, r) <- pick (edges g)
+      let (Just (li, _, !szl, lo), g1) = match l g
           (Just (ri, _, !szr, ro), g2) = match r g1
           adj = [a | a@(_,n) <- li ++ lo, n /= r]
-             ++ [a | a@(_,n) <- ri ++ ro]
-          g3 = ([], l, combineNodeLabels szl szr, adj) & g2
-      contract combineNodeLabels g3
+             ++ ri ++ ro
+          g3 = ([], l, szl + szr, adj) & g2
+      contract t g3
+
+-- Selet a random element from a list
+pick :: [a] -> IO a
+pick xs =
+ do i <- randomRIO (0, length xs - 1)
+    pure $! xs !! i
