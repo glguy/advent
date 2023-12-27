@@ -44,7 +44,7 @@ module Main (main) where
 
 import Advent (format, ordNub)
 import Advent.Tokenize (autoTokenize)
-import Data.Graph.Inductive (Gr, UGr, insert, match, size, labNodes, edges, nmap, mkUGraph, noNodes)
+import Data.Graph.Inductive (Gr, UGr, insert, match, size, labNodes, edges, nmap, mkUGraph, order)
 import System.Random (newStdGen, randomR, RandomGen)
 import Data.Semigroup (Sum(Sum))
 
@@ -75,14 +75,14 @@ fastmincut k g gen
   | n <= 6, (g', gen') <- contract 2 g gen = g' : k gen'
   | otherwise = rec (rec k) gen -- try twice
   where
-    n   = noNodes g
+    n   = order g
     t   = ceiling (1 + fromIntegral n / sqrt 2 :: Double)
     rec kr = uncurry (fastmincut kr) . contract t g
 
 -- Karger's algorithm parameterized by vertex stop count
 contract :: (RandomGen g, Semigroup n) => Int -> Gr n e -> g -> (Gr n e, g)
 contract t g gen
-  | noNodes g > t
+  | order g > t
   , ((l, r), gen')               <- pick (edges g) gen
   , (Just (li, _, !szl, lo), g1) <- match l g
   , (Just (ri, _, !szr, ro), g2) <- match r g1
