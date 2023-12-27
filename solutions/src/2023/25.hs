@@ -51,10 +51,10 @@ import Data.Semigroup (Sum(Sum))
 main :: IO ()
 main =
  do input <- [format|2023 25 (%s:( %s)*%n)*|]
-    let g = nmap (const (Sum (1::Int))) (simpleGraph (autoTokenize input))
+    let g = nmap (const 1) (simpleGraph (autoTokenize input))
         makeCandidates = fastmincut makeCandidates g
     gs <- makeCandidates <$> newStdGen
-    print (product [sz | g' <- gs, 3 == size g', then take 1, (_, Sum sz) <- labNodes g'])
+    print (product [sz :: Int | g' <- gs, 3 == size g', then take 1, (_, Sum sz) <- labNodes g'])
 
 -- Transform the input format into an fgl unlabeled graph
 simpleGraph :: [(Int, [Int])] -> UGr
@@ -71,29 +71,31 @@ fastmincut ::
   RandomGen gen => Semigroup node =>
   (gen -> [Gr node edge]) {- ^ continuation -} ->
   Gr node edge -> gen -> [Gr node edge]
-fastmincut k g gen
-  | n <= 6, (g', gen') <- contract 2 g gen = g' : k gen'
+fastmincut k gr gen
+  | n <= 6, (gr', gen') <- contract 2 gr gen = gr' : k gen'
   | otherwise = rec (rec k) gen -- try twice
   where
-    n   = order g
+    n   = order gr
     t   = ceiling (1 + fromIntegral n / sqrt 2 :: Double)
-    rec kr = uncurry (fastmincut kr) . contract t g
+    rec k' gen1 | (gr', gen2) <- contract t gr gen1 = fastmincut k' gr' gen2
 
 -- Karger's algorithm parameterized by vertex stop count
-contract :: (RandomGen g, Semigroup n) => Int -> Gr n e -> g -> (Gr n e, g)
-contract t g gen
-  | order g > t
-  , ((l, r), gen')               <- pick (edges g) gen
-  , (Just (li, _, !szl, lo), g1) <- match l g
-  , (Just (ri, _, !szr, ro), g2) <- match r g1
+contract ::
+  RandomGen gen => Semigroup node =>
+  Int -> Gr node edge -> gen -> (Gr node edge, gen)
+contract t gr gen
+  | order gr > t
+  , ((l, r), gen1)                <- pick (edges gr) gen
+  , (Just (li, _, !szl, lo), gr1) <- match l gr
+  , (Just (ri, _, !szr, ro), gr2) <- match r gr1
   , let adj = [a | a <- li ++ lo, snd a /= r] ++ ri ++ ro
-  , let g3 = insert ([], l, szl <> szr, adj) g2
-  = contract t g3 gen'
+  , let gr3 = insert ([], l, szl <> szr, adj) gr2
+  = contract t gr3 gen1
 
-  | otherwise = (g, gen)
+  | otherwise = (gr, gen)
 
 -- Selet a random element from a list
-pick :: RandomGen g => [a] -> g -> (a, g)
+pick :: RandomGen gen => [a] -> gen -> (a, gen)
 pick xs gen =
   case randomR (0, length xs - 1) gen of
     (i, gen') -> (xs !! i, gen')
