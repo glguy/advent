@@ -19,15 +19,13 @@ import Data.List (foldl1')
 import Data.Map (Map)
 import Data.Map qualified as Map
 
--- $setup
--- >>> :set -XQuasiQuotes
--- >>> let parse = [format|- ((@D%u)&,%n)*|] . unlines
-
 -- | Directions up, down, left, and right.
 data D = DU | DD | DL | DR
   deriving Show
 
 stageTH
+
+[format|((@D%u)&,%n)*|]
 
 -- coordinates ---------------------------------------------------------
 
@@ -45,14 +43,14 @@ toUnitVector DR = east
 -- 134662
 main :: IO ()
 main =
-  do (p1,p2) <- answers <$> [format|2019 3 ((@D%u)&,%n)*|]
+  do (p1,p2) <- answers <$> getInput 2019 3
      print p1
      print p2
 
 -- | Given the input file parsed as lists of lists of motions, compute the
 -- nearest distance to origin and minimum sum steps to intersection.
 --
--- >>> let check = answers . parse
+-- >>> let check = answers . parseInput . unlines
 -- >>> check ["R8,U5,L5,D3","U7,R6,D4,L4"]
 -- (6,30)
 -- >>> check ["R75,D30,R83,U83,L12,D49,R71,U7,L72","U62,R66,U55,R34,D71,R55,D58,R83"]
@@ -73,7 +71,7 @@ nearestDistanceToOrigin = minimum . map (manhattan origin) . Map.keys
 -- among all of the paths. The value at each location is the sum of the
 -- number of steps taken along each of the paths to get to that point.
 --
--- >>> let check = pathIntersections . parse
+-- >>> let check = pathIntersections . parseInput . unlines
 -- >>> check ["R8,U5,L5,D3","U7,R6,D4,L4"]
 -- fromList [(C (-5) 6,30),(C (-3) 3,40)]
 pathIntersections :: [[(D,Int)]] -> Map Coord Int

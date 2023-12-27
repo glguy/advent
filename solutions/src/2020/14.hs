@@ -9,9 +9,8 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2020/day/14>
 
 @
->>> :set -XQuasiQuotes
 >>> :{
-let cmds = [format|- ((mask = @M*|mem[%u] = %u)%n)*|]
+let cmds = parseInput
       "mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X\n\
       \mem[8] = 11\n\
       \mem[7] = 101\n\
@@ -21,7 +20,7 @@ in run1 [] IntMap.empty cmds
 165
 
 >>> :{
-let cmds = [format|- ((mask = @M*|mem[%u] = %u)%n)*|]
+let cmds = parseInput
       "mask = 000000000000000000000000000000X1001X\n\
       \mem[42] = 100\n\
       \mask = 00000000000000000000000000000000X0XX\n\
@@ -47,13 +46,15 @@ data M = M1 | M0 | MX deriving (Show)
 
 stageTH
 
+[format|((mask = @M*|mem[%u] = %u)%n)*|]
+
 -- |
 -- >>> :main
 -- 17934269678453
 -- 3440662844064
 main :: IO ()
 main =
-  do inp <- [format|2020 14 ((mask = @M*|mem[%u] = %u)%n)*|]
+  do inp <- getInput 2020 14
      print (run1 [] IntMap.empty inp)
      print (run2 [] IntMap.empty inp)
 

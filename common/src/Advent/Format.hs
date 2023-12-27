@@ -87,7 +87,7 @@ format = QuasiQuoter
   { quoteExp  = uncurry makeParser <=< prepare
   , quotePat  = \_ -> fail "format: patterns not supported"
   , quoteType = toType <=< parse . snd <=< prepare
-  , quoteDec  = \_ -> fail "format: declarations not supported"
+  , quoteDec  = makeDecs
   }
 
 prepare :: String -> Q (Maybe (Int, Int), String)
@@ -110,6 +110,20 @@ splitLeader :: String -> Maybe (Maybe (Int, Int), String)
 splitLeader (reads -> [(y,reads -> [(d, rest)])]) = Just (Just (y, d), dropWhile (' '==) rest)
 splitLeader (lex   -> [("-", rest)]) = Just (Nothing, dropWhile (' '==) rest)
 splitLeader _ = Nothing
+
+makeDecs :: String -> DecsQ
+makeDecs str =
+ do fmt <- parse str
+    [d|
+      parseInput :: String -> $(toType fmt)
+      parseInput str =
+        case readP_to_S ($(toReadP fmt) <* eof) str of
+          (x, _) : _ -> x
+          _          -> error "bad input parse"
+
+      getInput :: Int -> Int -> IO $(toType fmt)
+      getInput y d = parseInput <$> getRawInput y d
+      |]
 
 makeParser :: Maybe (Int, Int) -> String -> ExpQ
 makeParser mb str =

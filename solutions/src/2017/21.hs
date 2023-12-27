@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, ViewPatterns, QuasiQuotes #-}
+{-# Language ImportQualifiedPost, QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -11,9 +11,8 @@ Maintainer  : emertens@gmail.com
 Day 21 defines a system of rewrite rules on a grid of points that are
 applied to 2x2 or 3x3 subtiles of the whole grid.
 
->>> :set -XQuasiQuotes
 >>> let inputFile = "../.# => ##./#../...\n.#./..#/### => #..#/..../..../#..#\n"
->>> let rules = makeRules ([format|- ((.|#)+!&/ => (.|#)+!&/%n)*|] inputFile)
+>>> let rules = makeRules (parseInput inputFile)
 >>> let iterations = iterate (mapSubSquares rules) start
 
 >>> printGrid (iterations !! 0)
@@ -42,6 +41,8 @@ import Advent (chunks, count, format)
 import Data.List (transpose)
 import Data.Map qualified as Map
 
+[format|((.|#)+!&/ => (.|#)+!&/%n)*|]
+
 -- $setup
 -- >>> let printGrid = mapM_ putStrLn
 
@@ -49,7 +50,7 @@ import Data.Map qualified as Map
 -- The input file can be overridden via command-line arguments.
 main :: IO ()
 main =
-  do input <- [format|2017 21 ((.|#)+!&/ => (.|#)+!&/%n)*|]
+  do input <- getInput 2017 21
 
      let rules      = makeRules input
          iterations = iterate (mapSubSquares rules) start

@@ -9,7 +9,7 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2022/day/14>
 
 >>> :set -XQuasiQuotes
->>> let input = [format|- ((%u,%u)&( -> )%n)*|] "498,4 -> 498,6 -> 496,6\n503,4 -> 502,4 -> 502,9 -> 494,9\n"
+>>> let input = parseInput "498,4 -> 498,6 -> 496,6\n503,4 -> 502,4 -> 502,9 -> 494,9\n"
 >>> let world = Set.fromList (concatMap segs input)
 >>> let limit = voidLimit world
 >>> let Left world1 = fillFrom Left limit world top
@@ -54,13 +54,15 @@ import Data.Set qualified as Set
 import Advent (format)
 import Advent.Coord (coordRow, below, coordRow, left, right, Coord(..))
 
+[format|((%u,%u)&( -> )%n)*|]
+
 -- |
 -- >>> :main
 -- 644
 -- 27324
 main :: IO ()
 main =
- do input <- [format|2022 14 ((%u,%u)&( -> )%n)*|]
+ do input <- getInput 2022 14
     let world = Set.fromList (concatMap segs input)
         limit = voidLimit world
 
