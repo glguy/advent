@@ -17,8 +17,11 @@ the number of nodes each new node represents. This allows
 the final answer to be directly computed from the output
 of the algorithm.
 
-I've specialized the Karger-Stein algorithm to terminate
-early when the target edge count is found.
+I've implemented the Karger-Stein algorithm to produce an infinite
+list of candidate min-cuts. This list can then be searched for the
+one that has size 3 as required by the problem statement. This allows
+the algorithm to terminate as soon as the target cut is found
+without having to back that early exit into the algorithm itself.
 
 >>> :{
 :main +
