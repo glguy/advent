@@ -35,13 +35,14 @@ on a single axis.
 82000210
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (getInputLines, counts)
 import Advent.Coord (Coord(C), coordLines)
+import Data.List (tails)
 import Data.Map qualified as Map
 
--- |
+-- | Parse the input map and print out the answers to both parts.
 --
 -- >>> :main
 -- 9965032
@@ -52,8 +53,8 @@ main =
     let (rows, cols) = unzip [(y, x) | (C y x, '#') <- coordLines input]
         (r1, rWide) = solve1 rows
         (c1, cWide) = solve1 cols
-        solve n     = r1 + c1 + (rWide + cWide) * n
-    print (solve 2)
+        solve n = r1 + c1 + (rWide + cWide) * n
+    print (solve         2)
     print (solve 1_000_000)
 
 -- | Solve the travel problem along a single axis.
@@ -62,18 +63,13 @@ main =
 solve1 ::
   [Int]     {- ^ galaxy positions               -} ->
   (Int,Int) {- ^ regular and expanded distances -}
-solve1 positions =
-  case Map.assocs counted of
-    []             -> (0, 0)
-    (here, n) : xs -> go xs n here 0 0
+solve1 galaxies = (sum crossings, sum (zipWith (*) crossings gaps))
   where
-    counted = counts positions
+    counted = counts galaxies
     total   = sum counted
 
-    go []                _ _    reg gap = ((,) $! reg) $! gap
-    go ((there, m) : xs) n here reg gap = go xs (n + m) there reg' gap'
-      where
-        crossings = n * (total - n)
-        width = there - here - 1
-        reg' = reg + crossings
-        gap' = gap + crossings * width
+    -- empty space between locations containing galaxies
+    gaps = [x2 - x1 - 1 | x1 : x2 : _ <- tails (Map.keys counted)]
+
+    -- number of unique pairs of galaxies on left and right side of a gap
+    crossings = [n * (total - n) | n <- scanl1 (+) (Map.elems counted)]
