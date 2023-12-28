@@ -28,7 +28,7 @@ module Main (main) where
 
 import Advent (format, counts)
 import Data.Foldable (toList)
-import Data.List (sortOn, sort, elemIndex, nub)
+import Data.List (sortOn, sortBy, elemIndex, nub)
 import Data.Maybe (fromJust)
 
 -- |
@@ -63,7 +63,7 @@ winnings strength input =
 -- >>> strength1 "T55J5" < strength1 "QQQJA"
 -- True
 strength1 :: String -> [Int]
-strength1 hand = category hand : map val hand
+strength1 hand = category hand ++ map val hand
   where
     val x = fromJust (x `elemIndex` "23456789TJQKA")
 
@@ -81,19 +81,10 @@ strength2 hand =
     [ category (map rpl hand)
     | alt <- nub hand
     , let rpl x = if x == 'J' then alt else x
-    ] : map val hand
+    ] ++ map val hand
   where
     val x = fromJust (x `elemIndex` "J23456789TQKA")
 
 -- | Map a hand to an integer representing its set size.
-category :: String -> Int
-category hand =
-  case sort (toList (counts hand)) of
-    [5]         -> 6
-    [1,4]       -> 5
-    [2,3]       -> 4
-    [1,1,3]     -> 3
-    [1,2,2]     -> 2
-    [1,1,1,2]   -> 1
-    [1,1,1,1,1] -> 0
-    _           -> error "bad hand"
+category :: String -> [Int]
+category = sortBy (flip compare) . toList . counts
