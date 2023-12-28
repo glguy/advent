@@ -29,10 +29,10 @@ O.#..O.#.#
 module Main (main) where
 
 import Advent (getInputLines, times)
-import Data.List (elemIndices, transpose)
+import Data.List (transpose)
 import Data.Map qualified as Map
 
--- |
+-- | Load the input grid and print the answers to both parts.
 --
 -- >>> :main
 -- 109596
@@ -53,11 +53,14 @@ main =
 load :: [String] -> Int
 load = sum . map weight
   where
-    weight xs = sum [n - w | w <- elemIndices 'O' xs]
+    weight xs = sum [i | (i, 'O') <- zip [n, n - 1 ..] xs]
       where
         n = length xs
 
 -- | Shift the rocks on a single row to the left
+--
+-- >>> shift "..OO.O.#O.OO#"
+-- "OOO....#OOO.#"
 shift :: String -> String
 shift = go 0
   where

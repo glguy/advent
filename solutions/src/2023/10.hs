@@ -81,7 +81,7 @@ main =
     print (abs (polyareaRect route) - perimeter `quot` 2 + 1)
 
 pickStart :: Map Coord Char -> (Coord, Coord)
-pickStart input = head $
+pickStart input = head
   [ (k, dir)
   | (k, 'S') <- Map.assocs input
   , (dir, ok) <- [(south, "L|J"), (north, "F|7"), (west,"7-J")]
