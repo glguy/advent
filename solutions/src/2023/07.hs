@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TransformListComp, ParallelListComp #-}
+{-# Language QuasiQuotes, TransformListComp, ParallelListComp, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 7 solution
@@ -30,6 +30,8 @@ import Advent (format, counts)
 import Data.Foldable (toList)
 import Data.List (sortOn, sortBy, elemIndex, nub)
 import Data.Maybe (fromJust)
+import Data.Map (Map)
+import Data.Map qualified as Map
 
 -- |
 --
@@ -63,7 +65,7 @@ winnings strength input =
 -- >>> strength1 "T55J5" < strength1 "QQQJA"
 -- True
 strength1 :: String -> [Int]
-strength1 hand = category hand ++ map val hand
+strength1 hand = toRank (counts hand) ++ map val hand
   where
     val x = fromJust (x `elemIndex` "23456789TJQKA")
 
@@ -76,15 +78,16 @@ strength1 hand = category hand ++ map val hand
 -- >>> sortOn strength2 ["T55J5", "KTJJT", "QQQJA"]
 -- ["T55J5","QQQJA","KTJJT"]
 strength2 :: String -> [Int]
-strength2 hand =
-  maximum
-    [ category (map rpl hand)
-    | alt <- nub hand
-    , let rpl x = if x == 'J' then alt else x
-    ] ++ map val hand
+strength2 hand = rank ++ map val hand
   where
     val x = fromJust (x `elemIndex` "J23456789TQKA")
+    rank =
+      case Map.updateLookupWithKey (\_ _ -> Nothing) 'J' (counts hand) of
+          (Nothing   , sets) ->          toRank sets
+          (Just wilds, sets) -> improve (toRank sets)
+            where
+              improve []       = [wilds]
+              improve (x : xs) = x + wilds : xs
 
--- | Map a hand to an integer representing its set size.
-category :: String -> [Int]
-category = sortBy (flip compare) . toList . counts
+toRank :: Map Char Int -> [Int]
+toRank = sortBy (flip compare) . toList
