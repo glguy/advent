@@ -23,7 +23,7 @@ Distance:  9  40  200
 71503
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (format, binSearchLargest)
 

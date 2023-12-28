@@ -49,7 +49,7 @@ queue at the same time for each starting point.
 71
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (getInputArray, arrIx)
 import Advent.Coord (east, south, turnLeft, turnRight, Coord)

@@ -46,7 +46,7 @@ ranges and find the lowest bound of the output intervals.
 46
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (format, chunks)
 import Advent.Box (intersectBox, Box', Box(..), subtractBox')

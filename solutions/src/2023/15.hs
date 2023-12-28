@@ -36,9 +36,8 @@ main =
     let boxes = accumArray updateBox [] (0, 255)
                   [(hash lbl, (lbl, cmd)) | (_, (lbl, cmd)) <- input]
 
-    print (sum [ (1+box) * i * len
-               | (box, xs)     <- assocs boxes
-               , (i, (_, len)) <- zip [1..] xs])
+    print (sum [ (1 + box) * sum (zipWith (*) [1..] (map snd xs))
+               | (box, xs) <- assocs boxes])
 
 -- | Run the HASH algorithm on an input string.
 hash :: String -> Int
@@ -52,6 +51,6 @@ updateBox ::
 updateBox prev (lbl, Nothing) = filter ((lbl /=) . fst) prev
 updateBox prev (lbl, Just n ) = go prev
   where
-    go ((k,_) : xs) | lbl == k = (lbl, n) : xs
-    go (x     : xs)            = x : go xs
-    go []                      = [(lbl, n)]
+    go ((k, _) : xs) | lbl == k = (lbl, n) : xs
+    go (x      : xs)            = x : go xs
+    go []                       = [(lbl, n)]
