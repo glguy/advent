@@ -149,4 +149,3 @@ instance UnfoldNat n => Read (Box n) where
       dim :: Compose P Box m -> Compose P Box ('S m)
       dim (Compose more) = Compose (preadParen (p >= 11)
         (Dim <$ tok "Dim" <*> pread <*> pread <*> more))
-    
