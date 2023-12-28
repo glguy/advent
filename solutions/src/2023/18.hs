@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, LambdaCase #-}
+{-# Language QuasiQuotes, LambdaCase, TemplateHaskell #-}
 {-|
 Module      : Main
 Description : Day 18 solution
@@ -42,9 +42,13 @@ U 2 (#7a21e3)
 -}
 module Main (main) where
 
-import Advent (format)
-import Advent.Coord (east, north, origin, scaleCoord, south, west, Coord(..), norm1)
+import Advent (format, stageTH, partialSums)
+import Advent.Coord (Coord(..), east, north, south, west, scaleCoord, norm1)
 import Data.List (tails)
+
+data D = DD | DU | DR | DL
+
+stageTH
 
 -- | Parse the input and print the answers to both parts.
 --
@@ -53,7 +57,7 @@ import Data.List (tails)
 -- 96116995735219
 main :: IO ()
 main =
- do input <- [format|2023 18 (%c %d %(#%x%)%n)*|]
+ do input <- [format|2023 18 (@D %d %(#%x%)%n)*|]
     print (area [scaleCoord n (asUnitVec d) | (d,n,_) <- input])
     print (area [scaleCoord n ([east, south, west, north] !! d) | (_,_,x) <- input, let (n,d) = x `quotRem` 16])
 
@@ -63,19 +67,17 @@ main =
 area :: [Coord] -> Int
 area input = abs (polyareaRect path) + perimeter `quot` 2 + 1
   where
-    path      = scanl (+) origin input
-    perimeter = sum [norm1 n | n <- input]
+    path      = partialSums input
+    perimeter = sum (map norm1 input)
 
 -- | Convert the input character to a unit vector.
-asUnitVec :: Char -> Coord
+asUnitVec :: D -> Coord
 asUnitVec = \case
-  'R' -> east
-  'D' -> south
-  'L' -> west
-  'U' -> north
-  _   -> error "bad direction digit"
+  DR -> east
+  DD -> south
+  DL -> west
+  DU -> north
 
--- | Area of a polygon using Shoelace formula
--- over a closed loop.
+-- | Area of a polygon using Shoelace formula over a closed loop.
 polyareaRect :: [Coord] -> Int
 polyareaRect xs = sum [x1 * y2 - x2 * y1 | C y1 x1 : C y2 x2 : _ <- tails xs] `quot` 2
