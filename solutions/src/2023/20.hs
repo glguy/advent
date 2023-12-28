@@ -73,6 +73,7 @@ part2 incoming = foldl lcm 1 . go 0 (Set.fromList (Map.findWithDefault [] conj i
   where
     [conj] = incoming Map.! "rx"
 
+    -- finds the first button count for each gate in gates
     go n gates ((src, dst, msg) :| xs)
       | Set.null gates = []
       | "button" == src = go (n + 1) gates xs

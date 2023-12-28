@@ -1,4 +1,4 @@
-{-# Language BangPatterns, ImportQualifiedPost #-}
+{-# Language BangPatterns, LambdaCase, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 23 solution
@@ -56,61 +56,61 @@ main :: IO ()
 main =
  do input <- getInputArray 2023 23
     let (_, C ymax _) = bounds input
-    let input1 = buildPaths input part1
-    let input2 = buildPaths input part2
-    print (maximum (enum ymax (C 0 1) input1 0))
-    print (maximum (enum ymax (C 0 1) input2 0))
+    let solve = maximum . enum ymax (C 0 1) 0 . buildPaths input
+    print (solve part1)
+    print (solve part2)
 
 -- | Generate all the possible distances from the start to the end.
-enum :: Int -> Coord -> Map Coord [(Coord, Int)] -> Int -> [Int]
-enum !ymax !here edges !dist
+enum :: Int -> Coord -> Int -> Map Coord [(Coord, Int)] -> [Int]
+enum !ymax !here !dist edges
   | coordRow here == ymax = [dist]
   | otherwise =
    do let edges' = Map.delete here edges
       (next, cost) <- Map.findWithDefault [] here edges
-      enum ymax next edges' (dist + cost)
+      enum ymax next (dist + cost) edges'
 
+-- | Build a map of locations and distances reachable from each key.
 buildPaths ::
-  UArray Coord Char ->
-  (Char -> Coord -> Bool) ->
+  UArray Coord Char       {- ^ input grid        -} ->
+  (Coord -> Char -> Bool) {- ^ adjacency rule    -} ->
   Map Coord [(Coord, Int)]
 buildPaths input isOpen = go Map.empty (C 0 1)
   where
     (_, C ymax _) = bounds input
 
-    go acc x
-      | Map.member x acc = acc
-      | otherwise = foldl go (Map.insert x reachable acc) (map fst reachable)
+    go acc c
+      | Map.member c acc = acc -- already computed, skip
+      | otherwise = foldl go (Map.insert c reachable acc) (map fst reachable)
       where
-        reachable =
-         do c <- adj input isOpen x
-            walk c x 1
+        reachable = map (walk 1 c) (adj input isOpen c)
 
-    walk here there dist =
-      case delete there (adj input isOpen here) of
-        [next] | coordRow next /= ymax -> walk next here (dist+1)
-        _                              -> [(here, dist)]
+    -- find the next intersection in this direction and track the distance to it
+    walk dist prev cur
+      | [next] <- delete prev (adj input isOpen cur) -- only one next location
+      , coordRow next /= ymax                        -- not the terminal location
+      = walk (dist + 1) cur next                     -- keep walking
 
-adj :: UArray Coord Char -> (Char -> Coord -> Bool) -> Coord -> [Coord]
-adj input isOpen here =
+      | otherwise = (cur, dist)                      -- record interesting location
+
+-- | Return all the coordinates that are adjacent to this one.
+adj :: UArray Coord Char -> (Coord -> Char -> Bool) -> Coord -> [Coord]
+adj input isOpen cur =
   [ next
-  | next <- cardinal here
-  , cell <- arrIx input next
-  , isOpen cell (next - here)
+  | next <- cardinal cur
+  , char <- arrIx input next
+  , isOpen (next - cur) char
   ]
 
-part1 :: Char -> Coord -> Bool
-part1 c dir =
-  case c of
-    '#' -> False
-    '>' -> dir == east
-    'v' -> dir == south
-    '^' -> dir == north
-    '<' -> dir == west
-    _   -> True
+-- | Adjacency rule that respects slope characters.
+part1 :: Coord -> Char -> Bool
+part1 dir = \case
+  '#' -> False
+  '>' -> dir == east
+  'v' -> dir == south
+  '^' -> dir == north
+  '<' -> dir == west
+  _   -> True
 
-part2 :: Char -> Coord -> Bool
-part2 c _ =
-  case c of
-    '#' -> False
-    _   -> True
+-- | Adjacency rule that ignores slope characters.
+part2 :: Coord -> Char -> Bool
+part2 _ = ('#' /=)

@@ -115,7 +115,7 @@ snoc :: a -> Queue a -> Queue a
 snoc x (Queue f r s) = exec f (x:r) s
 
 exec :: [a] -> [a] -> Int -> Queue a
-exec f r 0    = fromList (rotate f r [])
+exec f r 0 = fromList (rotate f r [])
 exec f r i = Queue f r (i-1)
 
 rotate :: [a] -> [a] -> [a] -> [a]
