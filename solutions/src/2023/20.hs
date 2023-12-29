@@ -14,6 +14,46 @@ so if this solution doesn't work on yours, you didn't get lucky
 and get a easier case like I did, but I assume we all got the same
 kind of dumb easy case as the last LCM problem this year.
 
+
+>>> :{
+describe :: Int -> Outcome -> String
+describe n (Send src dst msg o) =
+  src ++ " -" ++ (if msg then "high" else "low") ++ "-> " ++
+  dst ++ "\n" ++ describe n o
+describe 0 (Stall _  ) = ""
+describe n (Stall net) = describe (n - 1) (sim net)
+:}
+
+>>> putStr (describe 3 (sim (snd (build (parseInput "broadcaster -> a\n%a -> inv, con\n&inv -> b\n%b -> con\n&con -> output\n")))))
+button -low-> broadcaster
+broadcaster -low-> a
+a -high-> inv
+a -high-> con
+inv -low-> b
+con -high-> output
+b -high-> con
+con -low-> output
+button -low-> broadcaster
+broadcaster -low-> a
+a -low-> inv
+a -low-> con
+inv -high-> b
+con -high-> output
+button -low-> broadcaster
+broadcaster -low-> a
+a -high-> inv
+a -high-> con
+inv -low-> b
+con -low-> output
+b -low-> con
+con -high-> output
+button -low-> broadcaster
+broadcaster -low-> a
+a -low-> inv
+a -low-> con
+inv -high-> b
+con -high-> output
+
 -}
 module Main (main) where
 
@@ -48,18 +88,21 @@ stageTH
 -- 225514321828633
 main :: IO ()
 main =
- do input <- getInput 2023 20
-    let incoming = Map.fromListWith (++) [(k, [v]) | (_, v, ks) <- input, k <- ks]
-    let nodes = Map.fromList [(name, node incoming name kind conns) | (kind, name, conns) <- input]
-
+ do (incoming, nodes) <- build <$> getInput 2023 20
     print (part1 nodes)
     print (part2 incoming nodes)
+
+build :: [(K, String, [String])] -> (Map String [String], Map String Node)
+build input = (incoming, nodes)
+  where
+    incoming = Map.fromListWith (++) [(k, [v]) | (_, v, ks) <- input, k <- ks]
+    nodes = Map.fromList [(name, node incoming name kind conns) | (kind, name, conns) <- input]
 
 node :: Map String [String] -> String -> K -> [String] -> Node
 node incoming name = \case
   K           -> Broadcast
   K_AMPERSAND -> Conjunction (length (Map.findWithDefault [] name incoming)) Set.empty
-  K_PERCENT   -> FlipFlop False
+  K_PERCENT   -> FlipFlop True
 
 part1 :: Map String Node -> Int
 part1 = go (1 :: Int) 0 0 . sim
@@ -73,7 +116,7 @@ part2 :: Map String [String] -> Map String Node -> Int
 part2 incoming = foldl lcm 1 . go 1 gates0 . sim
   where
     [conj] = incoming Map.! "rx"
-    
+
     -- all the gates feeding into @conj@
     gates0 = Set.fromList (Map.findWithDefault [] conj incoming)
 
@@ -102,10 +145,9 @@ sim = dispatch "button" "broadcaster" False Queue.Empty
 
         -- flipflop: on low, toggle state and send to nexts
         Just (FlipFlop mode next)
-          | not msg -> send out next st' -- was on sends low
+          | not msg -> send mode next st' -- was on sends low
           where
-            st' = Map.insert dst (FlipFlop out next) st
-            out = not mode
+            st' = Map.insert dst (FlipFlop (not mode) next) st
 
         -- conjunction: remember incoming value, transmit nand
         Just (Conjunction sz inc next) -> send out next st'
