@@ -60,11 +60,9 @@ L7JLJL-JLJLJL--JLJ.L
 -}
 module Main (main) where
 
-import Advent (getInputMap)
+import Advent (getInputArray, arrIx)
 import Advent.Coord (invert, invert', south, north, west, Coord(C))
-import Advent.Search (dfsOn)
-import Data.Map (Map)
-import Data.Map qualified as Map
+import Data.Array.Unboxed (UArray, (!), assocs)
 
 -- | Parse the input and print out answers to both parts.
 --
@@ -73,29 +71,30 @@ import Data.Map qualified as Map
 -- 541
 main :: IO ()
 main =
- do input <- getInputMap 2023 10
+ do input <- getInputArray 2023 10
     let (start, dir0) = pickStart input
         route = getLoop (map fst (iterate (step input) (start, dir0)))
         perimeter = length route
     print (perimeter `quot` 2)
     print (abs (polyareaRect route) - perimeter `quot` 2 + 1)
 
-pickStart :: Map Coord Char -> (Coord, Coord)
+pickStart :: UArray Coord Char -> (Coord, Coord)
 pickStart input = head
   [ (k, dir)
-  | (k, 'S') <- Map.assocs input
+  | (k, 'S') <- assocs input
   , (dir, ok) <- [(south, "L|J"), (north, "F|7"), (west,"7-J")]
-  , let next = Map.findWithDefault '.' (k + dir) input
+  , next <- arrIx input (k + dir)
   , next `elem` ok
   ]
 
 getLoop :: Eq a => [a] -> [a]
 getLoop (x:xs) = x : takeWhile (x /=) xs
+getLoop [] = error "getLoop: empty input"
 
-step :: Map Coord Char -> (Coord, Coord) -> (Coord, Coord)
+step :: UArray Coord Char -> (Coord, Coord) -> (Coord, Coord)
 step inp (here, dir) =
   let here' = here + dir in
-  (here', pipeEffect (inp Map.! here') dir)
+  (here', pipeEffect (inp ! here') dir)
 
 pipeEffect :: Char -> Coord -> Coord
 pipeEffect = \case

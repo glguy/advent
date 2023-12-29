@@ -27,12 +27,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Data.Map (Map)
-import Data.Map qualified as Map
-import Data.Char (isDigit)
-
-import Advent (getInputMap, ordNub)
+import Advent (getInputArray, ordNub, arrIx)
 import Advent.Coord (Coord, left, neighbors, right)
+import Data.Array.Unboxed (UArray, assocs)
+import Data.Char (isDigit)
+import Data.Map qualified as Map
+import Data.Maybe (fromMaybe)
 
 -- | Parse the input schematic and print answers to both parts.
 --
@@ -41,21 +41,21 @@ import Advent.Coord (Coord, left, neighbors, right)
 -- 81463996
 main :: IO ()
 main =
- do input <- getInputMap 2023 3
+ do input <- getInputArray 2023 3
     let numbers = extractNumbers input
     print (sum [partNo | (partNo, _:_) <- numbers])
     print (sum [a * b | [a, b] <- gearNumbers numbers])
 
 -- | Extract the numbers from the diagram and the parts adjacent to them.
-extractNumbers :: Map Coord Char -> [(Int, [(Coord, Char)])]
+extractNumbers :: UArray Coord Char -> [(Int, [(Coord, Char)])]
 extractNumbers input =
   [ (read digits, partsNear cs)
-  | (c, digit) <- Map.assocs input
+  | (c, digit) <- assocs input
   , isDigit digit, not (isDigit (lkp (left c))) -- left-boundary of number
   , let (cs, digits) = unzip (numbersAfter c)
   ]
   where
-    lkp i = Map.findWithDefault '.' i input
+    lkp = fromMaybe '.' . arrIx input
     numbersAfter start =
       [ (c, digit)
       | c <- iterate right start

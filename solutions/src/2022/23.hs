@@ -22,16 +22,16 @@ Maintainer  : emertens@gmail.com
 20
 
 -}
-module Main where
+module Main (main) where
 
-import Data.Array.Unboxed (Ix(rangeSize), UArray, accumArray)
+import Data.Array.Unboxed (UArray, assocs, rangeSize, UArray, accumArray)
 import Data.List (foldl', tails)
 import Data.Map qualified as Map
 import Data.Maybe (fromMaybe)
 import Data.Set (Set)
 import Data.Set qualified as Set
 
-import Advent (arrIx, getInputMap)
+import Advent (arrIx, getInputArray)
 import Advent.Coord (Coord, above, below, boundingBox, left, neighbors, right)
 
 -- |
@@ -40,7 +40,8 @@ import Advent.Coord (Coord, above, below, boundingBox, left, neighbors, right)
 -- 1023
 main :: IO ()
 main =
- do elves <- Map.keysSet . Map.filter ('#'==) <$> getInputMap 2022 23
+ do input <- getInputArray 2022 23
+    let elves = Set.fromList [c | (c, '#') <- assocs input]
     let states = sim elves
 
     -- part 1

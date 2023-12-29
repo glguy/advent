@@ -28,12 +28,12 @@ module Main (main) where
 
 import Advent (format, counts)
 import Data.Foldable (toList)
-import Data.List (sortOn, sortBy, elemIndex, nub)
+import Data.List (sortOn, sortBy, elemIndex)
 import Data.Maybe (fromJust)
 import Data.Map (Map)
 import Data.Map qualified as Map
 
--- |
+-- | Parse the input hands and print the answers to both parts.
 --
 -- >>> :main
 -- 248422077
