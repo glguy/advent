@@ -1,4 +1,4 @@
-{-# Language LambdaCase, ImportQualifiedPost, BlockArguments #-}
+
 {-|
 Module      : Main
 Description : Day 10 solution
@@ -22,6 +22,46 @@ This solution finds the contained area using
 :}
 4
 1
+
+>>> :{
+:main +
+"-L|F7
+7S-7|
+L|7||
+-L-J|
+L|-JF
+"
+:}
+4
+1
+
+>>> :{
+:main +
+"7-F7-
+.FJ|7
+SJLL7
+|F--J
+LJ.LJ
+"
+:}
+8
+1
+
+>>> :{
+:main +
+"...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........
+"
+:}
+23
+4
 
 >>> :{
 :main +
@@ -61,8 +101,9 @@ L7JLJL-JLJLJL--JLJ.L
 module Main (main) where
 
 import Advent (getInputArray, arrIx)
-import Advent.Coord (invert, invert', south, north, west, Coord(C))
+import Advent.Coord (invert, invert', south, north, west, manhattan, Coord(C))
 import Data.Array.Unboxed (UArray, (!), assocs)
+import Data.List (tails)
 
 -- | Parse the input and print out answers to both parts.
 --
@@ -72,40 +113,37 @@ import Data.Array.Unboxed (UArray, (!), assocs)
 main :: IO ()
 main =
  do input <- getInputArray 2023 10
-    let (start, dir0) = pickStart input
-        route = getLoop (map fst (iterate (step input) (start, dir0)))
-        perimeter = length route
+    let route = uncurry (follow input) (pickStart input)
+        perimeter = sum (zipWith manhattan route (tail route))
     print (perimeter `quot` 2)
     print (abs (polyareaRect route) - perimeter `quot` 2 + 1)
 
+-- | Determine the location of the start cell and a valid direction
+-- leaving it.
 pickStart :: UArray Coord Char -> (Coord, Coord)
 pickStart input = head
-  [ (k, dir)
-  | (k, 'S') <- assocs input
+  [ (c, dir)
+  | (c, 'S')  <- assocs input
   , (dir, ok) <- [(south, "L|J"), (north, "F|7"), (west,"7-J")]
-  , next <- arrIx input (k + dir)
+  , next      <- arrIx input (c + dir)
   , next `elem` ok
   ]
 
-getLoop :: Eq a => [a] -> [a]
-getLoop (x:xs) = x : takeWhile (x /=) xs
-getLoop [] = error "getLoop: empty input"
-
-step :: UArray Coord Char -> (Coord, Coord) -> (Coord, Coord)
-step inp (here, dir) =
-  let here' = here + dir in
-  (here', pipeEffect (inp ! here') dir)
-
-pipeEffect :: Char -> Coord -> Coord
-pipeEffect = \case
-  '-' -> id; '|' -> id
-  '7' -> invert ; 'L' -> invert
-  'J' -> invert'; 'F' -> invert'
-  c   -> error ("bad pipe character: " ++ show c)
-
--- | Area of a polygon using Shoelace formula.
-polyareaRect :: [Coord] -> Int
-polyareaRect xs = f 0 (xs ++ take 1 xs)
+-- | Trace out the closed loop from start to start
+follow :: UArray Coord Char -> Coord -> Coord -> [Coord]
+follow input start dir0 = start : go dir0 start 
   where
-    f acc (C y1 x1 : cs@(C y2 x2 : _)) = f (acc + x1 * y2 - x2 * y1) cs
-    f acc _ = acc `quot` 2
+    go dir prev =
+      let here = dir + prev in
+      case input ! here of
+        'S' -> [here]
+        '7' -> here : go (invert  dir) here
+        'L' -> here : go (invert  dir) here
+        'J' -> here : go (invert' dir) here
+        'F' -> here : go (invert' dir) here
+        _   ->        go dir           here
+
+-- | Area of a polygon using Shoelace formula on a closed loop
+-- in a clockwise direction.
+polyareaRect :: [Coord] -> Int
+polyareaRect xs = sum [x1 * y2 - x2 * y1 | C y1 x1 : C y2 x2 : _ <- tails xs] `quot` 2
