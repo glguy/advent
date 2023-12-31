@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, TemplateHaskell #-}
 {-|
 Module      : Main
 Description : Day 2 solution
@@ -26,10 +26,13 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 -}
 module Main (main) where
 
+import Advent (format, stageTH)
 import Data.Map (Map)
 import Data.Map qualified as Map
 
-import Advent (format)
+data C = Cred | Cgreen | Cblue deriving (Eq, Ord, Show)
+
+stageTH
 
 -- | Parse the input and print the answers to both parts.
 --
@@ -38,19 +41,19 @@ import Advent (format)
 -- 60948
 main :: IO ()
 main =
- do input <- [format|2023 2 (Game %d: (%d %s)&(, )&(; )%n)*|]
+ do input <- [format|2023 2 (Game %d: (%d @C)&(, )&(; )%n)*|]
     let summaries = [(i, summarizeGame rounds) | (i, rounds) <- input]
     print (sum [i | (i, summary) <- summaries, Map.isSubmapOfBy (<=) summary part1])
     print (sum [product summary | (_, summary) <- summaries])
 
 -- | Find the minimum marbles needed to play a whole game
-summarizeGame :: [[(Int, String)]] -> Map String Int
+summarizeGame :: [[(Int, C)]] -> Map C Int
 summarizeGame rs = Map.unionsWith max [summarizeRound r | r <- rs]
 
 -- | Find the minimum marbles needed to play round in a game
-summarizeRound :: [(Int, String)] -> Map String Int
-summarizeRound r = Map.fromListWith (+) [(color, count) | (count, color) <- r]
+summarizeRound :: [(Int, C)] -> Map C Int
+summarizeRound r = Map.fromList [(color, count) | (count, color) <- r]
 
 -- | Marbles available in part 1
-part1 :: Map String Int
-part1 = Map.fromList [("red", 12), ("green", 13), ("blue", 14)]
+part1 :: Map C Int
+part1 = Map.fromList [(Cred, 12), (Cgreen, 13), (Cblue, 14)]
