@@ -50,7 +50,6 @@ module Main (main) where
 
 import Advent (format, chunks)
 import Advent.Box (intersectBox, Box', Box(..), subtractBox')
-import Control.Exception (assert)
 import Control.Monad (foldM)
 import Data.Map (Map)
 import Data.Map qualified as Map
@@ -74,13 +73,15 @@ type IntervalRewriter = Map Int (Int, Int)
 smallestDestination :: [IntervalRewriter] -> [Interval] -> Int
 smallestDestination maps = lowerBound . minimum . concatMap (applyMaps maps)
 
--- Verify that all the maps are presented in order.
 -- Construct an interval rewriter from each sublist of entries
+-- from seed to location
 checkMaps :: [(String, String, [(Int, Int, Int)])] -> [IntervalRewriter]
-checkMaps input = assert (froms ++ ["location"] == "seed" : tos) (map toRewriter maps)
+checkMaps input = go "seed" maps
   where
-    (froms, tos, maps) = unzip3 input
-    toRewriter xs = Map.fromList [(src,  (src + len, dst - src)) | (dst, src, len) <- xs]
+    toRewriter xs = Map.fromList [(src, (src + len, dst - src)) | (dst, src, len) <- xs]
+    maps = Map.fromList [(src, (dst, entries)) | (src, dst, entries) <- input]
+    go "location" _ = []
+    go k m | (k', x) <- maps Map.! k = toRewriter x : go k' (Map.delete k m)
 
 -- | Apply the rewrite maps left to right to the input interval.
 applyMaps :: [IntervalRewriter] -> Interval -> [Interval]
