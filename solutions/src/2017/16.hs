@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, DataKinds, NumDecimals #-}
+{-# Language QuasiQuotes, DataKinds, NumDecimals, LambdaCase, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 16 solution
@@ -22,8 +22,22 @@ combination operation ('<>') is associative, as required for dances to be a
 'Monoid' because the component permutations themselves support an associative
 composition.
 
+$setup
+>>> :set -XDataKinds -XNumDecimals
+
+>>> let steps = map danceStep (parseInput "s1,x3/4,p3/b\n")
+>>> let dance = mconcat steps :: Dance 5
+>>> mapM_ (putStrLn . runDance) (scanl (<>) dance steps)
+baedc
+cbaed
+cbade
+ceadb
+
+>>> putStrLn (runDance (stimes (1e9 :: Int) dance))
+abcde
+
 -}
-module Main where
+module Main (main) where
 
 import Advent.Format (format)
 import Advent.Permutation (Permutation, rotateRight, runPermutation, swap)
@@ -31,22 +45,26 @@ import Data.Semigroup (Dual(..), stimes)
 import Data.Char (chr, ord)
 import GHC.TypeLits (KnownNat)
 
--- $setup
--- >>> :set -XDataKinds
+[format|(s%d|x%d/%d|p%c/%c)&,%n|]
 
 -- | Print the solutions to both parts of the day 16 problem. The input
 -- file can be overridden via command-line arguments.
+--
+-- >>> :main
+-- fnloekigdmpajchb
+-- amkjepdhifolgncb
 main :: IO ()
 main =
- do input <- [format|2017 16 (s%d|x%d/%d|p%c/%c)&,%n|]
-
-    let toDance (Left (Left n)) = spinDance n
-        toDance (Left (Right (x,y))) = swapDance x y
-        toDance (Right (x,y)) = partDance x y
-    let dance = foldMap toDance input :: Dance 16
-
-    putStrLn (runDance dance)
+ do dance <- foldMap danceStep <$> getInput 2017 16
+    putStrLn (runDance (dance :: Dance 16))
     putStrLn (runDance (stimes (1e9 :: Int) dance))
+
+-- | Convert a single input instruction into a dance permutation.
+danceStep :: KnownNat n => Either (Either Int (Int, Int)) (Char, Char) -> Dance n
+danceStep = \case
+  Left (Left n)      -> spinDance n
+  Left (Right (x,y)) -> swapDance x y
+  Right (x,y)        -> partDance x y
 
 -- | Map the numbers starting at @0@ to the letters starting at @a@.
 --

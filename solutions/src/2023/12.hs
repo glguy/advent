@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes #-}
+{-# Language QuasiQuotes, TemplateHaskell #-}
 {-|
 Module      : Main
 Description : Day 12 solution
@@ -43,9 +43,13 @@ group constraint.
 -}
 module Main (main) where
 
-import Advent (format, arrIx)
+import Advent (format, arrIx, stageTH)
 import Data.Array (range, (!), listArray)
 import Data.List (intercalate)
+
+data C = C_HASH | C_DOT | C_QUESTION
+
+stageTH
 
 -- | Parse the input sequences and print out answers to both parts.
 --
@@ -54,7 +58,7 @@ import Data.List (intercalate)
 -- 2043098029844
 main :: IO ()
 main =
- do input <- [format|2023 12 (%s %d&,%n)*|]
+ do input <- [format|2023 12 (@C* %d&,%n)*|]
     print (sum [ways g s | (s,g) <- input])
     print (sum [ways (concat (replicate 5 g)) (unfoldSprings s) | (s,g) <- input])
 
@@ -62,15 +66,15 @@ main =
 --
 -- >>> unfoldSprings ".#"
 -- ".#?.#?.#?.#?.#"
-unfoldSprings :: String -> String
-unfoldSprings = intercalate "?" . replicate 5
+unfoldSprings :: [C] -> [C]
+unfoldSprings = intercalate [C_QUESTION] . replicate 5
 
 -- | Given a group clue and an spring sequence, compute the number
 -- of unique rows that match the clue.
 --
 -- >>> ways [3,2,1] "?###????????"
 -- 10
-ways :: [Int] -> String -> Int
+ways :: [Int] -> [C] -> Int
 ways groups springs = answersA ! (0,0)
   where
     groupsN = length groups
@@ -91,10 +95,10 @@ ways groups springs = answersA ! (0,0)
           hashCase = startGroup groupI (springI + 1)
           {-# Inline hashCase #-} in -- improved benchmark results
       case arrIx springsA springI of
-        Just '.'   -> dotCase
-        Just '#'   -> hashCase
-        Just '?'   -> hashCase + dotCase
-        _          -> if groupI == groupsN then 1 else 0
+        Nothing         -> if groupI == groupsN then 1 else 0
+        Just C_DOT      -> dotCase
+        Just C_HASH     -> hashCase
+        Just C_QUESTION -> hashCase + dotCase
 
     -- compute the number of ways assuming the next group starts here
     startGroup groupI springI =
@@ -103,13 +107,17 @@ ways groups springs = answersA ! (0,0)
         Nothing    -> 0 -- no group available to start
 
     loopGroup groupI springI 0 = -- end of group
+      let dotCase = rec groupI (springI + 1) in
       case arrIx springsA springI of
-        Nothing    -> if groupI == groupsN then 1 else 0
-        Just '#'   -> 0 -- group too long
-        _          -> rec groupI (springI + 1)
+        Nothing         -> if groupI == groupsN then 1 else 0
+        Just C_DOT      -> dotCase
+        Just C_HASH     -> 0       -- group too long
+        Just C_QUESTION -> dotCase -- question mark forced to be dot
 
     loopGroup groupI springI n = -- middle of group
+      let hashCase = loopGroup groupI (springI + 1) (n - 1) in
       case arrIx springsA springI of
-        Just '.'   -> 0 -- group too short
-        Nothing    -> 0 -- group too short
-        _          -> loopGroup groupI (springI + 1) (n - 1)
+        Nothing         -> 0 -- group too short
+        Just C_DOT      -> 0 -- group too short
+        Just C_HASH     -> hashCase
+        Just C_QUESTION -> hashCase -- question mark forced to be hash

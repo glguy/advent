@@ -115,13 +115,15 @@ makeDecs :: String -> DecsQ
 makeDecs str =
  do fmt <- parse str
     [d|
-      parseInput :: String -> $(toType fmt)
+      type Input = $(toType fmt)
+
+      parseInput :: String -> Input
       parseInput str =
         case readP_to_S ($(toReadP fmt) <* eof) str of
           (x, _) : _ -> x
           _          -> error "bad input parse"
 
-      getInput :: Int -> Int -> IO $(toType fmt)
+      getInput :: Int -> Int -> IO Input
       getInput y d = parseInput <$> getRawInput y d
       |]
 
