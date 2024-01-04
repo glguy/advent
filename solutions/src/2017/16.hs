@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, DataKinds, NumDecimals, ScopedTypeVariables, OverloadedStrings #-}
+{-# Language QuasiQuotes, DataKinds, NumDecimals #-}
 {-|
 Module      : Main
 Description : Day 16 solution
@@ -25,9 +25,9 @@ composition.
 -}
 module Main where
 
-import Advent.Format ( format )
+import Advent.Format (format)
 import Advent.Permutation (Permutation, rotateRight, runPermutation, swap)
-import Data.Semigroup (Semigroup, (<>), Dual(..), sconcat, stimes)
+import Data.Semigroup (Dual(..), stimes)
 import Data.Char (chr, ord)
 import GHC.TypeLits (KnownNat)
 
@@ -46,7 +46,7 @@ main =
     let dance = foldMap toDance input :: Dance 16
 
     putStrLn (runDance dance)
-    putStrLn (runDance (stimes 1e9 dance))
+    putStrLn (runDance (stimes (1e9 :: Int) dance))
 
 -- | Map the numbers starting at @0@ to the letters starting at @a@.
 --
