@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes #-}
+{-# Language QuasiQuotes, BlockArguments, LambdaCase, TransformListComp #-}
 {-|
 Module      : Main
 Description : Day 24 solution
@@ -8,59 +8,69 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2015/day/24>
 
+>>> :{
+:main +
+"1
+2
+3
+4
+5
+7
+8
+9
+10
+11
+"
+:}
+99
+44
+
 -}
-module Main where
+module Main (main) where
 
 import Advent.Format (format)
-import Data.List (sortBy, sort)
-import Data.Maybe (listToMaybe)
+import Advent (pickOne)
+import Data.List (sortBy, sort, tails)
 import Data.Ord (comparing)
+import Advent.Queue (Queue)
+import qualified Advent.Queue as Queue
 
-data Packages = Packages { pkgSum, pkgCount, pkgProduct :: !Int }
-  deriving (Eq, Show)
+-- order specifically chosen to get desired Ord instance
+data Packages = Packages { pkgProduct, pkgSum :: !Int }
+  deriving (Eq, Ord, Show)
 
 noPackages :: Packages
 noPackages = Packages
-  { pkgCount = 0
-  , pkgSum = 0
+  { pkgSum     = 0
   , pkgProduct = 1
   }
 
 addPackage :: Int -> Packages -> Packages
 addPackage p pkgs = Packages
-  { pkgCount = pkgCount pkgs + 1
-  , pkgSum   = pkgSum   pkgs + p
-  , pkgProduct = fromIntegral p * pkgProduct pkgs
+  { pkgSum     = pkgSum   pkgs   + p
+  , pkgProduct = pkgProduct pkgs * fromIntegral p
   }
 
-instance Ord Packages where
-  compare = comparing pkgCount <> comparing pkgProduct <> comparing pkgSum
-
-search :: Int -> [Int] -> Maybe Int
-search n ps0 = listToMaybe $
-  do (pkg,ps1) <- sortBy (comparing fst) (start ps0)
-     moreGroups (n-1) ps1
-     return (pkgProduct pkg)
-     
+solve :: Int -> [Int] -> Int
+solve n input = go (Queue.singleton (noPackages, sort input))
   where
-  goal = sum ps0 `quot` n
+    target = sum input `quot` n
 
-  moreGroups 1 _ = [()]
-  moreGroups i ps1 =
-    do (_,ps2) <- start ps1
-       moreGroups (i-1) ps2
+    go = \case
+      Queue.Empty -> error "no solution"
+      (pkg, pkgs) Queue.:<| q
+        | target == pkgSum pkg -> pkgProduct pkg
+        | otherwise -> go (Queue.appendList q more)
+        where
+          more = [(pkg', xs) | x:xs <- tails pkgs, let pkg' = addPackage x pkg, then takeWhile by pkgSum pkg' <= target]
 
-  start = aux noPackages [] . sort
-
-  aux :: Packages -> [Int] -> [Int] -> [(Packages,[Int])]
-  aux a qs _ | pkgSum a == goal = [(a,qs)]
-  aux _ _ [] = []
-  aux a _ (p:_) | pkgSum (addPackage p a) > goal = []
-  aux a qs (p:ps) = aux (addPackage p a) qs ps
-                 ++ aux a (p:qs) ps
-
+-- | Parse the input and print the solutions to both parts.
+--
+-- >>> :main
+-- 11846773891
+-- 80393059
 main :: IO ()
 main =
   do input <- [format|2015 24 (%u%n)*|]
-     print (search 3 input)
-     print (search 4 input)
+     print (solve 3 input)
+     print (solve 4 input)
