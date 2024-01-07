@@ -11,13 +11,12 @@ Maintainer  : emertens@gmail.com
 Buy an equipment loadout and see how it fairs against a boss in a battle.
 
 -}
-module Main where
+module Main (main) where
 
 import Advent.Format (format)
-import Data.List ( maximumBy, minimumBy )
-import Data.Ord ( comparing )
+import Data.List (partition)
 
-data Item = Item { itemName :: String, itemCost, itemDamage, itemArmor :: Int }
+data Item = Item { itemName :: String, itemCost, itemDamage, itemArmor :: !Int }
   deriving (Show, Read)
 
 -- | >>> :main
@@ -25,17 +24,10 @@ data Item = Item { itemName :: String, itemCost, itemDamage, itemArmor :: Int }
 -- 148
 main :: IO ()
 main =
- do (hp,dmg,armor) <- [format|2015 21 Hit Points: %u%nDamage: %u%nArmor: %u%n|]
-    let win = fight hp dmg armor
-    print $ minimum $ map itemCost
-          $ filter win
-          $ gearOptions
-    print $ maximum $ map itemCost
-          $ filter (not . win)
-          $ gearOptions
-
-emptyItem :: String -> Item
-emptyItem name = Item name 0 0 0 
+ do (hp, dmg, armor) <- [format|2015 21 Hit Points: %u%nDamage: %u%nArmor: %u%n|]
+    let (wins, losses) = partition (fight hp dmg armor) gearOptions
+    print (minimum (map itemCost wins))
+    print (maximum (map itemCost losses))
 
 --Weapons:    Cost  Damage  Armor
 weapons :: [Item]
@@ -78,26 +70,27 @@ combine x y = Item
 
 gearOptions :: [Item]
 gearOptions =
-  do weapon <- weapons
-     armor  <- emptyItem "unarmored" : armors
-     ring   <- chooseUpTo 2 rings
-     return (foldl1 combine (weapon : armor : ring))
+ do weapon <- weapons
+    armor  <- chooseUpTo 1 armors
+    ring   <- chooseUpTo 2 rings
+    return (foldl1 combine (weapon : armor ++ ring))
 
 chooseUpTo :: Int -> [a] -> [[a]]
-chooseUpTo 0 _ = [[]]
-chooseUpTo _ [] = [[]]
-chooseUpTo n (x:xs) = map (x:) (chooseUpTo (n-1) xs) ++ chooseUpTo n xs
+chooseUpTo n (x:xs) | n >= 1 = map (x:) (chooseUpTo (n-1) xs) ++ chooseUpTo n xs
+chooseUpTo _ _               = [[]]
 
 fight ::
-  Int {- ^ hit points -} ->
-  Int {- ^ damage -} ->
-  Int {- ^ armor -} ->
-  Item ->
-  Bool
+  Int  {- ^ boss hit points -} ->
+  Int  {- ^ boss damage     -} ->
+  Int  {- ^ boss armor      -} ->
+  Item {- ^ player weapon   -} ->
+  Bool {- ^ player wins     -}
 fight hp dmg armor gear = outcome 100 (max 1 (dmg - itemArmor gear)) hp (max 1 (itemDamage gear - armor))
 
 outcome ::
-  Int -> Int ->
-  Int -> Int ->
-  Bool
+  Int  {- ^ player 1 HP               -} ->
+  Int  {- ^ player 1 HP lost per turn -} ->
+  Int  {- ^ player 2 HP               -} ->
+  Int  {- ^ player 2 HP lost per turn -} ->
+  Bool {- ^ player 1 wins             -}
 outcome hp1 dec1 hp2 dec2 = (hp1-1)`quot`dec1 >= (hp2-1)`quot`dec2

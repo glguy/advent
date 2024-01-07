@@ -71,6 +71,6 @@ solve n input = go (Queue.singleton (noPackages, sort input))
 -- 80393059
 main :: IO ()
 main =
-  do input <- [format|2015 24 (%u%n)*|]
-     print (solve 3 input)
-     print (solve 4 input)
+ do input <- [format|2015 24 (%u%n)*|]
+    print (solve 3 input)
+    print (solve 4 input)
