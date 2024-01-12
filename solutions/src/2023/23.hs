@@ -51,13 +51,13 @@ import Data.Array.Unboxed (bounds, UArray)
 import Data.List (delete)
 import Data.Map (Map)
 import Data.Map qualified as Map
-import Debug.Trace
 
 main :: IO ()
 main =
  do input <- getInputArray 2023 23
     let (_, C ymax _) = bounds input
     let solve = maximum . enum ymax (C 0 1) 0 . buildPaths input
+
     print (solve part1)
     print (solve part2)
 
