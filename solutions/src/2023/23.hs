@@ -51,6 +51,7 @@ import Data.Array.Unboxed (bounds, UArray)
 import Data.List (delete)
 import Data.Map (Map)
 import Data.Map qualified as Map
+import Debug.Trace
 
 main :: IO ()
 main =
@@ -86,8 +87,8 @@ buildPaths input isOpen = go Map.empty (C 0 1)
 
     -- find the next intersection in this direction and track the distance to it
     walk dist prev cur
-      | [next] <- delete prev (adj input isOpen cur) -- only one next location
-      , coordRow next /= ymax                        -- not the terminal location
+      | coordRow cur /= ymax                         -- not the terminal location
+      , [next] <- delete prev (adj input isOpen cur) -- only one next location
       = walk (dist + 1) cur next                     -- keep walking
 
       | otherwise = (cur, dist)                      -- record interesting location
