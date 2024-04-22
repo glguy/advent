@@ -13,7 +13,7 @@ copyright:           2021 Eric Mertens
 homepage:            https://github.com/glguy/advent2021
 bug-reports:         https://github.com/glguy/advent2021/issues
 build-type:          Simple
-Tested-With:         GHC ==9.4.8, GHC ==9.6.3, GHC ==9.8.1
+Tested-With:         GHC ==9.4.8, GHC ==9.6.5, GHC ==9.8.2
 
 source-repository head
   type: git
