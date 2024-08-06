@@ -11,13 +11,13 @@ author:              Eric Mertens
 maintainer:          emertens@gmail.com
 copyright:           2021 Eric Mertens
 build-type:          Simple
-Tested-With:         GHC ==9.4.8, GHC ==9.6.5, GHC ==9.8.2
+Tested-With:         GHC == {9.6.6, 9.8.2, 9.10.1}
 
 library
   hs-source-dirs:    .
   exposed-modules:   AsmProg
   build-depends:
-    base ^>= {4.17, 4.18, 4.19},
+    base ^>= {4.18, 4.19, 4.20},
     advent,
     lens,
     mtl
