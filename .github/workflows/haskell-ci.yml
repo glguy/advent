@@ -212,7 +212,7 @@ jobs:
           cd ${PKGDIR_advent} || false
           ${CABAL} -vnormal check
           cd ${PKGDIR_solutions} || false
-          ${CABAL} -vnormal check
+          ${CABAL} -vnormal check -imissing-upper-bounds
           cd ${PKGDIR_intcode} || false
           ${CABAL} -vnormal check
           cd ${PKGDIR_asmprog} || false
