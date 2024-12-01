@@ -1113,3 +1113,10 @@ executable sln_2023_25
   import:              day
   main-is:             2023/25.hs
   build-depends:       random, fgl
+
+
+executable sln_2024_01
+  import:              day
+  main-is:             2024/01.hs
+  build-depends:       containers
+

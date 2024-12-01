@@ -469,3 +469,6 @@ cradle:
       component: "sln_2023_24"
     - path: "./solutions/src/2023/25.hs"
       component: "sln_2023_25"
+
+    - path: "./solutions/src/2024/01.hs"
+      component: "sln_2024_01"
