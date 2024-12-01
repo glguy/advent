@@ -39,9 +39,7 @@ main :: IO ()
 main =
  do (left, right) <- unzip <$> [format|2024 1 (%u   %u%n)*|]
     print (sum (zipWith distance (sort left) (sort right)))
-    
-    let tab = counts right
-    print (sum [x * Map.findWithDefault 0 x tab | x <- left])
+    print (sum [k * v | (k, v) <- Map.assocs (Map.intersectionWith (*) (counts left) (counts right))])
 
 -- | Absolute distance between two numbers.
 distance :: Int -> Int -> Int
