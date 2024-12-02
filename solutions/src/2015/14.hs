@@ -46,7 +46,8 @@ main =
 -- | Compute the position of each reindeer at each second of the race
 positions :: Reindeer -> [Int]
 positions r
-  = partialSums
+  = drop 1
+  $ partialSums
   $ cycle
   $ replicate (stamina   r) (speed r) ++ replicate (breaktime r) 0
 
