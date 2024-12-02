@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ParallelListComp #-}
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 2 solution
@@ -37,7 +37,7 @@ main :: IO ()
 main =
  do input <- [format|2024 2 (%u& %n)*|]
     print (countBy isSafe input)
-    print (countBy (\x -> any isSafe (x : holes x)) input)
+    print (countBy (\x -> any isSafe (x : removeOne x)) input)
 
 isSafe :: [Int] -> Bool
 isSafe xs = all p1 ds || all p2 ds
@@ -46,5 +46,5 @@ isSafe xs = all p1 ds || all p2 ds
         p2 x = 1 <= x && x <= 3
         ds = zipWith (-) xs (drop 1 xs)
 
-holes :: [a] -> [[a]]
-holes xs = [l ++ r | l <- inits xs | _ : r <- tails xs]
+removeOne :: [a] -> [[a]]
+removeOne xs = zipWith (++) (inits xs) (drop 1 (tails xs))
