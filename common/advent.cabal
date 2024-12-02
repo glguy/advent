@@ -56,9 +56,12 @@ library
     Advent.Tokenize
 
   other-modules:
+    Advent.Format.Enum
     Advent.Format.Lexer
     Advent.Format.Parser
+    Advent.Format.Show
     Advent.Format.Types
+    Advent.Format.Utils
 
   build-tool-depends: alex:alex, happy:happy
 

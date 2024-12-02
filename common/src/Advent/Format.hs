@@ -56,13 +56,16 @@ Structures:
 -}
 module Advent.Format (format) where
 
-import Advent.Prelude (countBy)
-import Advent.Input (getRawInput)
+import Advent.Format.Enum (enumCases)
 import Advent.Format.Lexer (alexScanTokens, AlexPosn(..))
 import Advent.Format.Parser (parseFormat, ParseError(..))
-import Advent.Format.Types
+import Advent.Format.Show (showFormat, showToken)
+import Advent.Format.Types (Format(..))
+import Advent.Format.Utils
+import Advent.Input (getRawInput)
+import Advent.Prelude (countBy)
 import Control.Applicative ((<|>), some)
-import Control.Monad ((<=<), void)
+import Control.Monad ((<=<), when, void)
 import Data.Char (isDigit, isSpace, isUpper, isAsciiLower, isAsciiUpper, isHexDigit)
 import Data.Maybe (listToMaybe)
 import Language.Haskell.TH
@@ -73,7 +76,7 @@ import Text.ParserCombinators.ReadP
 parse :: String -> Q Format
 parse txt =
   case parseFormat (alexScanTokens txt) of
-    Right fmt                -> pure fmt
+    Right fmt                -> pure (simplify fmt)
     Left (Unclosed p)        -> failAt p "Unclosed parenthesis"
     Left (UnexpectedToken p t) -> failAt p ("Unexpected token " ++ showToken t)
     Left UnexpectedEOF       -> fail "Format parse error, unexpected end-of-input"
@@ -176,7 +179,7 @@ toReadP s =
           [| void (some $(toReadP x)) |]
 
     SepBy x y ->
-     do whenM (andM (acceptsEmpty x) (acceptsEmpty y)) (fail ("Both arguments to & accept ε: " ++ showFormat 0 s ""))
+     do whenM (allM acceptsEmpty [x, y]) (fail ("Both arguments to & accept ε: " ++ showFormat 0 s ""))
         if interesting x then
           [| sepBy $(toReadP x) $(toReadP y) |]
         else
@@ -195,8 +198,8 @@ toReadP s =
 
     Group x -> toReadP x
 
-    _ ->
-      case [(interesting x, toReadP x) | x <- follows s []] of
+    Follow xs ->
+      case [(interesting x, toReadP x) | x <- xs] of
         [] -> [| pure () |]
         xxs@((ix,x):xs)
           | n == 0    -> foldl apply0 x xs
@@ -249,7 +252,7 @@ toType fmt =
           [t| () |]
 
     SepBy x y ->
-     do whenM (andM (acceptsEmpty x) (acceptsEmpty y)) (fail ("Both arguments to & accept ε: " ++ showFormat 0 fmt ""))
+     do whenM (allM acceptsEmpty [x, y]) (fail ("Both arguments to & accept ε: " ++ showFormat 0 fmt ""))
         if interesting x then
           [t| [$(toType x)] |]
         else
@@ -268,26 +271,17 @@ toType fmt =
 
     Group x -> toType x
 
-    _ ->
-      case [toType x | x <- follows fmt [], interesting x] of
+    Follow xs ->
+      case [toType x | x <- xs, interesting x] of
         [] -> [t| () |]
         [t] -> t
         ts -> foldl appT (tupleT (length ts)) ts
 
--- | Prefix a list of format strings with a format string.
--- If the given list has all the topmost 'Follow' constructors
--- removed, the output list will as well. Any consecutive literals found
--- while flattening will be combined.
-follows :: Format -> [Format] -> [Format]
-follows (Follow x y) zs               = follows x (follows y zs)
-follows Empty        zs               = zs
-follows (Literal x)  (Literal y : zs) = follows (Literal (x ++ y)) zs
-follows x            zs               = x : zs
-
 enumParser :: String -> ExpQ
 enumParser nameStr =
   do entries <- enumCases nameStr
-
      let parsers = [[| $(conE name) <$ string str |] | (name, str) <- entries]
-
      [| choice $(listE parsers) |]
+
+whenM :: Monad m => m Bool -> m () -> m ()
+whenM pm m = pm >>= \p -> when p m

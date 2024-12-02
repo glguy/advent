@@ -37,15 +37,15 @@ NAME                            { (_, TAt $$)           }
 
 %%
 
-format
+format ::                       { Format                }
   : atoms                       { $1                    }
   | format '|' atoms            { Alt $1 $3             }
 
-atoms
-  :                             { Empty                 }
-  | atoms atom                  { follow $1 $2          }
+atoms ::                        { Format                }
+  :                             { Follow []             }
+  | atoms atom                  { Follow [$1, $2]       }
 
-atom
+atom ::                         { Format                }
   : '(' format ')'              { Group $2              }
   | '(' format error            {% Left (Unclosed $1)   }
   | '%u'                        { UnsignedInt           }
