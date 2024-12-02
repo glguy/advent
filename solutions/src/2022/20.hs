@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, NumericUnderscores, BlockArguments, RecordWildCards #-}
+{-# Language QuasiQuotes, NumericUnderscores, BlockArguments, RecordWildCards #-}
 {-|
 Module      : Main
 Description : Day 20 solution
@@ -8,7 +8,16 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/20>
 
->>> :main + "1\n2\n-3\n3\n-2\n0\n4\n"
+>>> :{
+:main + "1
+2
+-3
+3
+-2
+0
+4
+"
+:}
 3
 1623178306
 
@@ -41,8 +50,10 @@ solve iterations xs =
 
     replicateM_ iterations $
       for_ (assocs inputArray) \(i,v) ->
-       do a <- removeRing i ring
-          a' <- walk v a ring
+       do let d = v `mod` (n-1)
+              d' = if d > n`div`2 then d-(n-1) else d
+          a <- removeRing i ring
+          a' <- walk d' a ring
           insertBeforeRing i a' ring
 
     i0 <- case elemIndex 0 xs of
@@ -54,7 +65,6 @@ solve iterations xs =
     pure $! sum [inputArray!i1, inputArray!i2, inputArray!i3]
 
 data Ring = Ring {
-    ringSize :: !Int,
     fwdLinks :: !(IOUArray Int Int), -- ^ forward links
     bwdLinks :: !(IOUArray Int Int)  -- ^ backward links
 }
@@ -62,7 +72,7 @@ data Ring = Ring {
 -- | Build a new circular ring of given size
 newRing :: Int {- ^ size -} -> IO Ring
 newRing n =
-  Ring n
+  Ring
     <$> newListArray (0,n-1) ([1..n-1]++[0])
     <*> newListArray (0,n-1) ((n-1):[0..n-2])
 
@@ -95,10 +105,6 @@ walk ::
   Int {- ^ starting index -} ->
   Ring {- ^ ring -} ->
   IO Int {- ^ ending index -}
-walk n start Ring{..}
-  | n' > len `div` 2 = timesM (len-n') (readArray bwdLinks) start
-  | otherwise        = timesM n'       (readArray fwdLinks) start
-  where
-    len = ringSize - 1
-    n' = n `mod` len
-    
+walk n i Ring{..}
+  | n < 0     = timesM (-n) (readArray bwdLinks) i
+  | otherwise = timesM   n  (readArray fwdLinks) i

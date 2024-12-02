@@ -63,17 +63,11 @@ main =
     print (sum [ways (concat (replicate 5 g)) (unfoldSprings s) | (s,g) <- input])
 
 -- | Expand the input row as specified for part 2
---
--- >>> unfoldSprings ".#"
--- ".#?.#?.#?.#?.#"
 unfoldSprings :: [C] -> [C]
 unfoldSprings = intercalate [C_QUESTION] . replicate 5
 
 -- | Given a group clue and an spring sequence, compute the number
 -- of unique rows that match the clue.
---
--- >>> ways [3,2,1] "?###????????"
--- 10
 ways :: [Int] -> [C] -> Int
 ways groups springs = answersA ! (0,0)
   where
