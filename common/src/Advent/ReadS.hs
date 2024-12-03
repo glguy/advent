@@ -15,6 +15,7 @@ import Control.Applicative (Alternative((<|>), empty), many)
 import Control.Monad (ap, liftM)
 import Data.Functor (void)
 import Data.String (IsString(..))
+import Data.List (stripPrefix)
 
 -- | Wrapper for 'ReadS'
 newtype P a = P { unP :: ReadS a }
@@ -34,6 +35,11 @@ char c = P \case
   x:xs | c == x -> [((),xs)]
   _             -> []
 
+string :: String -> P ()
+string s = P \t ->
+    case stripPrefix s t of
+        Just n -> [((),n)]
+        Nothing -> []
 instance Functor P where
     fmap = liftM
 
@@ -80,6 +86,12 @@ pread = P reads
 -- | Wrapper for 'readParen'
 preadParen :: Bool -> P a -> P a
 preadParen req (P p) = P (readParen req p)
+
+pany :: P Char
+pany = P \s ->
+    case s of
+        x : xs -> [(x, xs)]
+        [] -> []
 
 -- | Left-biased choice. Uses righthand-side if lefthand-side fails.
 (<++) :: P a -> P a -> P a

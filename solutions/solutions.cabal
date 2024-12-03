@@ -1124,3 +1124,7 @@ executable sln_2024_01
 executable sln_2024_02
   import:              day
   main-is:             2024/02.hs
+
+executable sln_2024_03
+  import:              day
+  main-is:             2024/03.hs
