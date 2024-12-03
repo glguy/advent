@@ -40,6 +40,7 @@ string s = P \t ->
     case stripPrefix s t of
         Just n -> [((),n)]
         Nothing -> []
+
 instance Functor P where
     fmap = liftM
 
@@ -87,11 +88,17 @@ pread = P reads
 preadParen :: Bool -> P a -> P a
 preadParen req (P p) = P (readParen req p)
 
+-- | Match any one character.
 pany :: P Char
-pany = P \s ->
-    case s of
-        x : xs -> [(x, xs)]
-        [] -> []
+pany = P \case
+    x : xs -> [(x, xs)]
+    [] -> []
+
+-- | Match a character satisfying a predicate.
+psatisfy :: (Char -> Bool) {- ^ predicate -} -> P Char
+psatisfy p = P \case
+    x : xs | p x -> [(x, xs)]
+    _ -> []
 
 -- | Left-biased choice. Uses righthand-side if lefthand-side fails.
 (<++) :: P a -> P a -> P a
