@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, LambdaCase #-}
+{-# Language LambdaCase #-}
 {-|
 Module      : Main
 Description : Day 3 solution
