@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, ParallelListComp #-}
+{-# Language ParallelListComp #-}
 {-|
 Module      : Main
 Description : Day 4 solution
