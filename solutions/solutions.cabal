@@ -1132,4 +1132,4 @@ executable sln_2024_03
 executable sln_2024_04
   import:              day
   main-is:             2024/04.hs
-  build-depends:       containers
+  build-depends:       array
