@@ -1133,3 +1133,8 @@ executable sln_2024_04
   import:              day
   main-is:             2024/04.hs
   build-depends:       array
+
+executable sln_2024_05
+  import:              day
+  main-is:             2024/05.hs
+  build-depends:       fgl
