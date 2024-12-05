@@ -55,7 +55,7 @@ main :: IO ()
 main =
  do (ords, input) <- [format|2024 5 (%u%|%u%n)*%n(%u&,%n)*|]
     let (good,bad) = partition (valid ords) input
-    print (sum (map middle (good)))
+    print (sum (map middle good))
     print (sum (map (middle . fixup ords) bad))
 
 -- | Put the pages back in order given the ordering constraints and page numbers.
