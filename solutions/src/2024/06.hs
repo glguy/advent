@@ -63,7 +63,7 @@ walk grid d p =
 
 -- | Predicate for paths that loop instead of running off the edge of the map.
 -- <https://en.wikipedia.org/wiki/Cycle_detection#Floyd's_tortoise_and_hare>
-isLoop :: Ord a => [a] -> Bool
+isLoop :: Eq a => [a] -> Bool
 isLoop a = go a a
   where
    go (x:xs) (_:y:ys) = x == y || go xs ys
