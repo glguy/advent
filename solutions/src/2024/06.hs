@@ -1,4 +1,3 @@
-{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 6 solution
