@@ -29,7 +29,6 @@ module Main (main) where
 import Advent (getInputArray, arrIx, ordNub)
 import Advent.Coord (Coord, north, turnRight)
 import Data.Array.Unboxed (UArray, (//), assocs)
-import Data.Set qualified as Set
 
 -- | >>> :main
 -- 5239
@@ -59,7 +58,7 @@ walk grid d p =
 
 -- | Predicate for paths that loop instead of running off the edge of the map.
 isLoop :: Ord a => [a] -> Bool
-isLoop = go Set.empty
+isLoop (x:xs) = go (x:xs) xs
   where
-   go seen (x:xs) = Set.member x seen || go (Set.insert x seen) xs
-   go _ [] = False
+   go (x:xs) (y:_:ys) = x == y || go xs ys
+   go _ _ = False
