@@ -1137,4 +1137,4 @@ executable sln_2024_04
 executable sln_2024_05
   import:              day
   main-is:             2024/05.hs
-  build-depends:       fgl
+  build-depends:       algebraic-graphs
