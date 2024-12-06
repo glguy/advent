@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes #-}
+{-# Language QuasiQuotes, ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 5 solution
@@ -45,7 +45,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format)
-import Data.Graph.Inductive (mkUGraph, topsort, UGr)
+import Data.Graph.Inductive (UGr, match, mkUGraph, subgraph, topsort)
 import Data.List (partition)
 
 -- | >>> :main
@@ -53,26 +53,19 @@ import Data.List (partition)
 -- 6311
 main :: IO ()
 main =
- do (ords, input) <- [format|2024 5 (%u%|%u%n)*%n(%u&,%n)*|]
-    let (good,bad) = partition (valid ords) input
-    print (sum (map middle good))
-    print (sum (map (middle . fixup ords) bad))
-
--- | Put the pages back in order given the ordering constraints and page numbers.
-fixup :: [(Int, Int)] -> [Int] -> [Int]
-fixup ords pages = topsort (mkUGraph pages es :: UGr)
-  where
-    es = [(a,b) | (a,b) <- ords, a `elem` pages, b `elem` pages]
+ do (ords, pagess) <- [format|2024 5 (%u%|%u%n)*%n(%u&,%n)*|]
+    let graph       = mkUGraph (concat pagess) ords :: UGr
+        inputs      = [(pages, subgraph pages graph) | pages <- pagess]
+        (good, bad) = partition (uncurry topsorted) inputs
+    print (sum (map (middle .           fst) good))
+    print (sum (map (middle . topsort . snd) bad ))
 
 -- | Return the middle element of an odd-length list.
 middle :: [a] -> a
 middle xs = xs !! (length xs `div` 2)
 
--- | Predicate for pages orderings that satisfy the ordering constraints.
-valid :: [(Int, Int)] -> [Int] -> Bool
-valid ords x = all f ords
-  where
-    f (a,b) =
-      case break (a==) x of
-        (l, _:_) -> b `notElem` l
-        _ -> True
+-- | Check that node list is aleady topologically sorted.
+topsorted :: [Int] -> UGr -> Bool
+topsorted [] _ = True                        -- no pages left to check
+topsorted (p:ps) (match p -> (Just ([], _, _, _), g)) = topsorted ps g
+topsorted _ _ = False
