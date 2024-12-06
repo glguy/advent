@@ -30,9 +30,9 @@ loop.
 -}
 module Main (main) where
 
-import Advent (getInputArray, arrIx, countBy, ordNub)
+import Advent (getInputArray, countBy, ordNub)
 import Advent.Coord (Coord, north, turnRight)
-import Data.Array.Unboxed (UArray, (//), assocs)
+import Data.Array.Unboxed (UArray, (//), (!?), assocs)
 
 -- | >>> :main
 -- 5239
@@ -42,7 +42,7 @@ main =
  do input <- getInputArray 2024 6
     let start = head [p | (p, '^') <- assocs input]
         path1 = ordNub (map snd (walk input north start))
-        check2 p = isLoop (walk (input // [(p,'#')]) north start)
+        check2 p = isLoop (walk (input // [(p, '#')]) north start)
     print (length path1)
     print (countBy check2 (drop 1 path1))
 
@@ -55,7 +55,7 @@ walk ::
     [(Coord, Coord)]  {- ^ list of direction and positions -}
 walk grid d p =
     (d, p) :
-    case arrIx grid (d + p) of
+    case grid !? (d + p) of
         Nothing  -> []                        -- fell off
         Just '#' -> walk grid (turnRight d) p -- hit wall
         _        -> walk grid d (d + p)       -- moved
