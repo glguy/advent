@@ -32,7 +32,7 @@ module Main (main) where
 
 import Advent (getInputArray, countBy, ordNub)
 import Advent.Coord (Coord, north, turnRight)
-import Data.Array.Unboxed (UArray, (//), (!?), assocs)
+import Data.Array.Unboxed (UArray, (//), (!?), assocs, amap)
 
 -- | >>> :main
 -- 5239
@@ -41,24 +41,25 @@ main :: IO ()
 main =
  do input <- getInputArray 2024 6
     let start = head [p | (p, '^') <- assocs input]
-        path1 = ordNub (map snd (walk input north start))
-        check2 p = isLoop (walk (input // [(p, '#')]) north start)
+        walls = amap ('#' ==) input
+        path1 = ordNub (map snd (walk walls north start))
+        check2 p = isLoop (walk (walls // [(p, True)]) north start)
     print (length path1)
     print (countBy check2 (drop 1 path1))
 
 -- | Generate the list of directions and positions generated walking from the
 -- starting point.
 walk ::
-    UArray Coord Char {- ^ input map                       -} ->
+    UArray Coord Bool {- ^ wall map                        -} ->
     Coord             {- ^ direction                       -} ->
     Coord             {- ^ position                        -} ->
     [(Coord, Coord)]  {- ^ list of direction and positions -}
 walk grid d p =
     (d, p) :
     case grid !? (d + p) of
-        Nothing  -> []                        -- fell off
-        Just '#' -> walk grid (turnRight d) p -- hit wall
-        _        -> walk grid d (d + p)       -- moved
+        Nothing    -> []                        -- fell off
+        Just True  -> walk grid (turnRight d) p -- hit wall
+        Just False -> walk grid d (d + p)       -- moved
 
 -- | Predicate for paths that loop instead of running off the edge of the map.
 -- <https://en.wikipedia.org/wiki/Cycle_detection#Floyd's_tortoise_and_hare>
