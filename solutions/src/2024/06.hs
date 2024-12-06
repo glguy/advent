@@ -58,7 +58,7 @@ walk grid d p =
 
 -- | Predicate for paths that loop instead of running off the edge of the map.
 isLoop :: Ord a => [a] -> Bool
-isLoop (x:xs) = go (x:xs) xs
+isLoop xs = go xs xs
   where
-   go (x:xs) (y:_:ys) = x == y || go xs ys
-   go _ _ = False
+   go (x:xs) (_:y:ys) = x == y || go xs ys
+   go _      _        = False
