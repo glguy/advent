@@ -27,23 +27,25 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format)
-
+import Data.List (sort, isSuffixOf)
 -- | >>> :main
 -- 6231007345478
 -- 333027885676693
 main :: IO ()
 main =
  do input <- [format|2024 7 (%u: %u& %n)*|]
-    print (sum [x | (x, y) <- input, isValid [(+), (*)]      x y])
-    print (sum [x | (x, y) <- input, isValid [(+), (*), cat] x y])
+    print (sum [x | (x, y) <- input, isValid1 x y])
+    print (sum [x | (x, y) <- input, isValid2 x y])
 
-isValid :: [Int -> Int -> Int] -> Int -> [Int] -> Bool
-isValid _ _ [] = False
-isValid _ x [y] = x == y
-isValid ops x (y:z:w) =
-    any (\op -> let yz = op y z in x >= yz && isValid ops x (yz:w)) ops
+isValid1 :: Int -> [Int] -> Bool
+isValid1 x ys = 0 `elem` foldr f [x] ys
+  where
+    f a bs = [o | b <- bs, o <- [b `div` a | b `mod` a == 0] ++ [b - a | b >= a]]
 
--- | The concatenation operator (||) combines the digits from its left
--- and right inputs into a single number.
-cat :: Int -> Int -> Int
-cat x y = read (show x ++ show y)
+isValid2 :: Int -> [Int] -> Bool
+isValid2 x ys = 0 `elem` foldr f [x] ys
+  where
+    f :: Int -> [Int] -> [Int]
+    f a bs = [o | b <- bs, o <- [b `div` a | b `mod` a == 0]
+                             ++ [b - a | b >= a]
+                             ++ [read (take (length (show b) - length (show a)) (show b)) | show a `isSuffixOf` show b]]
