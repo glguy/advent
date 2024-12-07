@@ -41,7 +41,7 @@ import Data.Foldable (foldrM)
 -- 333027885676693
 main :: IO ()
 main =
- do input <- [format|2024 7 (%u: %u& %n)*|]
+ do input <- [format|2024 7 (%u:( %u)+%n)*|]
     print (sum [tgt | (tgt, ns) <- input, isReachable [addOp, mulOp       ] tgt ns])
     print (sum [tgt | (tgt, ns) <- input, isReachable [addOp, mulOp, catOp] tgt ns])
 
@@ -66,7 +66,7 @@ addOp a b = [b - a | b > a]
 -- >>> mulOp 3 16
 -- []
 mulOp :: Op
-mulOp a b = [q | let (q, r) = b `quotRem` a, q > 0, r == 0]
+mulOp a b = [q | let (q, r) = quotRem b a, q > 0, r == 0]
 
 -- | Cancel out a concatenation.
 --
@@ -77,7 +77,9 @@ mulOp a b = [q | let (q, r) = b `quotRem` a, q > 0, r == 0]
 -- []
 catOp :: Op
 catOp 0 b = [b | b > 0]
-catOp a b | (qa,ra) <- quotRem a 10, (qb,rb) <- quotRem b 10, ra == rb = catOp qa qb
+catOp a b | (qa, ra) <- quotRem a 10
+          , (qb, rb) <- quotRem b 10
+          , ra == rb = catOp qa qb
 catOp _ _ = []
 
 -- | Try to combine the input numbers using the available operations
@@ -87,7 +89,7 @@ isReachable ::
     Int   {- ^ target               -} ->
     [Int] {- ^ inputs               -} ->
     Bool  {- ^ target is reachable  -}
-isReachable ops target [] = error "Input sequence requires at least one number"
+isReachable _   _      []     = False
 isReachable ops target (n:ns) = n `elem` foldrM tryOps target ns
   where
     tryOps a b = [r | op <- ops, r <- a `op` b]
