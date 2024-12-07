@@ -8,6 +8,13 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/7>
 
+In order to prune out a lot of the search space, this solution works
+"backwards" from the right. At this point we'll know which of the
+operations potentially valid and which were not allowing the search
+space to be much smaller.
+
+This solution assumes that all inputs are greater than 0.
+
 >>> :{
 :main + "190: 10 19
 3267: 81 40 27
@@ -27,25 +34,41 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format)
-import Data.List (sort, isSuffixOf)
+import Data.Foldable (foldrM)
+
 -- | >>> :main
 -- 6231007345478
 -- 333027885676693
 main :: IO ()
 main =
  do input <- [format|2024 7 (%u: %u& %n)*|]
-    print (sum [x | (x, y) <- input, isValid1 x y])
-    print (sum [x | (x, y) <- input, isValid2 x y])
+    print (sum [x | (x, y) <- input, isValid [addOp, mulOp] x y])
+    print (sum [x | (x, y) <- input, isValid [addOp, mulOp, catOp] x y])
 
-isValid1 :: Int -> [Int] -> Bool
-isValid1 x (t:ys) = t `elem` foldr f [x] ys
-  where
-    f a bs = [o | b <- bs, o <- [b `div` a | b `mod` a == 0] ++ [b - a | b >= a]]
+-- | Reversed operations that attempt to cancel out an effect
+type Op = Int -> Int -> [Int]
 
-isValid2 :: Int -> [Int] -> Bool
-isValid2 x (t:ys) = t `elem` foldr f [x] ys
-  where
-    f :: Int -> [Int] -> [Int]
-    f a bs = [o | b <- bs, o <- [b `div` a | b `mod` a == 0]
-                             ++ [b - a | b > a]
-                             ++ [read (take (length (show b) - length (show a)) (show b)) | a < b , show a `isSuffixOf` show b]]
+-- | Cancel out an addition
+addOp :: Op
+addOp a b = [b - a | b > a]
+
+-- | Cancel out a multiplication
+mulOp :: Op
+mulOp a b = [q | let (q, r) = b `quotRem` a, q > 0, r == 0]
+
+-- | Cancel out a concatenation.
+catOp :: Op
+catOp 0 b = [b | b > 0]
+catOp a b | (qa,ra) <- quotRem a 10, (qb,rb) <- quotRem b 10, ra == rb = catOp qa qb
+catOp _ _ = []
+
+-- | Try to combine the input numbers using the available operations
+-- to reach the target number.
+isValid ::
+    [Op]  {- ^ available operations -} ->
+    Int   {- ^ target               -} ->
+    [Int] {- ^ inputs               -} ->
+    Bool  {- ^ target is reachable  -}
+isValid ops target [] = error "Input sequence requires at least one number"
+isValid ops target (n:ns) = n `elem` foldrM tryOps target ns
+  where tryOps a b = ops >>= \op -> a `op` b
