@@ -42,21 +42,39 @@ import Data.Foldable (foldrM)
 main :: IO ()
 main =
  do input <- [format|2024 7 (%u: %u& %n)*|]
-    print (sum [x | (x, y) <- input, isValid [addOp, mulOp] x y])
-    print (sum [x | (x, y) <- input, isValid [addOp, mulOp, catOp] x y])
+    print (sum [tgt | (tgt, ns) <- input, isReachable [addOp, mulOp       ] tgt ns])
+    print (sum [tgt | (tgt, ns) <- input, isReachable [addOp, mulOp, catOp] tgt ns])
 
 -- | Reversed operations that attempt to cancel out an effect
 type Op = Int -> Int -> [Int]
 
 -- | Cancel out an addition
+--
+-- >>> addOp 7 10
+-- [3]
+--
+-- >>> addOp 10 7
+-- []
 addOp :: Op
 addOp a b = [b - a | b > a]
 
 -- | Cancel out a multiplication
+--
+-- >>> mulOp 3 15
+-- [5]
+--
+-- >>> mulOp 3 16
+-- []
 mulOp :: Op
 mulOp a b = [q | let (q, r) = b `quotRem` a, q > 0, r == 0]
 
 -- | Cancel out a concatenation.
+--
+-- >>> catOp 12 4512
+-- [45]
+--
+-- >>> catOp 12 1245
+-- []
 catOp :: Op
 catOp 0 b = [b | b > 0]
 catOp a b | (qa,ra) <- quotRem a 10, (qb,rb) <- quotRem b 10, ra == rb = catOp qa qb
@@ -64,11 +82,12 @@ catOp _ _ = []
 
 -- | Try to combine the input numbers using the available operations
 -- to reach the target number.
-isValid ::
+isReachable ::
     [Op]  {- ^ available operations -} ->
     Int   {- ^ target               -} ->
     [Int] {- ^ inputs               -} ->
     Bool  {- ^ target is reachable  -}
-isValid ops target [] = error "Input sequence requires at least one number"
-isValid ops target (n:ns) = n `elem` foldrM tryOps target ns
-  where tryOps a b = ops >>= \op -> a `op` b
+isReachable ops target [] = error "Input sequence requires at least one number"
+isReachable ops target (n:ns) = n `elem` foldrM tryOps target ns
+  where
+    tryOps a b = [r | op <- ops, r <- a `op` b]
