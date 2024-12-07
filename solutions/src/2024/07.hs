@@ -38,14 +38,14 @@ main =
     print (sum [x | (x, y) <- input, isValid2 x y])
 
 isValid1 :: Int -> [Int] -> Bool
-isValid1 x ys = 0 `elem` foldr f [x] ys
+isValid1 x (t:ys) = t `elem` foldr f [x] ys
   where
     f a bs = [o | b <- bs, o <- [b `div` a | b `mod` a == 0] ++ [b - a | b >= a]]
 
 isValid2 :: Int -> [Int] -> Bool
-isValid2 x ys = 0 `elem` foldr f [x] ys
+isValid2 x (t:ys) = t `elem` foldr f [x] ys
   where
     f :: Int -> [Int] -> [Int]
     f a bs = [o | b <- bs, o <- [b `div` a | b `mod` a == 0]
-                             ++ [b - a | b >= a]
-                             ++ [read (take (length (show b) - length (show a)) (show b)) | show a `isSuffixOf` show b]]
+                             ++ [b - a | b > a]
+                             ++ [read (take (length (show b) - length (show a)) (show b)) | a < b , show a `isSuffixOf` show b]]
