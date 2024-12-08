@@ -31,7 +31,7 @@ module Main (main) where
 
 import Advent (getInputArray)
 import Advent.Coord (Coord(C))
-import Data.Array.Unboxed (assocs, bounds, inRange)
+import Data.Array.Unboxed (UArray, assocs, bounds, inRange)
 import Data.List (tails)
 import Data.Map qualified as Map
 import Data.Set qualified as Set
@@ -42,11 +42,16 @@ import Data.Set (Set)
 -- 1045
 main :: IO ()
 main =
- do input <- getInputArray 2024 8
-    let antennaGroups = Map.elems (Map.fromListWith (++) [(v, [k]) | (k, v) <- assocs input, v /= '.'])
-        inInput = inRange (bounds input)
+ do grid <- getInputArray 2024 8
+    let antennaGroups = groupAntennas grid
+        inInput = inRange (bounds grid)
     print (length (antinodes antennaGroups (nodeNeighbors inInput)))
     print (length (antinodes antennaGroups (nodeLine inInput)))
+
+-- | For each unique antenna on the grid gather up all its antenna
+-- locations into into a single group.
+groupAntennas :: UArray Coord Char -> [[Coord]]
+groupAntennas grid = Map.elems (Map.fromListWith (++) [(v, [k]) | (k, v) <- assocs grid, v /= '.'])
 
 -- | Generate all the unique antinodes given the groups of antennas and a way to
 -- generate nodes of a pairs of antennas.
