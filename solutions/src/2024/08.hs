@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 8 solution
@@ -63,8 +63,8 @@ main =
 -- that fit inside a bounding box predicate.
 nodeLine :: (Coord -> Bool) -> Coord -> Coord -> [Coord]
 nodeLine p a b =
-   takeWhile p (iterate (step +) a) ++
-   takeWhile p (iterate (subtract step) (a - step))
+    takeWhile p (iterate (step +) a) ++
+    takeWhile p (iterate (subtract step) (a - step))
   where
     C dy dx                  = a - b
     com | dx == 0 || dy == 0 = 1
