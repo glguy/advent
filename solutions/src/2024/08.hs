@@ -35,6 +35,7 @@ import Data.Array.Unboxed (assocs, bounds, inRange)
 import Data.List (tails)
 import Data.Map qualified as Map
 import Data.Set qualified as Set
+import Data.Set (Set)
 
 -- | >>> :main
 -- 303
@@ -43,21 +44,29 @@ main :: IO ()
 main =
  do input <- getInputArray 2024 8
     let antennaGroups = Map.elems (Map.fromListWith (++) [(v, [k]) | (k, v) <- assocs input, v /= '.'])
-    print (length (Set.fromList
-      [ node
-      | antennaGroup <- antennaGroups
-      , x:ys <- tails antennaGroup
-      , y    <- ys
-      , node <- [2 * y - x, 2 * x - y]
-      , inRange (bounds input) node
-      ]))
-    print (length (Set.fromList
-      [ node
-      | antennaGroup <- antennaGroups
-      , x:ys <- tails antennaGroup
-      , y    <- ys
-      , node <- nodeLine (inRange (bounds input)) x y
-      ]))
+        inInput = inRange (bounds input)
+    print (length (antinodes antennaGroups (nodeNeighbors inInput)))
+    print (length (antinodes antennaGroups (nodeLine inInput)))
+
+-- | Generate all the unique antinodes given the groups of antennas and a way to
+-- generate nodes of a pairs of antennas.
+antinodes ::
+    [[Coord]]                   {- ^ groups of antennas                    -} ->
+    (Coord -> Coord -> [Coord]) {- ^ function to generate nodes for a pair -} ->
+    Set Coord                   {- ^ set of unique nodes generated         -}
+antinodes antennaGroups generate =
+  Set.fromList
+    [ node
+    | antennaGroup <- antennaGroups
+    , x:ys <- tails antennaGroup
+    , y    <- ys
+    , node <- generate x y
+    ]
+
+-- | Neighbors from part one where antinodes are on either side of a
+-- pair of nodes.
+nodeNeighbors :: (Coord -> Bool) -> Coord -> Coord -> [Coord]
+nodeNeighbors p x y = filter p [2 * y - x, 2 * x - y]
 
 -- | Generate all the points on the line defined by two coordinates
 -- that fit inside a bounding box predicate.
