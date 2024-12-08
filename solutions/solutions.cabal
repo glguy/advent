@@ -1147,3 +1147,8 @@ executable sln_2024_06
 executable sln_2024_07
   import:              day
   main-is:             2024/07.hs
+
+executable sln_2024_08
+  import:              day
+  main-is:             2024/08.hs
+  build-depends:       containers
