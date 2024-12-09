@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, LambdaCase #-}
+{-# Language ImportQualifiedPost, LambdaCase, TransformListComp #-}
 {-|
 Module      : Main
 Description : Day 9 solution
@@ -7,6 +7,12 @@ License     : ISC
 Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/9>
+
+This solution processes a compressed disk representation, expands it into
+file and free-space blocks, and computes a checksum based on defragmentation rules.
+
+- Part 1: Files can be split and are compacted from the end of the disk.
+- Part 2: Files cannot be split and are moved to the lowest contiguous free blocks.
 
 >>> :main + "2333133121414131402"
 1928
@@ -18,7 +24,6 @@ module Main (main) where
 import Advent (getInputLines)
 import Data.Array.Unboxed (UArray, (!), listArray)
 import Data.Char (digitToInt)
-import Data.Foldable (foldl')
 import Data.Map (Map)
 import Data.Map qualified as Map
 
@@ -73,7 +78,7 @@ part1' a acc i j
 -- and compaction reads from the end and fills the earliest free block
 -- with space available.
 part2 :: [Int] -> Int
-part2 input = checksum (moveAll files free)
+part2 input = moveAll files free
   where
     (files, free) = decFile Map.empty Map.empty 0 0 input
 
@@ -90,27 +95,22 @@ decFree files free nextId nextOff = \case
   x : xs -> decFile files (Map.insert nextOff x free) nextId (nextOff + x) xs
   [] -> (files, free)
 
--- | Compute the checksum of a filesystem.
-checksum :: Map Int (Int, Int) -> Int
-checksum files =
-  sum [ fileId * sumOfOffsets
-      | (offset, (fileId, fileSize)) <- Map.assocs files
-      , let sumOfOffsets = (2 * offset + fileSize - 1) * fileSize `quot` 2]
-
 -- | Move all the files high-to-low to the lowest available contiguous
 -- free block.
-moveAll :: Map Int (Int, Int) -> Map Int Int -> Map Int (Int, Int)
-moveAll files free = fst (foldl' (uncurry move1) (files, free) (reverse (Map.keys files)))
+moveAll :: Map Int (Int, Int) -> Map Int Int -> Int
+moveAll files free = fst (Map.foldrWithKey' move1 (0, free) files)
 
--- | Given the file and free maps try to move the file at the given
--- offset to the lowest address contiguous free block.
-move1 :: Map Int (Int, Int) -> Map Int Int -> Int -> (Map Int (Int, Int), Map Int Int)
-move1 files free offset =
-  let (fileId, fileSize) = files Map.! offset in
-  case [(k, v) | (k, v) <- Map.assocs free, k < offset, v >= fileSize] of
-    [] -> (files, free)
-    (k, v) : _ -> (Map.insert k (fileId, fileSize) (Map.delete offset files), free2)
+-- | Given the file and free maps try to move the file to the lowest address
+-- contiguous free block.
+move1 :: Int -> (Int, Int) -> (Int, Map Int Int) -> (Int, Map Int Int)
+move1 offset (fileId, fileSize) (acc, free) =
+  seq acc $
+  case [(k, v) | (k, v) <- Map.assocs free, then takeWhile by k < offset, v >= fileSize] of
+    []         -> (acc + checksumOf offset fileId fileSize, free)
+    (k, v) : _ -> (acc + checksumOf k      fileId fileSize, free')
       where
-        free1 = Map.delete k free
-        free2 | v == fileSize = free1
-              | otherwise = Map.insert (k + fileSize) (v - fileSize) free1
+        free' | v == fileSize = Map.delete k free
+              | otherwise     = Map.insert (k + fileSize) (v - fileSize) (Map.delete k free)
+
+checksumOf :: Int -> Int -> Int -> Int
+checksumOf offset fileId fileSize = fileId * (2 * offset + fileSize - 1) * fileSize `quot` 2
