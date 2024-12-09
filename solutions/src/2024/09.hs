@@ -53,12 +53,15 @@ expand1 = go1 0
 -- disk according to the rules in part 1 where files can be split up
 -- and compaction reads from the end.
 part1 :: [Int] -> Int
-part1 encoded = part1' a 0 0 (n - 1)
+part1 encoded = part1' a 0 0 end
   where
-    xs = expand1 encoded
-    n  = sum encoded
-    a  = listArray (0, n - 1) xs
+    xs  = expand1 encoded
+    end = sum encoded - 1
+    a   = listArray (0, end) xs
 
+-- | Worker loop for 'part1' that tracks cursors for the next location to
+-- checksum and the next available byte to be moved when free space is
+-- encountered.
 part1' ::
   UArray Int Int {- ^ offset to file ID -} ->
   Int            {- ^ partial checksum  -} ->
@@ -78,9 +81,7 @@ part1' a acc i j
 -- and compaction reads from the end and fills the earliest free block
 -- with space available.
 part2 :: [Int] -> Int
-part2 input = moveAll files free
-  where
-    (files, free) = decFile [] [] 0 0 input
+part2 input = uncurry moveAll (decFile [] [] 0 0 input)
 
 -- | Decode the input string where the first character is a file size.
 decFile :: [(Int, Int, Int)] -> [(Int, Int)] -> Int -> Int -> [Int] -> ([(Int, Int, Int)], [(Int, Int)])
@@ -104,7 +105,7 @@ moveAll files free = fst (foldl move1 (0, Map.fromList free) files)
 -- contiguous free block.
 move1 :: (Int, Map Int Int) -> (Int, Int, Int) -> (Int, Map Int Int)
 move1 (acc, free) (offset, fileId, fileSize) =
-  let free1 = Map.takeWhileAntitone (< offset) free in
+  let free1 = Map.takeWhileAntitone (< offset) free in -- discard out of range free blocks
   case [(k, v) | (k, v) <- Map.assocs free1, v >= fileSize] of
     []         -> (acc + checksumOf offset fileId fileSize, free1)
     (k, v) : _ -> (acc + checksumOf k      fileId fileSize, free2)
@@ -112,5 +113,6 @@ move1 (acc, free) (offset, fileId, fileSize) =
         free2 | v == fileSize = Map.delete k free1
               | otherwise     = Map.insert (k + fileSize) (v - fileSize) (Map.delete k free1)
 
+-- | Compute the partial checksum for a file given: offset, file ID, file size
 checksumOf :: Int -> Int -> Int -> Int
 checksumOf offset fileId fileSize = fileId * (2 * offset + fileSize - 1) * fileSize `quot` 2
