@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, LambdaCase #-}
+{-# Language ImportQualifiedPost, LambdaCase #-}
 {-|
 Module      : Main
 Description : Day 9 solution
@@ -44,15 +44,18 @@ expand1 = go1 0
     go2 fileId = \case []   -> []
                        x:xs -> replicate x (-1)   ++ go1 fileId       xs
 
+-- | Compute the checksum resulting from defragmenting the expanded
+-- disk according to the rules in part 1 where files can be split up
+-- and compaction reads from the end.
 part1 :: [Int] -> Int
 part1 encoded = part1' a 0 0 (n - 1)
   where
     xs = expand1 encoded
-    n  = length xs
+    n  = sum encoded
     a  = listArray (0, n - 1) xs
 
 part1' ::
-  UArray Int Int {- ^ uncompressed disk -} ->
+  UArray Int Int {- ^ offset to file ID -} ->
   Int            {- ^ partial checksum  -} ->
   Int            {- ^ left cursor       -} ->
   Int            {- ^ right cursor      -} ->
@@ -65,6 +68,10 @@ part1' a acc i j
 
 -- Part 2 --
 
+-- | Compute the checksum resulting from defragmenting the expanded
+-- disk according to the rules in part 2 where files can't be split up
+-- and compaction reads from the end and fills the earliest free block
+-- with space available.
 part2 :: [Int] -> Int
 part2 input = checksum (moveAll files free)
   where
@@ -86,8 +93,9 @@ decFree files free nextId nextOff = \case
 -- | Compute the checksum of a filesystem.
 checksum :: Map Int (Int, Int) -> Int
 checksum files =
-  sum [k * fileId | (offset, (fileId, fileSize)) <- Map.assocs files
-                  , k <- take fileSize [offset ..]]
+  sum [ fileId * sumOfOffsets
+      | (offset, (fileId, fileSize)) <- Map.assocs files
+      , let sumOfOffsets = (2 * offset + fileSize - 1) * fileSize `quot` 2]
 
 -- | Move all the files high-to-low to the lowest available contiguous
 -- free block.
