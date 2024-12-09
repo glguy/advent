@@ -16,9 +16,11 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (getInputLines)
+import Data.Array.Unboxed (UArray, (!), listArray)
 import Data.Char (digitToInt)
-import Data.Map qualified as Map
+import Data.Foldable (foldl')
 import Data.Map (Map)
+import Data.Map qualified as Map
 
 -- | >>> :main
 -- 6299243228569
@@ -26,9 +28,47 @@ import Data.Map (Map)
 main :: IO ()
 main =
  do [input] <- getInputLines 2024 9
-    let (files, free) = decFile Map.empty Map.empty 0 0 (map digitToInt input)
-    print (checksum (comp1 files free))
-    print (checksum (comp2 files free))
+    let digits = map digitToInt input
+    print (part1 digits)
+    print (part2 digits)
+
+-- Part 1 --
+
+-- | Expand a compressed disk into a run of file IDs and free space
+-- markers using @-1@ for free space.
+expand1 :: [Int] -> [Int]
+expand1 = go1 0
+  where
+    go1 fileId = \case []   -> []
+                       x:xs -> replicate x fileId ++ go2 (fileId + 1) xs
+    go2 fileId = \case []   -> []
+                       x:xs -> replicate x (-1)   ++ go1 fileId       xs
+
+part1 :: [Int] -> Int
+part1 encoded = part1' a 0 0 (n - 1)
+  where
+    xs = expand1 encoded
+    n  = length xs
+    a  = listArray (0, n - 1) xs
+
+part1' ::
+  UArray Int Int {- ^ uncompressed disk -} ->
+  Int            {- ^ partial checksum  -} ->
+  Int            {- ^ left cursor       -} ->
+  Int            {- ^ right cursor      -} ->
+  Int            {- ^ complete checksum -}
+part1' a acc i j
+  | i > j      = acc
+  | a ! i >= 0 = part1' a (acc + i * (a ! i)) (i + 1) j
+  | a ! j >= 0 = part1' a (acc + i * (a ! j)) (i + 1) (j - 1)
+  | otherwise  = part1' a acc i (j - 1)
+
+-- Part 2 --
+
+part2 :: [Int] -> Int
+part2 input = checksum (moveAll files free)
+  where
+    (files, free) = decFile Map.empty Map.empty 0 0 input
 
 -- | Decode the input string where the first character is a file size.
 decFile :: Map Int (Int, Int) -> Map Int Int -> Int -> Int -> [Int] -> (Map Int (Int, Int), Map Int Int)
@@ -49,32 +89,15 @@ checksum files =
   sum [k * fileId | (offset, (fileId, fileSize)) <- Map.assocs files
                   , k <- take fileSize [offset ..]]
 
--- | Move all the bytes of the files from the high offsets down
--- to the lowest free addresses. Files are moved from the highest
--- offsets to the lowest free offsets. Files can be fragmented.
-comp1 :: Map Int (Int, Int) -> Map Int Int -> Map Int (Int, Int)
-comp1 files free =
-  case (Map.minViewWithKey free, Map.maxViewWithKey files) of
-    (Just ((k1,v1), free'), Just ((k2, (i, s)), files'))
-      | k1 < k2
-      , s == v1 -> comp1 (Map.insert k1 (i, s) files') free'
-      | k1 < k2
-      , s < v1 -> comp1 (Map.insert k1 (i, s) files')
-                        (Map.insert (k1+s) (v1-s) free')
-      | k1 < k2
-      , s > v1 -> comp1 (Map.insert k1 (i, v1) (Map.insert k2 (i, s-v1) files'))
-                        free'
-    _ -> files
-
 -- | Move all the files high-to-low to the lowest available contiguous
 -- free block.
-comp2 :: Map Int (Int, Int) -> Map Int Int -> Map Int (Int, Int)
-comp2 files free = fst (foldl' (uncurry move) (files, free) (reverse (Map.keys files)))
+moveAll :: Map Int (Int, Int) -> Map Int Int -> Map Int (Int, Int)
+moveAll files free = fst (foldl' (uncurry move1) (files, free) (reverse (Map.keys files)))
 
 -- | Given the file and free maps try to move the file at the given
 -- offset to the lowest address contiguous free block.
-move :: Map Int (Int, Int) -> Map Int Int -> Int -> (Map Int (Int, Int), Map Int Int)
-move files free offset =
+move1 :: Map Int (Int, Int) -> Map Int Int -> Int -> (Map Int (Int, Int), Map Int Int)
+move1 files free offset =
   let (fileId, fileSize) = files Map.! offset in
   case [(k, v) | (k, v) <- Map.assocs free, k < offset, v >= fileSize] of
     [] -> (files, free)
