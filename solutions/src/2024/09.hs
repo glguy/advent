@@ -103,13 +103,14 @@ moveAll files free = fst (foldl move1 (0, Map.fromList free) files)
 -- | Given the file and free maps try to move the file to the lowest address
 -- contiguous free block.
 move1 :: (Int, Map Int Int) -> (Int, Int, Int) -> (Int, Map Int Int)
-move1 (acc, free) (offset, fileId, fileSize)  =
-  case [(k, v) | (k, v) <- Map.assocs (Map.takeWhileAntitone (< offset) free), v >= fileSize] of
-    []         -> (acc + checksumOf offset fileId fileSize, free)
-    (k, v) : _ -> (acc + checksumOf k      fileId fileSize, free')
+move1 (acc, free) (offset, fileId, fileSize) =
+  let free1 = Map.takeWhileAntitone (< offset) free in
+  case [(k, v) | (k, v) <- Map.assocs free1, v >= fileSize] of
+    []         -> (acc + checksumOf offset fileId fileSize, free1)
+    (k, v) : _ -> (acc + checksumOf k      fileId fileSize, free2)
       where
-        free' | v == fileSize = Map.delete k free
-              | otherwise     = Map.insert (k + fileSize) (v - fileSize) (Map.delete k free)
+        free2 | v == fileSize = Map.delete k free1
+              | otherwise     = Map.insert (k + fileSize) (v - fileSize) (Map.delete k free1)
 
 checksumOf :: Int -> Int -> Int -> Int
 checksumOf offset fileId fileSize = fileId * (2 * offset + fileSize - 1) * fileSize `quot` 2
