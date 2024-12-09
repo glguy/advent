@@ -104,7 +104,6 @@ moveAll files free = fst (Map.foldrWithKey' move1 (0, free) files)
 -- contiguous free block.
 move1 :: Int -> (Int, Int) -> (Int, Map Int Int) -> (Int, Map Int Int)
 move1 offset (fileId, fileSize) (acc, free) =
-  seq acc $
   case [(k, v) | (k, v) <- Map.assocs free, then takeWhile by k < offset, v >= fileSize] of
     []         -> (acc + checksumOf offset fileId fileSize, free)
     (k, v) : _ -> (acc + checksumOf k      fileId fileSize, free')
