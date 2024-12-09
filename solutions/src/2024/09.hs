@@ -22,7 +22,7 @@ file and free-space blocks, and computes a checksum based on defragmentation rul
 module Main (main) where
 
 import Advent (getInputLines)
-import Data.Array.Unboxed (UArray, (!), listArray)
+import Data.Array.Unboxed (UArray, (!), accumArray, bounds)
 import Data.Char (digitToInt)
 import Data.Map (Map)
 import Data.Map qualified as Map
@@ -34,30 +34,40 @@ main :: IO ()
 main =
  do [input] <- getInputLines 2024 9
     let digits = map digitToInt input
-    print (part1 digits)
-    print (part2 digits)
+    let (files, free) = decFile [] [] 0 0 digits
+    print (part1 (expandDiskArray (sum digits) files))
+    print (part2 files free)
 
--- Part 1 --
+-- Input decoding --
+
+-- | Decode the input string where the first character is a file size.
+decFile :: [(Int, Int, Int)] -> [(Int, Int)] -> Int -> Int -> [Int] -> ([(Int, Int, Int)], [(Int, Int)])
+decFile files free nextId nextOff = \case
+  x : xs -> decFree ((nextOff, nextId, x) : files) free (nextId + 1) (nextOff + x) xs
+  [] -> (files, free)
+
+-- | Decode the input string where the first character is a free block.
+decFree :: [(Int, Int, Int)] -> [(Int, Int)] -> Int -> Int -> [Int] -> ([(Int, Int, Int)], [(Int, Int)])
+decFree files free nextId nextOff = \case
+  0 : xs -> decFile files free nextId nextOff xs
+  x : xs -> decFile files ((nextOff, x) : free) nextId (nextOff + x) xs
+  [] -> (files, free)
 
 -- | Expand a compressed disk into a run of file IDs and free space
 -- markers using @-1@ for free space.
-expand1 :: [Int] -> [Int]
-expand1 = go1 0
-  where
-    go1 fileId = \case []   -> []
-                       x:xs -> replicate x fileId ++ go2 (fileId + 1) xs
-    go2 fileId = \case []   -> []
-                       x:xs -> replicate x (-1)   ++ go1 fileId       xs
+expandDiskArray :: Int -> [(Int, Int, Int)] -> UArray Int Int
+expandDiskArray end files =
+  accumArray (\_ x -> x) (-1) (0, end)
+    [(offset, fileId) | (offset0, fileId, size) <- files
+                      , offset <- [offset0 .. offset0 + size - 1]]
+
+-- Part 1 --
 
 -- | Compute the checksum resulting from defragmenting the expanded
 -- disk according to the rules in part 1 where files can be split up
 -- and compaction reads from the end.
-part1 :: [Int] -> Int
-part1 encoded = part1' a 0 0 end
-  where
-    xs  = expand1 encoded
-    end = sum encoded - 1
-    a   = listArray (0, end) xs
+part1 :: UArray Int Int -> Int
+part1 a = uncurry (part1' a 0) (bounds a)
 
 -- | Worker loop for 'part1' that tracks cursors for the next location to
 -- checksum and the next available byte to be moved when free space is
@@ -76,30 +86,10 @@ part1' a acc i j
 
 -- Part 2 --
 
--- | Compute the checksum resulting from defragmenting the expanded
--- disk according to the rules in part 2 where files can't be split up
--- and compaction reads from the end and fills the earliest free block
--- with space available.
-part2 :: [Int] -> Int
-part2 input = uncurry moveAll (decFile [] [] 0 0 input)
-
--- | Decode the input string where the first character is a file size.
-decFile :: [(Int, Int, Int)] -> [(Int, Int)] -> Int -> Int -> [Int] -> ([(Int, Int, Int)], [(Int, Int)])
-decFile files free nextId nextOff = \case
-  x : xs -> decFree ((nextOff, nextId, x) : files) free (nextId + 1) (nextOff + x) xs
-  [] -> (files, free)
-
--- | Decode the input string where the first character is a free block.
-decFree :: [(Int, Int, Int)] -> [(Int, Int)] -> Int -> Int -> [Int] -> ([(Int, Int, Int)], [(Int, Int)])
-decFree files free nextId nextOff = \case
-  0 : xs -> decFile files free nextId nextOff xs
-  x : xs -> decFile files ((nextOff, x) : free) nextId (nextOff + x) xs
-  [] -> (files, free)
-
 -- | Move all the files high-to-low to the lowest available contiguous
--- free block.
-moveAll :: [(Int, Int, Int)] -> [(Int, Int)] -> Int
-moveAll files free = fst (foldl move1 (0, Map.fromList free) files)
+-- free block computing the checksum along the way.
+part2 :: [(Int, Int, Int)] -> [(Int, Int)] -> Int
+part2 files free = fst (foldl move1 (0, Map.fromList free) files)
 
 -- | Given the file and free maps try to move the file to the lowest address
 -- contiguous free block.
