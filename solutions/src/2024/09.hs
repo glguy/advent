@@ -24,6 +24,7 @@ module Main (main) where
 import Advent (getInputLines)
 import Data.Array.Unboxed (UArray, (!), listArray)
 import Data.Char (digitToInt)
+import Data.Foldable (foldl')
 import Data.Map (Map)
 import Data.Map qualified as Map
 
@@ -80,30 +81,30 @@ part1' a acc i j
 part2 :: [Int] -> Int
 part2 input = moveAll files free
   where
-    (files, free) = decFile Map.empty Map.empty 0 0 input
+    (files, free) = decFile [] [] 0 0 input
 
 -- | Decode the input string where the first character is a file size.
-decFile :: Map Int (Int, Int) -> Map Int Int -> Int -> Int -> [Int] -> (Map Int (Int, Int), Map Int Int)
+decFile :: [(Int, Int, Int)] -> [(Int, Int)] -> Int -> Int -> [Int] -> ([(Int, Int, Int)], [(Int, Int)])
 decFile files free nextId nextOff = \case
-  x : xs -> decFree (Map.insert nextOff (nextId, x) files) free (nextId + 1) (nextOff + x) xs
+  x : xs -> decFree ((nextOff, nextId, x) : files) free (nextId + 1) (nextOff + x) xs
   [] -> (files, free)
 
 -- | Decode the input string where the first character is a free block.
-decFree :: Map Int (Int, Int) -> Map Int Int -> Int -> Int -> [Int] -> (Map Int (Int, Int), Map Int Int)
+decFree :: [(Int, Int, Int)] -> [(Int, Int)] -> Int -> Int -> [Int] -> ([(Int, Int, Int)], [(Int, Int)])
 decFree files free nextId nextOff = \case
   0 : xs -> decFile files free nextId nextOff xs
-  x : xs -> decFile files (Map.insert nextOff x free) nextId (nextOff + x) xs
+  x : xs -> decFile files ((nextOff, x) : free) nextId (nextOff + x) xs
   [] -> (files, free)
 
 -- | Move all the files high-to-low to the lowest available contiguous
 -- free block.
-moveAll :: Map Int (Int, Int) -> Map Int Int -> Int
-moveAll files free = fst (Map.foldrWithKey' move1 (0, free) files)
+moveAll :: [(Int, Int, Int)] -> [(Int, Int)] -> Int
+moveAll files free = fst (foldl' move1 (0, Map.fromList free) files)
 
 -- | Given the file and free maps try to move the file to the lowest address
 -- contiguous free block.
-move1 :: Int -> (Int, Int) -> (Int, Map Int Int) -> (Int, Map Int Int)
-move1 offset (fileId, fileSize) (acc, free) =
+move1 :: (Int, Map Int Int) -> (Int, Int, Int) -> (Int, Map Int Int)
+move1 (acc, free) (offset, fileId, fileSize)  =
   case [(k, v) | (k, v) <- Map.assocs free, then takeWhile by k < offset, v >= fileSize] of
     []         -> (acc + checksumOf offset fileId fileSize, free)
     (k, v) : _ -> (acc + checksumOf k      fileId fileSize, free')
