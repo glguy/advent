@@ -46,26 +46,25 @@ decFree files free nextId nextOff = \case
 -- | Compute the checksum of a filesystem.
 checksum :: Map Int (Int, Int) -> Int
 checksum files =
-   sum [k * fileId | (offset, (fileId, fileSize)) <- Map.assocs files
-                   , k <- take fileSize [offset ..]]
+  sum [k * fileId | (offset, (fileId, fileSize)) <- Map.assocs files
+                  , k <- take fileSize [offset ..]]
 
 -- | Move all the bytes of the files from the high offsets down
 -- to the lowest free addresses. Files are moved from the highest
 -- offsets to the lowest free offsets. Files can be fragmented.
 comp1 :: Map Int (Int, Int) -> Map Int Int -> Map Int (Int, Int)
 comp1 files free =
-   case (Map.minViewWithKey free, Map.maxViewWithKey files) of
-      (Just ((k1,v1), free'), Just ((k2, (i, s)), files'))
-        | k1 < k2
-        , s == v1 -> comp1 (Map.insert k1 (i, s) files') free'
-        | k1 < k2
-        , s < v1 -> comp1 (Map.insert k1 (i, s) files')
-                          (Map.insert (k1+s) (v1-s) free')
-        | k1 < k2
-        , s > v1 -> comp1 (Map.insert k1 (i, v1)
-                           (Map.insert k2 (i, s-v1) files'))
-                           free'
-      _ -> files
+  case (Map.minViewWithKey free, Map.maxViewWithKey files) of
+    (Just ((k1,v1), free'), Just ((k2, (i, s)), files'))
+      | k1 < k2
+      , s == v1 -> comp1 (Map.insert k1 (i, s) files') free'
+      | k1 < k2
+      , s < v1 -> comp1 (Map.insert k1 (i, s) files')
+                        (Map.insert (k1+s) (v1-s) free')
+      | k1 < k2
+      , s > v1 -> comp1 (Map.insert k1 (i, v1) (Map.insert k2 (i, s-v1) files'))
+                        free'
+    _ -> files
 
 -- | Move all the files high-to-low to the lowest available contiguous
 -- free block.
@@ -76,11 +75,11 @@ comp2 files free = fst (foldl' (uncurry move) (files, free) (reverse (Map.keys f
 -- offset to the lowest address contiguous free block.
 move :: Map Int (Int, Int) -> Map Int Int -> Int -> (Map Int (Int, Int), Map Int Int)
 move files free offset =
-   let (fileId, fileSize) = files Map.! offset in
-   case [(k, v) | (k, v) <- Map.assocs free, k < offset, v >= fileSize] of
-      [] -> (files, free)
-      (k, v) : _ -> (Map.insert k (fileId, fileSize) (Map.delete offset files), free2)
-         where
-            free1 = Map.delete k free
-            free2 | v == fileSize = free1
-                  | otherwise = Map.insert (k + fileSize) (v - fileSize) free1
+  let (fileId, fileSize) = files Map.! offset in
+  case [(k, v) | (k, v) <- Map.assocs free, k < offset, v >= fileSize] of
+    [] -> (files, free)
+    (k, v) : _ -> (Map.insert k (fileId, fileSize) (Map.delete offset files), free2)
+      where
+        free1 = Map.delete k free
+        free2 | v == fileSize = free1
+              | otherwise = Map.insert (k + fileSize) (v - fileSize) free1
