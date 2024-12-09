@@ -1,4 +1,4 @@
-{-# Language ImportQualifiedPost, LambdaCase, TransformListComp #-}
+{-# Language ImportQualifiedPost, LambdaCase #-}
 {-|
 Module      : Main
 Description : Day 9 solution
@@ -105,7 +105,7 @@ moveAll files free = fst (foldl' move1 (0, Map.fromList free) files)
 -- contiguous free block.
 move1 :: (Int, Map Int Int) -> (Int, Int, Int) -> (Int, Map Int Int)
 move1 (acc, free) (offset, fileId, fileSize)  =
-  case [(k, v) | (k, v) <- Map.assocs free, then takeWhile by k < offset, v >= fileSize] of
+  case [(k, v) | (k, v) <- Map.assocs (Map.takeWhileAntitone (< offset) free), v >= fileSize] of
     []         -> (acc + checksumOf offset fileId fileSize, free)
     (k, v) : _ -> (acc + checksumOf k      fileId fileSize, free')
       where
