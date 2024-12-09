@@ -24,7 +24,6 @@ module Main (main) where
 import Advent (getInputLines)
 import Data.Array.Unboxed (UArray, (!), listArray)
 import Data.Char (digitToInt)
-import Data.Foldable (foldl')
 import Data.Map (Map)
 import Data.Map qualified as Map
 
@@ -99,7 +98,7 @@ decFree files free nextId nextOff = \case
 -- | Move all the files high-to-low to the lowest available contiguous
 -- free block.
 moveAll :: [(Int, Int, Int)] -> [(Int, Int)] -> Int
-moveAll files free = fst (foldl' move1 (0, Map.fromList free) files)
+moveAll files free = fst (foldl move1 (0, Map.fromList free) files)
 
 -- | Given the file and free maps try to move the file to the lowest address
 -- contiguous free block.
