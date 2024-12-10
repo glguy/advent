@@ -7,6 +7,14 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/10>
 
+This solution solves the task by:
+- recursively finding all valid hiking trails from each trailhead,
+- filtering paths that meet the criteria for gradual uphill slopes,
+- calculating the score of each trailhead (total unique endpoints),
+- calculating the rating of each trailhead (distinct paths to any endpoint).
+
+The solution uses a depth-first search approach for path exploration.
+
 >>> :{
 :main + "89010123
 78121874
@@ -38,6 +46,12 @@ main =
     print (length (concatMap ordNub paths))
     print (length (concat           paths))
 
-pathsFrom :: UArray Coord Char -> Coord -> Char -> [Coord]
+-- | Find the list of coordinates of peaks reachable from each trail
+-- starting from the given coordinate and height at that coordinate.
+pathsFrom ::
+    UArray Coord Char {- ^ topographic map                  -} ->
+    Coord             {- ^ current location                 -} ->
+    Char              {- ^ current height                   -} ->
+    [Coord]           {- ^ list of reachable peak locations -}
 pathsFrom _ i '9' = [i]
 pathsFrom a i ai  = [k | j <- cardinal i, aj <- arrIx a j, succ ai == aj, k <- pathsFrom a j aj]
