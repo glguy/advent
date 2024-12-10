@@ -311,7 +311,7 @@ executable sln_2017_09
 executable sln_2017_10
   import:              day
   main-is:             2017/10.hs
-  build-depends:       vector, split, knothash
+  build-depends:       vector, split
 
 executable sln_2017_11
   import:              day
@@ -329,7 +329,7 @@ executable sln_2017_13
 executable sln_2017_14
   import:              day
   main-is:             2017/14.hs
-  build-depends:       vector, fgl, containers, knothash
+  build-depends:       vector, fgl, containers
 
 executable sln_2017_15
   import:              day

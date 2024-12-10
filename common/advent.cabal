@@ -41,6 +41,7 @@ library
     Advent.Format
     Advent.Group
     Advent.Input
+    Advent.KnotHash
     Advent.MaxClique
     Advent.MinCut
     Advent.Memo

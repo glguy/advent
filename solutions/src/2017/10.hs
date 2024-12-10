@@ -1,4 +1,3 @@
-{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 10 solution
@@ -14,17 +13,11 @@ Day 10 poses a convoluted knot-tying algorithm to implement.
 module Main where
 
 import Advent           (getInputLines)
-import Control.Monad    ((<=<), zipWithM_)
-import Control.Monad.ST (ST, runST)
-import Data.Bits        (xor)
-import Data.Char        (ord, chr)
-import Data.Foldable    (for_)
-import Data.List        (foldl1')
-import Data.List.Split  (chunksOf, splitOn)
+import Advent.KnotHash  (knotHash, tieKnots)
+import Data.Char        (ord)
+import Data.List.Split  (splitOn)
+import Numeric.Natural  (Natural)
 import Text.Printf      (printf)
-import Data.Vector.Unboxed qualified as V
-import Data.Vector.Unboxed.Mutable qualified as M
-import KnotHash (knotHash, tieKnots)
 
 -- | Print the solution to both parts of Day 10. Input file is configurable
 -- via the command-line.
@@ -35,28 +28,30 @@ import KnotHash (knotHash, tieKnots)
 main :: IO ()
 main =
   do [inputLine] <- getInputLines 2017 10
-     putStrLn (part1 inputLine)
+     putStrLn (part1 256 inputLine)
      putStrLn (part2 inputLine)
 
 -- | Compute the product of the first two elements after performing
 -- the knot-tying ritual using the lengths given as inputs.
 --
+-- >>> :set -XDataKinds
 -- >>> part1 5 "3,4,1,5"
 -- "12"
 part1 ::
+  Natural ->
   String {- ^ input string -} ->
   String {- ^ output hash  -}
-part1 = show . product . map toInteger . take 2 . tieKnots . part1Input
+part1 n = show . product . map toInteger . take 2 . tieKnots n . part1Input
 
 -- | Given a rope size and an input string, compute the resulting hash.
 --
--- >>> part2 256 ""
+-- >>> part2 ""
 -- "a2582a3a0e66e6e86e3812dcb672a272"
--- >>> part2 256 "AoC 2017"
+-- >>> part2 "AoC 2017"
 -- "33efeb34ea91902bb2f59c9920caa6cd"
--- >>> part2 256 "1,2,3"
+-- >>> part2 "1,2,3"
 -- "3efbe78a8d82f29979031a4aa0b16a9d"
--- >>> part2 256 "1,2,4"
+-- >>> part2 "1,2,4"
 -- "63960835bcdc130f0b66d7ff4f6a5a8e"
 part2 ::
   String {- ^ input string -} ->
