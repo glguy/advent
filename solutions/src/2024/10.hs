@@ -1,3 +1,4 @@
+{-# Language ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 10 solution
@@ -7,13 +8,8 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/10>
 
-This solution solves the task by:
-- recursively finding all valid hiking trails from each trailhead,
-- filtering paths that meet the criteria for gradual uphill slopes,
-- calculating the score of each trailhead (total unique endpoints),
-- calculating the rating of each trailhead (distinct paths to any endpoint).
-
-The solution uses a depth-first search approach for path exploration.
+The solution uses caching via `Map` to aggregate trail multiplicities
+efficiently.
 
 >>> :{
 :main + "89010123
@@ -35,6 +31,8 @@ module Main (main) where
 import Advent (arrIx, getInputArray, ordNub)
 import Advent.Coord (Coord, cardinal)
 import Data.Array.Unboxed (UArray, assocs)
+import Data.Map qualified as Map
+import Data.Map (Map)
 
 -- | >>> :main
 -- 778
@@ -42,16 +40,27 @@ import Data.Array.Unboxed (UArray, assocs)
 main :: IO ()
 main =
  do input <- getInputArray 2024 10
-    let paths = [pathsFrom input start '0' | (start, '0') <- assocs input]
-    print (length (concatMap ordNub paths))
-    print (length (concat           paths))
+    let paths = [pathsFrom input start | (start, '0') <- assocs input]
+    print (sum (map length paths))
+    print (sum (map sum    paths))
 
 -- | Find the list of coordinates of peaks reachable from each trail
--- starting from the given coordinate and height at that coordinate.
+-- given a starting location.
+-- 
+-- Returns a map where keys are coordinates of peaks and values are the
+-- number of distinct trails that reach each peak.
 pathsFrom ::
-    UArray Coord Char {- ^ topographic map                  -} ->
-    Coord             {- ^ current location                 -} ->
-    Char              {- ^ current height                   -} ->
-    [Coord]           {- ^ list of reachable peak locations -}
-pathsFrom _ i '9' = [i]
-pathsFrom a i ai  = [k | j <- cardinal i, aj <- arrIx a j, succ ai == aj, k <- pathsFrom a j aj]
+    UArray Coord Char {- ^ topographical map                     -} ->
+    Coord             {- ^ starting location                     -} ->
+    Map Coord Int     {- ^ peak locations and trail multiplicity -}
+pathsFrom input start = foldl (step input) (Map.singleton start 1) ['1'..'9']
+
+-- | Given a map of current locations and multiplicity take a single step to
+-- locations with the target height. Each new location inherits the
+-- multiplicity of the paths that reached it.
+step ::
+    UArray Coord Char {- ^ topographical map                        -} ->
+    Map Coord Int     {- ^ current locations and trail multiplicity -} ->
+    Char              {- ^ target height                            -} ->
+    Map Coord Int     {- ^ target locations and trail multiplicity  -}
+step a m h = Map.fromListWith (+) [(j, n) | (i, n) <- Map.assocs m, j <- cardinal i, hj <- arrIx a j, hj == h]
