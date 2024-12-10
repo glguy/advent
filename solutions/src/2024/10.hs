@@ -28,7 +28,7 @@ efficiently.
 -}
 module Main (main) where
 
-import Advent (arrIx, getInputArray, ordNub)
+import Advent (arrIx, getInputArray)
 import Advent.Coord (Coord, cardinal)
 import Data.Array.Unboxed (UArray, assocs)
 import Data.Map qualified as Map
