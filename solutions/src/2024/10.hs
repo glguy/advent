@@ -39,11 +39,11 @@ main =
     print (part2 input)
 
 part1 :: UArray Coord Char -> Int
-part1 a = length [() | (start, '0') <- assocs a, i <- dfs step start, a ! i == '9']
+part1 a = length [() | (start, '0') <- assocs a, end <- dfs step start, a!end == '9']
   where
-    step x = [y | y <- cardinal x, Just (succ (a ! x)) == arrIx a y ]
+    step x = [y | y <- cardinal x, h <- arrIx a y, succ (a ! x) == h]
 
 part2 :: UArray Coord Char -> Int
-part2 a = length [() | (start, '0') <- assocs a, (i, _) <- dfs step (start, []), a ! i == '9']
+part2 a = length [() | (start, '0') <- assocs a, (end, _) <- dfs step (start, []), a!end == '9']
   where
-    step (x, xs) = [(y, x : xs) | y <- cardinal x, Just (succ (a ! x)) == arrIx a y]
+    step (x, xs) = [(y, x:xs) | y <- cardinal x, h <- arrIx a y, succ (a!x) == h]
