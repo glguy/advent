@@ -26,8 +26,7 @@ module Main (main) where
 
 import Advent (arrIx, getInputArray, ordNub)
 import Advent.Coord (Coord, cardinal)
-import Data.Array.Unboxed (UArray, (!), assocs)
-import Control.Monad (guard)
+import Data.Array.Unboxed (UArray, assocs)
 
 -- | >>> :main
 -- 778
@@ -35,15 +34,10 @@ import Control.Monad (guard)
 main :: IO ()
 main =
  do input <- getInputArray 2024 10
-    let paths = [pathsFrom input start | (start, '0') <- assocs input]
+    let paths = [pathsFrom input start '0' | (start, '0') <- assocs input]
     print (length (concatMap ordNub paths))
-    print (length (concat paths))
+    print (length (concat           paths))
 
-pathsFrom :: UArray Coord Char -> Coord -> [Coord]
-pathsFrom a i
-  | a!i == '9' = [i]
-  | otherwise = do j <- cardinal i
-                   h <- arrIx a j
-                   guard (succ (a!i) == h)
-                   pathsFrom a j
-  
+pathsFrom :: UArray Coord Char -> Coord -> Char -> [Coord]
+pathsFrom _ i '9' = [i]
+pathsFrom a i ai  = [k | j <- cardinal i, aj <- arrIx a j, succ ai == aj, k <- pathsFrom a j aj]
