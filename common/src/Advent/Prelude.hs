@@ -16,8 +16,6 @@ module Advent.Prelude where
 import Control.Applicative (Alternative(empty))
 import Control.Monad.Trans.State (StateT(StateT, runStateT))
 import Data.Array.Unboxed qualified as A
-import Data.Array.Base qualified as AB
-import GHC.Arr qualified as GA
 import Data.Coerce (coerce)
 import Data.Foldable (toList)
 import Data.IntMap (IntMap)
@@ -141,12 +139,9 @@ löb = möb fmap
 möb :: (((a -> b) -> b) -> c -> a) -> c -> a
 möb f = \x -> let go = f ($ go) x in go
 
--- | Index an array returning 'Nothing' if the index is out of bounds.
+-- | Index an array returning 'empty' if the index is out of bounds.
 arrIx :: (A.IArray a e, A.Ix i, Alternative f) => a i e -> i -> f e
-arrIx a i
-  | A.inRange b i = pure $! AB.unsafeAt a (GA.unsafeIndex b i)
-  | otherwise = empty
-  where b = A.bounds a
+arrIx a i = maybe empty pure (a A.!? i)
 {-# Inline arrIx #-}
 
 -- | Apply a function @n@ times strictly.
