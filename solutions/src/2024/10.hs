@@ -22,12 +22,12 @@ Maintainer  : emertens@gmail.com
 81
 
 -}
-module Main where
+module Main (main) where
 
-import Advent (arrIx, getInputArray)
+import Advent (arrIx, getInputArray, ordNub)
 import Advent.Coord (Coord, cardinal)
-import Advent.Search (dfs)
 import Data.Array.Unboxed (UArray, (!), assocs)
+import Control.Monad (guard)
 
 -- | >>> :main
 -- 778
@@ -35,15 +35,15 @@ import Data.Array.Unboxed (UArray, (!), assocs)
 main :: IO ()
 main =
  do input <- getInputArray 2024 10
-    print (part1 input)
-    print (part2 input)
+    let paths = [pathsFrom input start | (start, '0') <- assocs input]
+    print (length (concatMap ordNub paths))
+    print (length (concat paths))
 
-part1 :: UArray Coord Char -> Int
-part1 a = length [() | (start, '0') <- assocs a, end <- dfs step start, a!end == '9']
-  where
-    step x = [y | y <- cardinal x, h <- arrIx a y, succ (a ! x) == h]
-
-part2 :: UArray Coord Char -> Int
-part2 a = length [() | (start, '0') <- assocs a, (end, _) <- dfs step (start, []), a!end == '9']
-  where
-    step (x, xs) = [(y, x:xs) | y <- cardinal x, h <- arrIx a y, succ (a!x) == h]
+pathsFrom :: UArray Coord Char -> Coord -> [Coord]
+pathsFrom a i
+  | a!i == '9' = [i]
+  | otherwise = do j <- cardinal i
+                   h <- arrIx a j
+                   guard (succ (a!i) == h)
+                   pathsFrom a j
+  
