@@ -15,6 +15,7 @@ module Advent.Input where
 
 import Advent.Coord (Coord(..), coordLines)
 import Data.Array.Unboxed qualified as A
+import Data.List (findIndex)
 import Data.Map (Map)
 import Data.Map.Strict qualified as SMap
 import System.Environment (getArgs)
@@ -38,10 +39,6 @@ getRawInput y d =
        "+":input:_ -> pure input
        fn:_  -> readFile fn
 
--- | Default input filename given a day number
-inputFileName :: Int {- ^ day -} -> FilePath
-inputFileName = printf "inputs/%02d.txt"
-
 -- | Load input file as a list of lines.
 getInputLines :: Int {- ^ year -} -> Int {- ^ day -} -> IO [String]
 getInputLines y d = lines <$> getRawInput y d
@@ -49,11 +46,16 @@ getInputLines y d = lines <$> getRawInput y d
 -- | Load input file as a rectangular array of characters.
 getInputArray :: Int {- ^ year -} -> Int {- ^ day -} -> IO (A.UArray Coord Char)
 getInputArray y d =
-  do xs <- getInputLines y d
-     pure $! A.listArray (C 0 0, C (length xs - 1) (length (head xs) - 1)) (concat xs)
+ do xs <- getInputLines y d
+    w <- case xs of
+      [] -> fail "getInputArray: empty grid"
+      x : xs ->
+        case findIndex (\y -> length y /= w) xs of
+          Just i  -> fail ("getInputArray: bad length on line " ++ show (i+2))
+          Nothing -> pure w
+        where w = length x
+    pure $! A.listArray (C 0 0, C (length xs - 1) (w - 1)) (concat xs)
 
 -- | Load input file as a 2-dimensional map of characters.
 getInputMap :: Int {- ^ year -} -> Int {- ^ day -} -> IO (Map Coord Char)
-getInputMap y d =
-  do xs <- getInputLines y d
-     pure $! SMap.fromList (coordLines xs)
+getInputMap y d = SMap.fromList . coordLines <$> getInputLines y d
