@@ -14,6 +14,10 @@ While the problem does state that order is preserved, the question
 it asks about the stones does not depend on order, so we forget that
 order!
 
+This solution uses 'IntMap' 'Int' as a multiset mapping stone numbers
+to stone counts. Emperically using an 'IntMap' instead of a 'Map' 'Int'
+was a bit more efficient.
+
 >>> :main + "125 17\n"
 55312
 65601038650482
@@ -36,15 +40,22 @@ main =
 
 -- | Compute the number of stones resulting from a starting set of stones
 -- and a number of blink iterations.
-solve :: Int -> [Int] -> Int
+solve ::
+  Int   {- ^ iteration count       -} ->
+  [Int] {- ^ initial stones        -} ->
+  Int   {- ^ final count of stones -}
 solve n input = sum (times n blinks (IntMap.fromListWith (+) [(i, 1) | i <- input]))
 
 -- | Blink all the stones at once. Stone numbers are mapped to multiplicity.
-blinks :: IntMap Int -> IntMap Int
+blinks ::
+  IntMap Int {- ^ multiset of stones                           -} ->
+  IntMap Int {- ^ multiset of stones after one blink iteration -}
 blinks stones = IntMap.fromListWith (+) [(stone', n) | (stone, n) <- IntMap.assocs stones, stone' <- blink stone]
 
 -- | Blink a single stone and figure out what stones it turns into.
-blink :: Int -> [Int]
+blink ::
+  Int   {- ^ stone before blink -} ->
+  [Int] {- ^ stones after blink -}
 blink 0 = [1]         -- 0 -> 1
 blink n               -- split in half if even length
   | (w, 0) <- length (show n) `quotRem` 2
