@@ -24,8 +24,8 @@ module Main (main) where
 import Advent (getInputLines)
 import Data.Array.Unboxed (UArray, (!), accumArray, bounds)
 import Data.Char (digitToInt)
-import Data.Map (Map)
-import Data.Map qualified as Map
+import Data.IntMap (IntMap)
+import Data.IntMap qualified as IntMap
 import Data.Maybe (listToMaybe)
 
 -- | >>> :main
@@ -90,27 +90,27 @@ part1' a acc i j
 -- | Move all the files high-to-low to the lowest available contiguous
 -- free block computing the checksum along the way.
 part2 :: [(Int, Int, Int)] -> [(Int, Int)] -> Int
-part2 files free = fst (foldl move1 (0, Map.fromList free) files)
+part2 files free = fst (foldl move1 (0, IntMap.fromList free) files)
 
 -- | Given the file and free maps try to move the file to the lowest address
 -- contiguous free block.
-move1 :: (Int, Map Int Int) -> (Int, Int, Int) -> (Int, Map Int Int)
+move1 :: (Int, IntMap Int) -> (Int, Int, Int) -> (Int, IntMap Int)
 move1 (acc, free) (offset, fileId, fileSize) =
-  let free1 = Map.takeWhileAntitone (< offset) free in -- discard out of range free blocks
+  let free1 = IntMap.takeWhileAntitone (< offset) free in -- discard out of range free blocks
   case pickFree fileSize free1 of
     Nothing         -> (acc + checksumOf offset fileId fileSize, free1)
     Just (o, free2) -> (acc + checksumOf o      fileId fileSize, free2)
 
 -- | Find the first free region that can hold a file of the given size.
 -- If one is identified remove it from the free list.
-pickFree :: Int -> Map Int Int -> Maybe (Int, Map Int Int)
+pickFree :: Int -> IntMap Int -> Maybe (Int, IntMap Int)
 pickFree fileSize free = listToMaybe
   [ (offset, free2)
-  | (offset, freeSize) <- Map.assocs free
+  | (offset, freeSize) <- IntMap.assocs free
   , freeSize >= fileSize
-  , let free1 = Map.delete offset free
+  , let free1 = IntMap.delete offset free
         free2 | freeSize == fileSize = free1
-              | otherwise = Map.insert (offset + fileSize) (freeSize - fileSize) free1
+              | otherwise = IntMap.insert (offset + fileSize) (freeSize - fileSize) free1
   ]
 
 -- | Compute the partial checksum for a file given: offset, file ID, file size
