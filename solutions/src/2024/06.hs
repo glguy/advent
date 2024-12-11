@@ -1,3 +1,4 @@
+{-# Language ViewPatterns #-}
 {-|
 Module      : Main
 Description : Day 6 solution
@@ -31,7 +32,7 @@ loop.
 module Main (main) where
 
 import Advent (getInputArray, countBy, ordNub)
-import Advent.Coord (Coord, north, turnRight)
+import Advent.Coord (Coord, north, turnRight, charToVec)
 import Data.Array.Unboxed (UArray, (//), (!?), assocs, amap)
 
 -- | >>> :main
@@ -40,10 +41,10 @@ import Data.Array.Unboxed (UArray, (//), (!?), assocs, amap)
 main :: IO ()
 main =
  do input <- getInputArray 2024 6
-    let start = head [p | (p, '^') <- assocs input]
+    let (dir, start) = head [(dir, p) | (p, charToVec -> Just dir) <- assocs input]
         walls = amap ('#' ==) input
-        path1 = ordNub (map snd (walk walls north start))
-        check2 p = isLoop (walk (walls // [(p, True)]) north start)
+        path1 = ordNub (map snd (walk walls dir start))
+        check2 p = isLoop (walk (walls // [(p, True)]) dir start)
     print (length path1)
     print (countBy check2 (drop 1 path1))
 
