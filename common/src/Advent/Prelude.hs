@@ -151,7 +151,7 @@ times n f x
   | otherwise = times (n-1) f $! f x
 {-# INLINE times #-}
 
--- | Apply a function @n@ times strictly.
+-- | Bind an argument through a function @n@.
 timesM :: Monad m => Int -> (a -> m a) -> a -> m a
 timesM n f x
   | n <= 0    = pure x

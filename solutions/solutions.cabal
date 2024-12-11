@@ -9,9 +9,9 @@ license:             ISC
 license-file:        LICENSE
 author:              Eric Mertens
 maintainer:          emertens@gmail.com
-copyright:           2021 Eric Mertens
-homepage:            https://github.com/glguy/advent2021
-bug-reports:         https://github.com/glguy/advent2021/issues
+copyright:           2015-2024 Eric Mertens
+homepage:            https://github.com/glguy/advent
+bug-reports:         https://github.com/glguy/advent/issues
 build-type:          Simple
 Tested-With:         GHC =={9.6.6, 9.8.2, 9.10.1}
 
