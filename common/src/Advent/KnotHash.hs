@@ -1,8 +1,8 @@
-{-# Language DataKinds, BlockArguments, PatternSynonyms #-}
+{-# Language DataKinds, BlockArguments, PatternSynonyms, ParallelListComp #-}
 module Advent.KnotHash (knotHash, tieKnots) where
 
 import Advent (chunks, fromDigits, partialSums)
-import Advent.Permutation (mkPermutation, runPermutation, Permutation)
+import Advent.Permutation (mkPermutation, runPermutation, Permutation, rotateLeft, rotateRight)
 import Data.Bits (Bits(xor))
 import Data.Char (ord)
 import Data.Foldable (Foldable(foldl'))
@@ -23,19 +23,19 @@ knotHash =
 -- | Create a rope, tie knots of the given lengths while skipping
 -- according to the increasing skip rule.
 tieKnots ::
-  Natural ->
+  Natural {- ^ rope length    -} ->
   [Int]   {- ^ knot lengths   -} ->
-  [Word8] {- ^ resulting rope -}
+  [Int]   {- ^ resulting rope -}
 tieKnots n lengths =
   withSomeSNat n \sn@SNat ->
-  runPermutation fromIntegral $
-  mconcat [ p sn o l
-          | (o,l) <- zip (partialSums (zipWith (+) [0..] lengths)) lengths
+  runPermutation id $
+  mconcat [ p sn offset len
+          | offset <- partialSums (zipWith (+) [0..] lengths)
+          | len    <- lengths
           ]
 
 p :: SNat n -> Int -> Int -> Permutation n
-p n@SNat o l =
-  mkPermutation \i ->
-  if (i-o)`mod` fromIntegral (natVal n) < l
-  then l-1-i+o+o
-  else i
+p n@SNat offset len =
+  rotateLeft offset <>
+  mkPermutation (\i -> if i < len then len - 1 - i else i) <> -- reverse first length elements
+  rotateRight offset
