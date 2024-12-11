@@ -4,8 +4,6 @@ cradle:
       component: "advent:lib:advent"
     - path: "./asmprog/AsmProg.hs"
       component: "asmprog"
-    - path: "./knothash/KnotHash.hs"
-      component: "knothash"
     - path: "./intcode/"
       component: "intcode"
 
