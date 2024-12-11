@@ -22,8 +22,8 @@ order!
 module Main (main) where
 
 import Advent (format, times)
-import Data.Map (Map)
-import Data.Map.Strict qualified as Map
+import Data.IntMap (IntMap)
+import Data.IntMap.Strict qualified as IntMap
 
 -- | >>> :main
 -- 202019
@@ -37,11 +37,11 @@ main =
 -- | Compute the number of stones resulting from a starting set of stones
 -- and a number of blink iterations.
 solve :: Int -> [Int] -> Int
-solve n input = sum (times n blinks (Map.fromListWith (+) [(i, 1) | i <- input]))
+solve n input = sum (times n blinks (IntMap.fromListWith (+) [(i, 1) | i <- input]))
 
 -- | Blink all the stones at once. Stone numbers are mapped to multiplicity.
-blinks :: Map Int Int -> Map Int Int
-blinks stones = Map.fromListWith (+) [(stone', n) | (stone, n) <- Map.assocs stones, stone' <- blink stone]
+blinks :: IntMap Int -> IntMap Int
+blinks stones = IntMap.fromListWith (+) [(stone', n) | (stone, n) <- IntMap.assocs stones, stone' <- blink stone]
 
 -- | Blink a single stone and figure out what stones it turns into.
 blink :: Int -> [Int]
