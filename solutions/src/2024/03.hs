@@ -36,11 +36,9 @@ part2 :: [Instr] -> Int
 part2 = snd . foldl f (True, 0)
   where
     f (enabled, acc) = \case
-      Do            -> (True, acc)
-      Don't         -> (False, acc)
-      Mul x y
-        | enabled   -> (enabled, acc + x * y)
-        | otherwise -> (enabled, acc)
+      Do      -> (True   , acc)
+      Don't   -> (False  , acc)
+      Mul x y -> (enabled, if enabled then acc + x * y else acc)
 
 data Instr = Mul Int Int | Do | Don't
   deriving Show
