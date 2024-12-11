@@ -48,8 +48,7 @@ blink :: Int -> [Int]
 blink 0 = [1]         -- 0 -> 1
 blink n               -- split in half if even length
   | let str = show n
-  , let len = length str
-  , even len
-  , (l, r) <- splitAt (len `quot` 2) str
-  = [read l, read r]
+  , (w, 0) <- length str `quotRem` 2
+  , (l, r) <- n `quotRem` (10 ^ w)
+  = [l, r]
 blink n = [n * 2024]  -- otherwise multiply by 2024
