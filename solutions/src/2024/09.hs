@@ -26,6 +26,7 @@ import Data.Array.Unboxed (UArray, (!), accumArray, bounds)
 import Data.Char (digitToInt)
 import Data.Map (Map)
 import Data.Map qualified as Map
+import Data.Maybe (listToMaybe)
 
 -- | >>> :main
 -- 6299243228569
@@ -96,12 +97,21 @@ part2 files free = fst (foldl move1 (0, Map.fromList free) files)
 move1 :: (Int, Map Int Int) -> (Int, Int, Int) -> (Int, Map Int Int)
 move1 (acc, free) (offset, fileId, fileSize) =
   let free1 = Map.takeWhileAntitone (< offset) free in -- discard out of range free blocks
-  case [(k, v) | (k, v) <- Map.assocs free1, v >= fileSize] of
-    []         -> (acc + checksumOf offset fileId fileSize, free1)
-    (k, v) : _ -> (acc + checksumOf k      fileId fileSize, free2)
-      where
-        free2 | v == fileSize = Map.delete k free1
-              | otherwise     = Map.insert (k + fileSize) (v - fileSize) (Map.delete k free1)
+  case pickFree fileSize free1 of
+    Nothing         -> (acc + checksumOf offset fileId fileSize, free1)
+    Just (o, free2) -> (acc + checksumOf o      fileId fileSize, free2)
+
+-- | Find the first free region that can hold a file of the given size.
+-- If one is identified remove it from the free list.
+pickFree :: Int -> Map Int Int -> Maybe (Int, Map Int Int)
+pickFree fileSize free = listToMaybe
+  [ (offset, free2)
+  | (offset, freeSize) <- Map.assocs free
+  , freeSize >= fileSize
+  , let free1 = Map.delete offset free
+        free2 | freeSize == fileSize = free1
+              | otherwise = Map.insert (offset + fileSize) (freeSize - fileSize) free1
+  ]
 
 -- | Compute the partial checksum for a file given: offset, file ID, file size
 checksumOf :: Int -> Int -> Int -> Int
