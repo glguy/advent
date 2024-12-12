@@ -39,7 +39,6 @@ regions = unfoldr \input ->
         step i = [j | j <- cardinal i, Map.lookup j input == Just label]
   ]
 
-
 -- | Find the perimeter length of a region.
 perimeter :: Set Coord -> Int
 perimeter xs = length [() | x <- Set.toList xs, y <- cardinal x, y `Set.notMember` xs]
@@ -47,9 +46,9 @@ perimeter xs = length [() | x <- Set.toList xs, y <- cardinal x, y `Set.notMembe
 -- | Compute the number of walls needed to surround a region by looking for
 -- the corners of the region.
 walls :: Set Coord -> Int
-walls xs =
-  let f i = Set.member i xs in
-  countBy (\x -> not (f (above x)) && (not (f (right x)) || f (above (right x)))) xs +
-  countBy (\x -> not (f (below x)) && (not (f (right x)) || f (below (right x)))) xs +
-  countBy (\x -> not (f (right x)) && (not (f (above x)) || f (above (right x)))) xs +
-  countBy (\x -> not (f (left  x)) && (not (f (above x)) || f (above (left  x)))) xs
+walls xs
+  = countBy (corner left  above) xs + countBy (corner above right) xs
+  + countBy (corner below left ) xs + countBy (corner right below) xs
+  where
+    corner dir1 dir2 x = open dir1 && (open dir2 || not (open (dir1 . dir2)))
+      where open dir = dir x `Set.notMember` xs
