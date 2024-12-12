@@ -8,6 +8,10 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/12>
 
+This solution represents edges of regions as the pair of a square
+location and a unit vector that points in the direction of one
+of the sides of that square.
+
 >>> :{
 :main + "AAAA
 BBCD
@@ -49,7 +53,7 @@ MMMISSJEEE
 module Main (main) where
 
 import Advent (getInputMap, countBy)
-import Advent.Coord (Coord, cardinal, above, right, below, left)
+import Advent.Coord (Coord, cardinal, turnLeft)
 import Advent.Search (fill)
 import Data.List (unfoldr)
 import Data.Map (Map)
@@ -63,9 +67,9 @@ import Data.Set qualified as Set
 main :: IO ()
 main =
  do input <- getInputMap 2024 12
-    let rs = regions input
-    print (sum (map (\x -> perimeter x * length x) rs))
-    print (sum (map (\x -> walls     x * length x) rs))
+    let rs = [(length r, edges r) | r <- regions input]
+    print (sum [area * length es               | (area, es) <- rs])
+    print (sum [area * countBy (isStart es) es | (area, es) <- rs])
 
 -- | Return a list of regions in the input map.
 regions :: Map Coord Char -> [Set Coord]
@@ -76,16 +80,12 @@ regions = unfoldr \input ->
         step i = [j | j <- cardinal i, Map.lookup j input == Just label]
   ]
 
--- | Find the perimeter length of a region.
-perimeter :: Set Coord -> Int
-perimeter xs = length [() | x <- Set.toList xs, y <- cardinal x, y `Set.notMember` xs]
+-- | Find the perimeter edges of a region.
+edges :: Set Coord -> Set (Coord, Coord)
+edges xs = Set.fromList
+  [(x, y - x) | x <- Set.toList xs, y <- cardinal x, Set.notMember y xs]
 
--- | Compute the number of walls needed to surround a region by looking for
--- the corners of the region.
-walls :: Set Coord -> Int
-walls xs
-  = countBy (corner left  above) xs + countBy (corner above right) xs
-  + countBy (corner below left ) xs + countBy (corner right below) xs
-  where
-    corner dir1 dir2 x = open dir1 && (open dir2 || not (open (dir1 . dir2)))
-      where open dir = dir x `Set.notMember` xs
+-- | Predicate for edges that are the "beginning" of a edge
+-- and thus represent their whole "side".
+isStart :: Set (Coord, Coord) -> (Coord, Coord) -> Bool
+isStart xs (p, d) = Set.notMember (p + turnLeft d, d) xs
