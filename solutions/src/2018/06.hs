@@ -15,7 +15,7 @@ module Main (main) where
 import Advent        (format, counts)
 import Advent.Coord (Coord(C), cardinal, coordCol, coordRow,
                      above, below, right, left, manhattan, boundingBox)
-import Advent.Search (dfs)
+import Advent.Search (fill)
 import Data.List (groupBy, sort, sortBy)
 import Data.Function (on)
 import Data.Ix (range)
@@ -78,7 +78,7 @@ part1 input
 -- is in bounds. Once we're unable to grow the region any further we return its
 -- size.
 part2 :: [Coord] -> Int
-part2 input = length (dfs step startingPoint)
+part2 input = length (fill step startingPoint)
   where
     distances :: Coord -> Int
     distances c = sum (map (manhattan c) input)

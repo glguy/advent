@@ -50,7 +50,7 @@ module Main (main) where
 
 import Advent (getInputMap, countBy)
 import Advent.Coord (Coord, cardinal, above, right, below, left)
-import Advent.Search (dfs)
+import Advent.Search (fill)
 import Data.List (unfoldr)
 import Data.Map (Map)
 import Data.Map qualified as Map
@@ -72,7 +72,7 @@ regions :: Map Coord Char -> [Set Coord]
 regions = unfoldr \input ->
   [ (region, Map.withoutKeys input region)
   | (start, label) <- Map.lookupMin input
-  , let region = Set.fromList (dfs step start)
+  , let region = fill step start
         step i = [j | j <- cardinal i, Map.lookup j input == Just label]
   ]
 

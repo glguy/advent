@@ -36,7 +36,7 @@ import Data.Set (Set)
 import Data.Set qualified as Set
 
 import Advent (format)
-import Advent.Search (bfs)
+import Advent.Search (fill)
 import Advent.Coord3 (Coord3(..), boundingBox)
 
 -- |
@@ -53,7 +53,7 @@ main =
 
 -- | Given the the location of the lava cubes, find a bounding box of air surrounding them.
 findAir :: Set Coord3 -> Set Coord3
-findAir cubes = Set.fromList (bfs step (hi + 1))
+findAir cubes = fill step (hi + 1)
   where
     (lo, hi) = fromJust (boundingBox cubes)
     box      = (lo - 1, hi + 1)

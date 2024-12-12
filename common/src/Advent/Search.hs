@@ -19,7 +19,10 @@ module Advent.Search (
 
   -- * A* search
   AStep(..),
-  astar, astarN, astarOn, astarOnN
+  astar, astarN, astarOn, astarOnN,
+
+  -- * Reachable exploration
+  fill, fillN, fillInt, fillNInt,
 
   ) where
 
@@ -198,3 +201,37 @@ data AStep a = AStep {
   astepCost      :: !Int, -- ^ cost of edge
   astepHeuristic :: !Int  -- ^ heuristic cost to goal from this new node
   } deriving Show
+
+-- | Generate a set of all the values reachable from a starting
+-- state and a step function.
+fill :: Ord a => (a -> [a]) -> a -> Set.Set a
+fill step x = fillN step [x]
+{-# INLINE fill #-}
+
+-- | Generate a set of all the values reachable from a list
+-- of starting states and a step function.
+fillN :: Ord a => (a -> [a]) -> [a] -> Set.Set a
+fillN step = foldl' go Set.empty
+  where
+    go seen x
+      | x `Set.member` seen = seen
+      | otherwise = foldl' go (Set.insert x seen) (step x)
+{-# INLINE fillN #-}
+
+-- | Generate a set of all the values reachable from a starting
+-- state and a step function. Specialized version of 'fill' when
+-- working with 'Int'.
+fillInt :: (Int -> [Int]) -> Int -> IntSet.IntSet
+fillInt step x = fillNInt step [x]
+{-# INLINE fillInt #-}
+
+-- | Generate a set of all the values reachable from a list
+-- of starting states and a step function. Specialized version
+-- of 'fillN' when working with 'Int'.
+fillNInt :: (Int -> [Int]) -> [Int] -> IntSet.IntSet
+fillNInt step = foldl' go IntSet.empty
+  where
+    go seen x
+      | x `IntSet.member` seen = seen
+      | otherwise = foldl' go (IntSet.insert x seen) (step x)
+{-# INLINE fillNInt #-}

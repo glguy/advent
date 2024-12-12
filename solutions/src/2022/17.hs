@@ -26,7 +26,7 @@ import Data.Set qualified as Set
 
 import Advent (format)
 import Advent.Coord (Coord(C), coordRow, east, west, cardinal, coordCol, south)
-import Advent.Search (bfsN)
+import Advent.Search (fillN)
 
 -- | The set of five blocks
 --
@@ -123,8 +123,8 @@ clean stuff = Set.filter alive stuff
   where
     ymin = coordRow (minimum stuff)
     step c = [n | n <- cardinal c, 0 <= coordCol n, coordCol n <= 6, coordRow c >= ymin, Set.notMember n stuff]
-    air = bfsN step [C ymin x | x <- [0..6], Set.notMember (C ymin x) stuff]
-    alive x = any (`elem` air) (cardinal x) || coordRow x == ymin
+    air = fillN step [C ymin x | x <- [0..6], Set.notMember (C ymin x) stuff]
+    alive x = any (`Set.member` air) (cardinal x) || coordRow x == ymin
 
 -- | Piece the next piece on the top of the tower returning the updated
 -- piece index, jet index, and tower contents. The tower is pruned to
