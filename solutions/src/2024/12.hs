@@ -8,6 +8,43 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/12>
 
+>>> :{
+:main + "AAAA
+BBCD
+BBCC
+EEEC
+"
+:}
+140
+80
+
+>>> :{
+:main + "OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO
+"
+:}
+772
+436
+
+>>> :{
+:main + "RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE
+"
+:}
+1930
+1206
+
 -}
 module Main (main) where
 
