@@ -63,11 +63,28 @@ cost extra (ax, ay, bx, by, x, y)
     x'  = x + extra
     y'  = y + extra
 
-colinear :: Integer -> Integer -> Integer -> Integer -> Integer -> Integer -> Integer
 colinear ax ay bx by x y
-  | ax*by == bx*ay          -- buttons are colinear with each other
-  , ax*y  == x*ay           -- output is colinear with buttons
-  , let (d, e, f) = integerGcde ax bx
+  -- Buttons weren't colinear with the output - 0 is failure
+  | ax * y /= ay * x || bx * y /= by * x = 0
+
+  | ax /= 0, bx /= 0 = colinear' ax bx x
+  | ay /= 0, by /= 0 = colinear' ay by y
+
+  | ax /= 0 = 3 * single ax x
+  | ay /= 0 = 3 * single ay y
+  | bx /= 0 =     single bx x
+  | by /= 0 =     single by y
+
+  | otherwise = 0
+
+single :: Integer -> Integer -> Integer
+single ax x
+  | (p, 0) <- x `quotRem` ax = p
+  | otherwise = 0
+
+colinear' :: Integer -> Integer -> Integer -> Integer
+colinear' ax bx x
+  | let (d, e, f) = integerGcde ax bx
   , (h, 0) <- x `quotRem` d -- target x is a multiple of the gcd of the two button +x
   , let a = e * h -- prototypical (but potentially negative) solution
   , let b = f * h -- prototypical (but potentially negative) solution
