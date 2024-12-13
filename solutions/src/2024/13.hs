@@ -8,10 +8,6 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/13>
 
-This solution doesn't handle the cases where
-buttons A and B are colinear, but the input
-didn't require us to worry about that.
-
 >>> :{
 :main + "Button A: X+94, Y+34
 Button B: X+22, Y+67
@@ -63,6 +59,8 @@ cost extra (ax, ay, bx, by, x, y)
     x'  = x + extra
     y'  = y + extra
 
+-- | The buttons are colinear so we'll need to select a different
+-- approach.
 colinear ax ay bx by x y
   -- Buttons weren't colinear with the output - 0 is failure
   | ax * y /= ay * x || bx * y /= by * x = 0
@@ -77,11 +75,13 @@ colinear ax ay bx by x y
 
   | otherwise = 0
 
+-- | Only one button matters, just count the presses needed
 single :: Integer -> Integer -> Integer
 single ax x
   | (p, 0) <- x `quotRem` ax = p
   | otherwise = 0
 
+-- <https://en.wikipedia.org/wiki/Diophantine_equation>
 colinear' :: Integer -> Integer -> Integer -> Integer
 colinear' ax bx x
   | let (d, e, f) = integerGcde ax bx
