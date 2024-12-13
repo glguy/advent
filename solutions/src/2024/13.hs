@@ -38,7 +38,6 @@ module Main (main) where
 
 import Advent (format)
 import GHC.Num (integerGcde)
-import Debug.Trace
 
 -- | >>> :main
 -- 29877
