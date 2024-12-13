@@ -37,7 +37,6 @@ Prize: X=18641, Y=10279
 module Main (main) where
 
 import Advent (format)
-import Numeric.LinearAlgebra (Matrix, linearSolve, atIndex, (><))
 
 -- | >>> :main
 -- 29877
@@ -51,23 +50,19 @@ main =
     print (sum (map (cost              0) input))
     print (sum (map (cost 10000000000000) input))
 
-cost :: Int -> (Int, Int, Int, Int, Int, Int) -> Int
-cost extra (ax, ay, bx, by, x, y) =
-  case linearSolve m v of
-    Just tu
-      | t * ax + u * bx == x'
-      , t * ay + u * by == y' -> 3 * t + u
-      where
-        t = round (tu `atIndex` (0,0))
-        u = round (tu `atIndex` (1,0))
-    _ -> 0
+cost :: Int -> (Int, Int, Int, Int, Int, Int) -> Integer
+cost extra (ax, ay, bx, by, x, y)
+  | det == 0 = error "colinearity not supported"
+  | a >= 0, b >= 0, ar == 0, br == 0 = 3 * a + b
+  | otherwise = 0
   where
-    x' = extra + x
-    y' = extra + y
-
-    m :: Matrix Double
-    m = (2><2) [ fromIntegral ax, fromIntegral bx,
-                 fromIntegral ay, fromIntegral by]
-
-    v = (2><1) [ fromIntegral x',
-                 fromIntegral y']
+    ax' = toInteger ax
+    ay' = toInteger ay
+    bx' = toInteger bx
+    by' = toInteger by
+    x'  = toInteger (x + extra)
+    y'  = toInteger (y + extra)
+    
+    det = ax' * by' - ay' * bx'
+    (a, ar) = (by' * x' - bx' * y') `quotRem` det
+    (b, br) = (ax' * y' - ay' * x') `quotRem` det
