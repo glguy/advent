@@ -61,6 +61,7 @@ cost extra (ax, ay, bx, by, x, y)
 
 -- | The buttons are colinear so we'll need to select a different
 -- approach.
+colinear :: Integer -> Integer -> Integer -> Integer -> Integer -> Integer -> Integer
 colinear ax ay bx by x y
   -- Buttons weren't colinear with the output - 0 is failure
   | ax * y /= ay * x || bx * y /= by * x = 0
