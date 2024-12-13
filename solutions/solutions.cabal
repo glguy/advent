@@ -202,7 +202,7 @@ executable sln_2016_11
 executable sln_2016_12
   import:              day
   main-is:             2016/12.hs
-  build-depends:       asmprog, containers, vector, lens
+  build-depends:       containers, vector, lens
 
 executable sln_2016_13
   import:              day
@@ -252,7 +252,7 @@ executable sln_2016_22
 executable sln_2016_23
   import:              day
   main-is:             2016/23.hs
-  build-depends:       asmprog, containers, vector, lens, transformers
+  build-depends:       containers, vector, lens, transformers
 
 executable sln_2016_24
   import:              day
@@ -262,7 +262,7 @@ executable sln_2016_24
 executable sln_2016_25
   import:              day
   main-is:             2016/25.hs
-  build-depends:       asmprog, containers, vector, lens, transformers
+  build-depends:       containers, vector, lens, transformers
 
 -- 2017 ---------------------------------------------------------------
 
@@ -1172,3 +1172,8 @@ executable sln_2024_12
   import:              day
   main-is:             2024/12.hs
   build-depends:       containers
+
+executable sln_2024_13
+  import:              day
+  main-is:             2024/13.hs
+  build-depends:       containers, array

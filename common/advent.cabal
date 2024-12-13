@@ -33,6 +33,7 @@ library
 
   exposed-modules:
     Advent
+    Advent.AsmProg
     Advent.Box
     Advent.Chinese
     Advent.Coord
@@ -72,6 +73,8 @@ library
     containers       ^>= {0.6, 0.7},
     fgl              ^>= 5.8,
     MemoTrie         ^>= 0.6,
+    mtl              ^>= 2.3.1,
+    lens             ^>= 5.3.2,
     random           ^>= 1.2,
     template-haskell,
     transformers     ^>= {0.5, 0.6},

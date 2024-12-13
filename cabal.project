@@ -4,5 +4,8 @@ package *
 packages:
   common/advent.cabal
   solutions/solutions.cabal
-  intcode/intcode.cabal
-  asmprog/asmprog.cabal
+
+source-repository-package
+  type: git
+  location: https://github.com/glguy/intcode
+  tag: 1a9daae346eb458065c1926e60e89d5c43856607

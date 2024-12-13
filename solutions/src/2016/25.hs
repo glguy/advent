@@ -17,7 +17,7 @@ module Main where
 
 import Advent.Input ( getInputLines )
 import Advent.ReadS ( P(..), runP )
-import AsmProg
+import Advent.AsmProg
 import Control.Applicative ( Alternative(empty) )
 import Control.Lens (use, (+=), (-=), (.=), (<~), makeLenses, Contains(contains))
 import Control.Monad.Trans.State ( evalState )

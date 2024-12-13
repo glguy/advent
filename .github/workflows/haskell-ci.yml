@@ -137,8 +137,6 @@ jobs:
           touch cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/common" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/solutions" >> cabal.project
-          echo "packages: $GITHUB_WORKSPACE/source/intcode" >> cabal.project
-          echo "packages: $GITHUB_WORKSPACE/source/asmprog" >> cabal.project
           cat cabal.project
       - name: sdist
         run: |
@@ -154,28 +152,18 @@ jobs:
           echo "PKGDIR_advent=${PKGDIR_advent}" >> "$GITHUB_ENV"
           PKGDIR_solutions="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/solutions-[0-9.]*')"
           echo "PKGDIR_solutions=${PKGDIR_solutions}" >> "$GITHUB_ENV"
-          PKGDIR_intcode="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/intcode-[0-9.]*')"
-          echo "PKGDIR_intcode=${PKGDIR_intcode}" >> "$GITHUB_ENV"
-          PKGDIR_asmprog="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/asmprog-[0-9.]*')"
-          echo "PKGDIR_asmprog=${PKGDIR_asmprog}" >> "$GITHUB_ENV"
           rm -f cabal.project cabal.project.local
           touch cabal.project
           touch cabal.project.local
           echo "packages: ${PKGDIR_advent}" >> cabal.project
           echo "packages: ${PKGDIR_solutions}" >> cabal.project
-          echo "packages: ${PKGDIR_intcode}" >> cabal.project
-          echo "packages: ${PKGDIR_asmprog}" >> cabal.project
           echo "package advent" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package solutions" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
-          echo "package intcode" >> cabal.project
-          echo "    ghc-options: -Werror=missing-methods" >> cabal.project
-          echo "package asmprog" >> cabal.project
-          echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           cat >> cabal.project <<EOF
           EOF
-          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: any.$_ installed\n" unless /^(advent|asmprog|intcode|solutions)$/; }' >> cabal.project.local
+          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: any.$_ installed\n" unless /^(advent|solutions)$/; }' >> cabal.project.local
           cat cabal.project
           cat cabal.project.local
       - name: dump install plan
@@ -207,10 +195,6 @@ jobs:
           ${CABAL} -vnormal check
           cd ${PKGDIR_solutions} || false
           ${CABAL} -vnormal check -imissing-upper-bounds
-          cd ${PKGDIR_intcode} || false
-          ${CABAL} -vnormal check
-          cd ${PKGDIR_asmprog} || false
-          ${CABAL} -vnormal check
       - name: haddock
         run: |
           $CABAL v2-haddock --disable-documentation --haddock-all $ARG_COMPILER --with-haddock $HADDOCK $ARG_TESTS $ARG_BENCH all

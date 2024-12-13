@@ -13,7 +13,7 @@ module Main where
 
 import Advent ( getInputLines )
 import Advent.ReadS ( P(..), runP )
-import AsmProg
+import Advent.AsmProg
 import Control.Lens
 import Control.Applicative (Alternative((<|>), empty))
 import Control.Monad.Trans.State.Strict ( evalState, State )

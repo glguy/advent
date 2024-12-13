@@ -13,7 +13,7 @@ module Main where
 
 import Advent (getInputLines)
 import Advent.ReadS
-import AsmProg
+import Advent.AsmProg
 import Control.Applicative (Alternative((<|>), empty))
 import Control.Lens ((^.), (&~), (+=), (-=), (.=), (<~))
 import Data.Foldable (for_)
