@@ -85,14 +85,14 @@ single ax x
 -- <https://en.wikipedia.org/wiki/Diophantine_equation>
 colinear' :: Integer -> Integer -> Integer -> Integer
 colinear' ax bx x
-  | let (d, e, f) = integerGcde ax bx
-  , (h, 0) <- x `quotRem` d -- target x is a multiple of the gcd of the two button +x
-  , let a = e * h -- prototypical (but potentially negative) solution
-  , let b = f * h -- prototypical (but potentially negative) solution
-  , let u = ax `quot` d
-  , let v = - (bx `quot` d)
-  , let klo = a `divCeil` v
-  , let khi = b `div` u
+  | (d, e, f) <- integerGcde ax bx
+  , (h, 0)    <- x `quotRem` d -- target x is a multiple of the gcd of the two button +x
+  , a         <- e * h -- prototypical (but potentially negative) solution
+  , b         <- f * h -- prototypical (but potentially negative) solution
+  , u         <- ax `quot` d
+  , v         <- - (bx `quot` d)
+  , klo       <- a `divCeil` v
+  , khi       <- b `div` u
   , klo <= khi
   = minimum [3 * (a - k * v) + (b - k * u) | k <- [klo, khi]] -- the relation is linear so one of the extremes is the answer
   | otherwise = 0

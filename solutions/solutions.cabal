@@ -861,7 +861,6 @@ executable sln_2021_24_sbv
   import:              day
   main-is:             2021/24_sbv.hs
   build-depends:       sbv, containers
-  buildable:           False
 
 executable sln_2021_25
   import:              day
@@ -1105,9 +1104,7 @@ executable sln_2023_23
 executable sln_2023_24
   import:              day
   main-is:             2023/24.hs
-  build-depends:       hmatrix, sbv ^>= 10.2
-  if impl(ghc >= 9.8)
-    buildable: False
+  build-depends:       hmatrix, sbv ^>= 11
 
 executable sln_2023_25
   import:              day
