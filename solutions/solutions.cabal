@@ -1104,7 +1104,7 @@ executable sln_2023_23
 executable sln_2023_24
   import:              day
   main-is:             2023/24.hs
-  build-depends:       hmatrix, sbv ^>= 11
+  build-depends:       hmatrix, sbv
 
 executable sln_2023_25
   import:              day

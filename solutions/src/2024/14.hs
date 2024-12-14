@@ -17,7 +17,7 @@ committing it into the repo.
 module Main where
 
 import Advent (counts, format)
-import Advent.Coord (Coord(C), drawCoords, zipCoord)
+import Advent.Coord (Coord(C), drawCoords, mapCoord, zipCoord)
 
 room :: Coord
 room = C 103 101
@@ -30,13 +30,13 @@ main =
 
 toQuad :: Coord -> [Int]
 toQuad (C y x)
-  | x < roomX `div` 2, y < roomY `div` 2 = [1]
-  | x > roomX `div` 2, y < roomY `div` 2 = [2]
-  | x < roomX `div` 2, y > roomY `div` 2 = [3]
-  | x > roomX `div` 2, y > roomY `div` 2 = [4]
-  | otherwise = []
+  | x < midX, y < midY = [1]
+  | x > midX, y < midY = [2]
+  | x < midX, y > midY = [3]
+  | x > midX, y > midY = [4]
+  | otherwise          = []
   where
-    C roomY roomX = room
+    C midY midX = mapCoord (`div` 2) room
 
 step :: Int -> (Int, Int, Int, Int) -> Coord
 step n (x, y, dx, dy) = zipCoord mod (C (y + n * dy) (x + n * dx)) room
