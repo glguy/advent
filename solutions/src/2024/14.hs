@@ -16,23 +16,20 @@ committing it into the repo.
 -}
 module Main where
 
-import Advent (counts, format, times)
+import Advent (counts, format)
 import Advent.Coord (Coord(C), drawCoords, zipCoord)
 
 room :: Coord
 room = C 103 101
 
-data Bot = Bot !Coord !Coord
-
 main :: IO ()
 main =
  do input <- [format|2024 14 (p=%d,%d v=%d,%d%n)*|]
-    let bots = [Bot (C y x) (C dy dx) | (x, y, dx, dy) <- input]
-    print (product (counts (concatMap (toQuad . times 100 step) bots)))
-    putStrLn (drawCoords [p | Bot p _ <- map (times 7051 step) bots])
+    print (product (counts (concatMap (toQuad . step 100) input)))
+    putStrLn (drawCoords (map (step 7051) input))
 
-toQuad :: Bot -> [Int]
-toQuad (Bot (C y x) _)
+toQuad :: Coord -> [Int]
+toQuad (C y x)
   | x < roomX `div` 2, y < roomY `div` 2 = [1]
   | x > roomX `div` 2, y < roomY `div` 2 = [2]
   | x < roomX `div` 2, y > roomY `div` 2 = [3]
@@ -41,5 +38,5 @@ toQuad (Bot (C y x) _)
   where
     C roomY roomX = room
 
-step :: Bot -> Bot
-step (Bot p v) = Bot (zipCoord mod (p + v) room) v
+step :: Int -> (Int, Int, Int, Int) -> Coord
+step n (x, y, dx, dy) = zipCoord mod (C (y + n * dy) (x + n * dx)) room
