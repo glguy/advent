@@ -49,7 +49,7 @@ main =
 
 cost :: Integer -> (Integer, Integer, Integer, Integer, Integer, Integer) -> Integer
 cost extra (ax, ay, bx, by, x, y)
-  | det == 0 = colinear ax ay bx by x y
+  | det == 0 = colinear ax ay bx by x' y'
   | (a, 0) <- (by * x' - bx * y') `quotRem` det, a >= 0
   , (b, 0) <- (ax * y' - ay * x') `quotRem` det, b >= 0
   = 3 * a + b
