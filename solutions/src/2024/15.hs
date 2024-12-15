@@ -95,12 +95,10 @@ buildGrid = Map.fromList . filter (\x -> snd x /= '.') . coordLines
 
 expandCell :: Char -> String
 expandCell = \case
-    '\n' -> "\n"
     '#'  -> "##"
     'O'  -> "[]"
     '.'  -> ".."
     '@'  -> "@."
-    _    -> error "bad input"
 
 score :: Map Coord Char -> Int
 score m = sum [100 * y + x | (C y x, c) <- Map.assocs m, c == 'O' || c == '[']
@@ -114,18 +112,13 @@ sim (grid, start) d =
           grid' = Map.union (Map.mapKeysMonotonic (d +) region)
                             (Map.difference grid region)
   where
-    vertical = coordRow d /= 0
-
     go seen [] = Just seen
     go seen (x:xs)
       | Map.notMember x seen
       , Just c <- Map.lookup x grid
       = if c == '#' then Nothing else
-        let next = case c of
-              '[' -> [x + east | vertical] ++ [x + d]
-              ']' -> [x + west | vertical] ++ [x + d]
-              'O' ->                          [x + d]
-              '@' ->                          [x + d]
-              _   -> []
-        in go (Map.insert x c seen) (next ++ xs)
+        go (Map.insert x c seen)
+           ([x + east | coordRow d /= 0, c == '['] ++
+            [x + west | coordRow d /= 0, c == ']'] ++
+            [x + d] ++ xs)
       | otherwise = go seen xs
