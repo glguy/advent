@@ -71,10 +71,8 @@ module Main (main) where
 
 import Advent (format)
 import Advent.Coord (Coord(..), charToVec, coordLines, coordRow, east, west)
-import Advent.Search (dfs)
 import Data.Map (Map)
 import Data.Map qualified as Map
-import Data.Set qualified as Set
 import Data.Maybe (mapMaybe)
 
 -- | >>> :main
