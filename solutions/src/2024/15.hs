@@ -8,6 +8,64 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/15>
 
+>>> :{
+:main + "########
+#..O.O.#
+##@.O..#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+\&
+<^^>>>vv<v>>v<<
+"
+:}
+2028
+1751
+
+>>> :{
+:main + "#######
+#...#.#
+#.....#
+#..OO@#
+#..O..#
+#.....#
+#######
+\&
+<vv<<^^<<^^
+"
+:}
+908
+618
+
+>>> :{
+:main + "##########
+#..O..O.O#
+#......O.#
+#.OO..O.O#
+#..O@..O.#
+#O#..O...#
+#O..O..O.#
+#.OO.O.OO#
+#....O...#
+##########
+\&
+<vv>^<v^>v>^vv^v>v<>v^v<v<^vv<<<^><<><>>v<vvv<>^v^>^<<<><<v<<<v^vv^v>^
+vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
+><>vv>v^v^<>><>>>><^^>vv>v<^^^>>v^v^<^^>v^^>v^<^v>v<>>v^v^<v>v^^<^^vv<
+<<v<^>>^^^^>>>v^<>vvv^><v<<<>^^^vv^<vvv>^>v<^^^^v<>^>vvvv><>>v^<<^^^^^
+^><^><>>><>^^<<^^v>>><^<v>^<vv>>v>>>^v><>^v><<<<v>>v<v<v>vvv>^<><<>^><
+^>><>^v<><^vvv<^^<><v<<<<<><^v<<<><<<^^<v<^^^><^>>^<v^><<<^>>^v<v^v<v^
+>^>>^v>vv>^<<^v<>><<><<v<<v><>v<^vv<<<>^^v^>^^>>><<^v>>v^v><^^>>^<>vv^
+<><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
+^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
+v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
+"
+:}
+10092
+9021
+
 -}
 module Main (main) where
 
@@ -42,7 +100,7 @@ expandCell '@' = "@."
 expandCell _   = error "bad input"
 
 score :: Map Coord Char -> Int
-score m = sum [100 * y + x  | (C y x, c) <- Map.assocs m, c == 'O' || c == '[']
+score m = sum [100 * y + x | (C y x, c) <- Map.assocs m, c == 'O' || c == '[']
 
 sim :: (Map Coord Char, Coord) -> Coord -> (Map Coord Char, Coord)
 sim (grid, start) d
@@ -50,10 +108,10 @@ sim (grid, start) d
   | otherwise                 = (grid', start + d)
   where
     moving = filter (\x -> snd x /= '.') (dfs moveStep (start,'@'))
-    
+
     grid' = Map.union (Map.fromList [(p + d, c  ) | (p, c) <- moving])
           $ Map.union (Map.fromList [(p    , '.') | (p, _) <- moving]) grid
-    
+
     vertical = coordRow d /= 0
 
     moveStep (x, _) =
