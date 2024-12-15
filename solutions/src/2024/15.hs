@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, BlockArguments, LambdaCase, ImportQualifiedPost, TransformListComp #-}
+{-# Language QuasiQuotes, LambdaCase, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 15 solution
