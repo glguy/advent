@@ -74,6 +74,7 @@ import Advent.Coord (Coord(..), charToVec, coordLines, coordRow, east, west)
 import Advent.Search (dfs)
 import Data.Map (Map)
 import Data.Map qualified as Map
+import Data.Set qualified as Set
 import Data.Maybe (mapMaybe)
 
 -- | >>> :main
@@ -82,43 +83,51 @@ import Data.Maybe (mapMaybe)
 main :: IO ()
 main =
  do (input1, input2) <- [format|2024 15 (%s%n)*%n(%s%n)*|]
-    let grid = Map.fromList (coordLines input1)
-    let start:_ = [p | (p, '@') <- Map.assocs grid]
+    let grid = buildGrid input1
+    let start1:_ = [p | (p, '@') <- Map.assocs grid]
     let dirs = mapMaybe charToVec (concat input2)
-    print (score (fst (foldl sim (grid, start) dirs)))
+    print (score (fst (foldl sim (grid, start1) dirs)))
 
-    let grid2 = Map.fromList (coordLines (map (concatMap expandCell) input1))
-    let start:_ = [p  | (p, '@') <- Map.assocs grid2]
-    print (score (fst (foldl sim (grid2, start) dirs)))
+    let grid2 = buildGrid (map (concatMap expandCell) input1)
+    let start2:_ = [p  | (p, '@') <- Map.assocs grid2]
+    print (score (fst (foldl sim (grid2, start2) dirs)))
+
+buildGrid :: [String] -> Map Coord Char
+buildGrid = Map.fromList . filter (\x -> snd x /= '.') . coordLines
 
 expandCell :: Char -> String
-expandCell '\n' = "\n"
-expandCell '#' = "##"
-expandCell 'O' = "[]"
-expandCell '.' = ".."
-expandCell '@' = "@."
-expandCell _   = error "bad input"
+expandCell = \case
+    '\n' -> "\n"
+    '#'  -> "##"
+    'O'  -> "[]"
+    '.'  -> ".."
+    '@'  -> "@."
+    _    -> error "bad input"
 
 score :: Map Coord Char -> Int
 score m = sum [100 * y + x | (C y x, c) <- Map.assocs m, c == 'O' || c == '[']
 
 sim :: (Map Coord Char, Coord) -> Coord -> (Map Coord Char, Coord)
-sim (grid, start) d
-  | '#' `elem` map snd moving = (grid, start)
-  | otherwise                 = (grid', start + d)
+sim (grid, start) d =
+    case go Map.empty [start] of
+      Nothing     -> (grid, start)
+      Just region -> (grid', start + d)
+        where
+          grid' = Map.union (Map.mapKeysMonotonic (d +) region)
+                            (Map.difference grid region)
   where
-    moving = filter (\x -> snd x /= '.') (dfs moveStep (start,'@'))
-
-    grid' = Map.union (Map.fromList [(p + d, c  ) | (p, c) <- moving])
-          $ Map.union (Map.fromList [(p    , '.') | (p, _) <- moving]) grid
-
     vertical = coordRow d /= 0
 
-    moveStep (x, _) =
-      map (\p -> (p, grid Map.! p))
-      case grid Map.! x of
-        '[' -> [x + east | vertical] ++ [x + d]
-        ']' -> [x + west | vertical] ++ [x + d]
-        'O' ->                          [x + d]
-        '@' ->                          [x + d]
-        _   -> []
+    go seen [] = Just seen
+    go seen (x:xs)
+      | Map.notMember x seen
+      , Just c <- Map.lookup x grid
+      = if c == '#' then Nothing else
+        let next = case c of
+              '[' -> [x + east | vertical] ++ [x + d]
+              ']' -> [x + west | vertical] ++ [x + d]
+              'O' ->                          [x + d]
+              '@' ->                          [x + d]
+              _   -> []
+        in go (Map.insert x c seen) (next ++ xs)
+      | otherwise = go seen xs
