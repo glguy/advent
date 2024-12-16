@@ -9,6 +9,18 @@ Maintainer  : emertens@gmail.com
 <https://adventofcode.com/2024/day/16>
 
 >>> :{
+:main + "#######
+#..S..#
+#.###.#
+#.##..#
+#..E.##
+#######
+"
+:}
+4007
+14
+
+>>> :{
 :main + "###############
 #.......#....E#
 #.#.###.#.###.#
@@ -75,44 +87,37 @@ main =
         end  :_ = [p | (p,'E') <- assocs input]
         open    = amap ('#' /=) input
 
-        -- start with all the possible initial facings so that the optimization later
-        -- that assumes we only turn 90-degrees before moving will hold
-        q0 = IntMap.fromList [(   0, Map.singleton (start, east) [])
-                             ,(1000, Map.fromList [((start, north), []), ((start, south), [])])
-                             ,(2000, Map.singleton (start, west) [])]
-
-        step (p,v) = [(1001, (p', v')) | let v' = turnRight v, let p' = p + v', open ! p']
-                  ++ [(1001, (p', v')) | let v' = turnLeft  v, let p' = p + v', open ! p']
-                  ++ [(   1, (p', v )) |                       let p' = p + v , open ! p']
+        step (p,v) = [(1000, (p, turnRight v))]
+                  ++ [(1000, (p, turnLeft  v))]
+                  ++ [(   1, (p', v)) | let p' = p + v, open ! p']
         isEnd (p, _) = p == end
 
-        (cost, preds) = shortestPath step isEnd q0
+        (cost, preds) = shortestPath (start, east) step isEnd
         nodesOnShortestPaths
           = Set.map fst
           $ fillN (preds Map.!)
             [(end,v) | v <- [north, east, south, west], Map.member (end, v) preds]
 
+    -- putStr (drawPicture (Map.fromList ([(n, '!') | n <- Set.elems nodesOnShortestPaths] <> assocs input)))
+
     print cost
     print (length nodesOnShortestPaths)
-
--- | Mapping from a node to the predecessors of that node on the shortest path to that node
-type Predecessors a = Map a [a]
 
 -- | Main loop for a shortest-path implementation that computes the cost of the shortest path
 shortestPath ::
   Ord a =>
-  (a -> [(Int, a)])       {- ^ successors of a node -} ->
-  (a -> Bool)             {- ^ predicate for the destination -} ->
-  IntMap (Predecessors a) {- ^ cost to candidate predecessor additions -} ->
-  (Int, Predecessors a)   {- ^ cost of shortest path to end and predecessors of all shortest paths -}
-shortestPath = go Map.empty
+  a                 {- ^ initial node -} ->
+  (a -> [(Int, a)]) {- ^ successors of a node -} ->
+  (a -> Bool)       {- ^ predicate for the destination -} ->
+  (Int, Map a [a])  {- ^ cost of shortest path to end and predecessors of all shortest paths -}
+shortestPath start step isEnd = go Map.empty (IntMap.singleton 0 (Map.singleton start []))
   where
-    go seen step isEnd q =
+    go seen q =
       case IntMap.minViewWithKey q of
         Nothing -> error "no solution"
         Just ((cost, states), q1)
           | done      -> (cost, seen')
-          | otherwise -> go seen' step isEnd q2
+          | otherwise -> go seen' q2
           where
             -- remove all the states at this cost that we've seen at a lower cost
             states' = Map.difference states seen
