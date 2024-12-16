@@ -86,8 +86,8 @@ search input seen q =
   case IntMap.minViewWithKey q of
     Nothing -> error "no solution"
     Just ((cost, states), q1)
-      | not (null dones) -> (cost, Set.size (Set.unions dones))
-      | otherwise        -> search input seen' q2
+      | null dones -> search input seen' q2
+      | otherwise  -> (cost, Set.size (Set.unions dones))
       where
         -- remove all the states at this cost that we've seen at a lower cost
         states' = Map.withoutKeys states seen
