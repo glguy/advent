@@ -16,7 +16,7 @@ import Data.List (intercalate)
 import Data.SBV
     (Word64, SWord64, SBool,
      (.==), (.&.), (.&&), sShiftRight, shiftR, xor,
-     optLexicographic, free, minimize, constrain, getModelValue, sFalse, symbolicMerge, fromBool)
+     optLexicographic, minimize, constrain, getModelValue, sFalse, ite, fromBool)
 
 -- | >>> :main
 -- 2,7,4,7,2,1,7,5,1
@@ -32,11 +32,10 @@ main =
 
     putStrLn (intercalate "," (map show (run (Machine a1 b c) program)))
 
-    res <- optLexicographic
-      do a2 <- free "a"
-         minimize "smallest" a2
-         constrain (sRun (SMachine program a2 (fromIntegral b) (fromIntegral c)) program)
-    case getModelValue "a" res of
+    res <- optLexicographic \a2 ->
+     do minimize "smallest a" a2
+        constrain (sRun (SMachine program a2 (fromIntegral b) (fromIntegral c)) program)
+    case getModelValue "smallest a" res of
       Just x -> print (x :: Word64)
       Nothing -> fail "no solution"
 
@@ -68,12 +67,12 @@ sRun m0 pgm = go m0 pgm
   where
     go m = \case
       0 : x : ip' -> go m{ sA = sA m `sShiftRight` combo x } ip'
+      6 : x : ip' -> go m{ sB = sA m `sShiftRight` combo x } ip'
+      7 : x : ip' -> go m{ sC = sA m `sShiftRight` combo x } ip'
       1 : x : ip' -> go m{ sB = sB m `xor`  fromIntegral x } ip'
       2 : x : ip' -> go m{ sB = 7    .&.           combo x } ip'
       4 : _ : ip' -> go m{ sB = sB m `xor`         sC m    } ip'
-      6 : x : ip' -> go m{ sB = sA m `sShiftRight` combo x } ip'
-      7 : x : ip' -> go m{ sC = sA m `sShiftRight` combo x } ip'
-      3 : x : ip' -> symbolicMerge False (sA m .== 0) (go m ip') (go m (drop x pgm))
+      3 : x : ip' -> ite (sA m .== 0) (go m{sA=0} ip') (go m (drop x pgm))
       5 : x : ip' ->
         case outs m of
           []   -> sFalse
