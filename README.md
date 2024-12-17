@@ -10,9 +10,8 @@ These libraries and solutions are provided under the ISC license.
 ## Build steps
 
 1. Install [GHCUP](https://www.haskell.org/ghcup/)
-2. Install current version of GHC `ghcup install ghc 9.6.3`
-3. Update submodules `git submodule update --init`
-4. Configure to use correct GHC `cabal configure -w ghc-9.6.3`
+2. Install current version of GHC `ghcup install ghc 9.10.1`
+3. Configure to use correct GHC `cabal configure -w ghc-9.10.1`
 4. Build everything `cabal build all`
 
 GHC 9.6.3 isn't specifically required, however it's what I
@@ -26,7 +25,7 @@ each solution.
 1. Default (no command line argument) reads file `inputs/YEAR/DAY.txt`
 2. Filename argument reads the given file.
 3. Hyphen `-` argument reads from stdin.
-4. Plus `+` arguent reads input from second command line argument as a string literal.
+4. Plus `+` argument reads input from second command line argument as a string literal.
 
 Examples:
 
