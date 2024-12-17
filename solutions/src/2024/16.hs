@@ -92,7 +92,7 @@ main =
                   ++ [(   1, (p', v)) | let p' = p + v, open ! p']
         isEnd (p, _) = p == end
 
-        (cost, ends, preds) = shortestPath (start, east) step isEnd
+        Just (cost, ends, preds) = shortestPath (start, east) step isEnd
         nodesOnShortestPaths = Set.map fst (fillN (preds Map.!) ends)
 
     print cost
@@ -101,19 +101,19 @@ main =
 -- | Main loop for a shortest-path implementation that computes the cost of the shortest path.
 shortestPath ::
   Ord a =>
-  a                      {- ^ initial node -} ->
-  (a -> [(Int, a)])      {- ^ successors of a node -} ->
-  (a -> Bool)            {- ^ predicate for the destination -} ->
-  (Int, [a], Map a [a])  {- ^ cost, reached end states, predecessors -}
+  a                           {- ^ initial node -} ->
+  (a -> [(Int, a)])           {- ^ successors of a node -} ->
+  (a -> Bool)                 {- ^ predicate for the destination -} ->
+  Maybe (Int, [a], Map a [a]) {- ^ cost, reached end states, predecessors -}
 shortestPath start step isEnd = go Map.empty (IntMap.singleton 0 (Map.singleton start []))
   where
     addWork q (k, v) = IntMap.insertWith (Map.unionWith (++)) k v q
     go seen q =
       case IntMap.minViewWithKey q of
-        Nothing -> error "no solution"
+        Nothing -> Nothing
         Just ((cost, states), q1)
           | null done -> go seen' q2
-          | otherwise -> (cost, done, seen')
+          | otherwise -> Just (cost, done, seen')
           where
             -- remove all the states at this cost that we've seen at a lower cost
             states' = Map.difference states seen
