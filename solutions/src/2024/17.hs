@@ -15,8 +15,8 @@ import Advent (format)
 import Data.List (intercalate)
 import Data.SBV
     (Word64, SWord64, SBool,
-     (.==), (./=), (.&.), (.&&), sShiftRight, shiftR, xor,
-     optLexicographic, free, minimize, constrain, getModelValue, sFalse, sTrue, (.||))
+     (.==), (.&.), (.&&), sShiftRight, shiftR, xor,
+     optLexicographic, free, minimize, constrain, getModelValue, sFalse, symbolicMerge, fromBool)
 
 -- | >>> :main
 -- 2,7,4,7,2,1,7,5,1
@@ -69,17 +69,17 @@ run2 m0 pgm = go m0 pgm
     go m = \case
       0 : x : ip' -> go m{ sA = sA m `sShiftRight` combo x } ip'
       1 : x : ip' -> go m{ sB = sB m `xor`  fromIntegral x } ip'
-      2 : x : ip' -> go m{ sB = 7    .&.      combo x } ip'
-      4 : _ : ip' -> go m{ sB = sB m `xor`    sC m    } ip'
+      2 : x : ip' -> go m{ sB = 7    .&.           combo x } ip'
+      4 : _ : ip' -> go m{ sB = sB m `xor`         sC m    } ip'
       6 : x : ip' -> go m{ sB = sA m `sShiftRight` combo x } ip'
       7 : x : ip' -> go m{ sC = sA m `sShiftRight` combo x } ip'
-      3 : x : ip' -> (sA m .== 0) .&& go m ip' .||
-                     (sA m ./= 0) .&& go m (drop x pgm)
+      3 : x : ip' -> symbolicMerge False
+                       (sA m .== 0) (go m ip') (go m (drop x pgm))
       5 : x : ip' ->
         case outs m of
-          [] -> sFalse
+          []   -> sFalse
           o:os -> combo x .&. 7 .== fromIntegral o .&& go m{ outs = os} ip'
-      _           -> if null (outs m) then sTrue else sFalse
+      _ -> fromBool (null (outs m))
       where
         combo = \case
           0 -> 0; 1 -> 1; 2 -> 2; 3 -> 3
