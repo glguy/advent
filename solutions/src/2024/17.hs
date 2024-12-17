@@ -23,19 +23,19 @@ import Data.SBV
 -- 37221274271220
 main :: IO ()
 main =
- do (a,b,c,program) <- [format|2024 17
+ do (a1,b,c,program) <- [format|2024 17
       Register A: %u%n
       Register B: %u%n
       Register C: %u%n
       %n
       Program: %u&,%n|]
 
-    putStrLn (intercalate "," (map show (run (Machine a b c) program)))
-    
+    putStrLn (intercalate "," (map show (run (Machine a1 b c) program)))
+
     res <- optLexicographic
       do a2 <- free "a"
          minimize "smallest" a2
-         constrain (run2 (SMachine program a2 0 0) program)
+         constrain (sRun (SMachine program a2 (fromIntegral b) (fromIntegral c)) program)
     case getModelValue "a" res of
       Just x -> print (x :: Word64)
       Nothing -> fail "no solution"
@@ -63,8 +63,8 @@ run m0 pgm = go m0 pgm
 
 data SMachine = SMachine { outs :: [Int], sA, sB, sC :: SWord64 }
 
-run2 :: SMachine -> [Int] -> SBool
-run2 m0 pgm = go m0 pgm
+sRun :: SMachine -> [Int] -> SBool
+sRun m0 pgm = go m0 pgm
   where
     go m = \case
       0 : x : ip' -> go m{ sA = sA m `sShiftRight` combo x } ip'
@@ -73,12 +73,11 @@ run2 m0 pgm = go m0 pgm
       4 : _ : ip' -> go m{ sB = sB m `xor`         sC m    } ip'
       6 : x : ip' -> go m{ sB = sA m `sShiftRight` combo x } ip'
       7 : x : ip' -> go m{ sC = sA m `sShiftRight` combo x } ip'
-      3 : x : ip' -> symbolicMerge False
-                       (sA m .== 0) (go m ip') (go m (drop x pgm))
+      3 : x : ip' -> symbolicMerge False (sA m .== 0) (go m ip') (go m (drop x pgm))
       5 : x : ip' ->
         case outs m of
           []   -> sFalse
-          o:os -> combo x .&. 7 .== fromIntegral o .&& go m{ outs = os} ip'
+          o:os -> combo x .&. 7 .== fromIntegral o .&& go m{ outs = os } ip'
       _ -> fromBool (null (outs m))
       where
         combo = \case
