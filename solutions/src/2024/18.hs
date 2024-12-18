@@ -31,7 +31,7 @@ main =
     print cost
     let input'       = reverse input
         isBlocking i = isNothing (search (drop i input'))
-        (x,y)        = input' !! binSearchLargest isBlocking 0 1024
+        (x,y)        = input' !! binSearchLargest isBlocking 0 (length input' - 1024)
     putStrLn (show x ++ "," ++ show y)
 
 -- | Find the minimum cost to go from one side of the maze to the other, if there is one.
