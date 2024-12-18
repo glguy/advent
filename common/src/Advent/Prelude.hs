@@ -285,3 +285,18 @@ binSearchLargest p lo hi
   | otherwise    = binSearchLargest p lo mid
   where
     mid = lo + (hi - lo) `div` 2
+
+-- | Binary search for the largest value satisfying a predicate.
+-- Finds the largest value when the predicate switches from True
+-- to False. There should only be one such point in the range.
+binSearchSmallest ::
+  (Int -> Bool) {- ^ predicate    -} ->
+  Int           {- ^ too small    -} ->
+  Int           {- ^ big enough   -} ->
+  Int
+binSearchSmallest p lo hi
+  | lo + 1 == hi = hi
+  | p mid        = binSearchSmallest p lo mid
+  | otherwise    = binSearchSmallest p mid hi
+  where
+    mid = lo + (hi - lo) `div` 2

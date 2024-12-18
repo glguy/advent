@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 18 solution
@@ -14,11 +14,10 @@ that need to be done.
 -}
 module Main where
 
-import Advent (arrIx, format, binSearchLargest)
-import Advent.Coord (Coord(..), cardinal)
+import Advent (arrIx, format, binSearchSmallest)
+import Advent.Coord (Coord(..), cardinal, manhattan)
 import Advent.Search (AStep(AStep), astar)
 import Data.Array.Unboxed (UArray, accumArray)
-import Data.List (find, inits)
 import Data.Maybe (isNothing, listToMaybe)
 
 -- | >>> :main
@@ -29,9 +28,9 @@ main =
  do input <- [format|2024 18 (%u,%u%n)*|]
     let Just cost = search (take 1024 input)
     print cost
-    let input'       = reverse input
-        isBlocking i = isNothing (search (drop i input'))
-        (x,y)        = input' !! binSearchLargest isBlocking 0 (length input' - 1024)
+    let isBlocking i = isNothing (search (take i input))
+        needed       = binSearchSmallest isBlocking 1024 (length input)
+        (x,y)        = input !! (needed - 1)
     putStrLn (show x ++ "," ++ show y)
 
 -- | Find the minimum cost to go from one side of the maze to the other, if there is one.
@@ -41,4 +40,4 @@ search points = listToMaybe [cost | (C 70 70, cost) <- astar step (C 0 0)]
     open :: UArray Coord Bool
     open = accumArray (\_ e -> e) True (C 0 0, C 70 70) [(C y x, False) | (x,y) <- points]
 
-    step i = [AStep j 1 0 | j <- cardinal i, True <- arrIx open j]
+    step i = [AStep j 1 (manhattan j (C 70 70)) | j <- cardinal i, True <- arrIx open j]
