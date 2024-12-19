@@ -55,11 +55,16 @@ designWays t str = memo ! 0
            | i      <- [0 .. n]
            | suffix <- tails str]
 
-data Trie = Node !Bool (Map Char Trie)
+-- | Efficient structure for finding all of the prefixes of a string that match.
+data Trie = Node !Bool (Map Char Trie) deriving Show
 
 -- | Construct a 'Trie' that matches exactly one string.
 toTrie :: String -> Trie
-toTrie = foldr (\x t -> Node False (Map.singleton x t)) (Node True Map.empty)
+toTrie = foldr cons (Node True Map.empty)
+
+-- | Extend a 'Trie' to match with a prefix character.
+cons :: Char -> Trie -> Trie
+cons x t = Node False (Map.singleton x t)
 
 -- | Given a starting index find all the ending indexes for
 -- suffixes that remain after matching a string in the 'Trie'.
@@ -77,6 +82,6 @@ matches (Node b xs) n yys =
 instance Semigroup Trie where
   Node x xs <> Node y ys = Node (x || y) (Map.unionWith (<>) xs ys)
 
--- | 'mempty' is a 'Trie' that matches no 'String's
+-- | 'mempty' is a 'Trie' that matches nothing.
 instance Monoid Trie where
   mempty = Node False Map.empty
