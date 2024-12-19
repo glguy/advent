@@ -57,9 +57,15 @@ designWays t str = memo ! 0
 
 data Trie = Node !Bool (Map Char Trie)
 
+-- | Construct a 'Trie' that matches exactly one string.
 toTrie :: String -> Trie
 toTrie = foldr (\x t -> Node False (Map.singleton x t)) (Node True Map.empty)
 
+-- | Given a starting index find all the ending indexes for
+-- suffixes that remain after matching a string in the 'Trie'.
+--
+-- >>> matches (toTrie "pre" <> toTrie "pref") 0 "prefix"
+-- [3,4]
 matches :: Trie -> Int -> String -> [Int]
 matches (Node b xs) n yys =
   [n | b] ++
