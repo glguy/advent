@@ -1198,3 +1198,7 @@ executable sln_2024_18
   import:              day
   main-is:             2024/18.hs
   build-depends:       array
+
+executable sln_2024_19
+  import:              day
+  main-is:             2024/19.hs
