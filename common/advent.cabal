@@ -38,6 +38,7 @@ library
     Advent.Chinese
     Advent.Coord
     Advent.Coord3
+    Advent.DisjointSet
     Advent.Fix
     Advent.Format
     Advent.Group
