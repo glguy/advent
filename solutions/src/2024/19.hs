@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, BlockArguments, ImportQualifiedPost, ParallelListComp #-}
+{-# Language QuasiQuotes, BlockArguments, ImportQualifiedPost, ParallelListComp, BangPatterns #-}
 {-|
 Module      : Main
 Description : Day 19 solution
@@ -25,7 +25,7 @@ bbrgwb
 16
 
 -}
-module Main where
+module Main (main) where
 
 import Advent (format, countBy)
 import Data.Array (Array, (!), listArray)
@@ -45,7 +45,7 @@ main =
 
 -- | Compute the number of ways a design can be created using a trie
 -- of available patterns.
-designWays :: Trie -> String -> Int
+designWays :: Ord a => Trie a -> [a] -> Int
 designWays t str = memo ! 0
   where
     n = length str
@@ -55,15 +55,15 @@ designWays t str = memo ! 0
            | i      <- [0 .. n]
            | suffix <- tails str]
 
--- | Efficient structure for finding all of the prefixes of a string that match.
-data Trie = Node !Bool (Map Char Trie) deriving Show
+-- | Efficient structure for finding all of the prefixes of a list that match.
+data Trie a = Node !Bool (Map a (Trie a))
 
--- | Construct a 'Trie' that matches exactly one string.
-toTrie :: String -> Trie
+-- | Construct a 'Trie' that matches exactly one list.
+toTrie :: Ord a => [a] -> Trie a
 toTrie = foldr cons (Node True Map.empty)
 
--- | Extend a 'Trie' to match with a prefix character.
-cons :: Char -> Trie -> Trie
+-- | Extend a 'Trie' to match with a prefix element.
+cons :: a -> Trie a -> Trie a
 cons x t = Node False (Map.singleton x t)
 
 -- | Given a starting index find all the ending indexes for
@@ -71,17 +71,17 @@ cons x t = Node False (Map.singleton x t)
 --
 -- >>> matches (toTrie "pre" <> toTrie "pref") 0 "prefix"
 -- [3,4]
-matches :: Trie -> Int -> String -> [Int]
-matches (Node b xs) n yys =
+matches :: Ord a => Trie a -> Int -> [a] -> [Int]
+matches (Node b xs) !n yys =
   [n | b] ++
   case yys of
     y:ys | Just t <- Map.lookup y xs -> matches t (n+1) ys
     _ -> []
 
 -- | '<>' constructs the union of two 'Trie's.
-instance Semigroup Trie where
+instance Ord a => Semigroup (Trie a) where
   Node x xs <> Node y ys = Node (x || y) (Map.unionWith (<>) xs ys)
 
 -- | 'mempty' is a 'Trie' that matches nothing.
-instance Monoid Trie where
+instance Ord a => Monoid (Trie a) where
   mempty = Node False Map.empty
