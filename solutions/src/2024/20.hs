@@ -26,9 +26,9 @@ main =
     let open      = amap ('#' /=) input
         start : _ = [p | (p,'S') <- assocs input]
         end   : _ = [p | (p,'E') <- assocs input]
-        optimals  = search open end
+        (os,o:_)  = break (\(p,_) -> p == start) (search open end) -- take up to and including the start
         cheats    = [ d
-                    | (p1,c1) : more <- tails optimals
+                    | (p1,c1) : more <- tails (o:os)
                     , (p2,c2)        <- more
                     , let d = manhattan p1 p2, d <= 20
                     , abs (c1 - c2) >= 100 + d
