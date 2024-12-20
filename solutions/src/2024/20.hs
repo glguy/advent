@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language QuasiQuotes #-}
 {-|
 Module      : Main
 Description : Day 20 solution
@@ -16,7 +16,6 @@ import Advent.Coord (cardinal, Coord, manhattan)
 import Advent.Search (astar, AStep(AStep))
 import Data.Array.Unboxed (UArray, amap, assocs, accumArray, bounds, (!))
 import Data.List (tails)
-import Data.Map qualified as Map
 
 -- >>> :main
 -- 1346
