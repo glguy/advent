@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes #-}
+{-# Language QuasiQuotes, BlockArguments #-}
 {-|
 Module      : Main
 Description : Day 20 solution
@@ -37,6 +37,4 @@ main =
     print (length cheats)
 
 search :: UArray Coord Bool -> Coord -> [(Coord, Int)]
-search open = astar step
-  where
-    step p = [AStep p' 1 0 | p' <- cardinal p, True <- arrIx open p']
+search open = astar \p -> [AStep p' 1 0 | p' <- cardinal p, True <- arrIx open p']
