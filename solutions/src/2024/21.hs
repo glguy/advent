@@ -37,11 +37,11 @@ main :: IO ()
 main =
  do codes <- getInputLines 2024 21
     let score n x = (read (init x) * answer n x)
-    print (sum (map (score 2) codes))
+    print (sum (map (score  2) codes))
     print (sum (map (score 25) codes))
 
 answer :: Int -> String -> Int
-answer n str = minimum (map (robotCostN n) (initialStrings str))
+answer n str = minimum (map (robotLength n) (doorInputs str))
 
 data Pad = Pad (Set Coord) (Map Char Coord)
 
@@ -74,19 +74,19 @@ doorPad = padFromList
   , (C 0 0      , 'A')
   ]
 
-initialStrings :: String -> [String]
-initialStrings str =
+doorInputs :: String -> [String]
+doorInputs str =
    [ keys
    | let deltas = padDeltas doorPad str
    , keys <- concat <$> traverse deltaToKeys deltas
    , validate doorPad keys
    ]
 
-robotCostN :: Int -> String -> Int
-robotCostN = memo2 \n str ->
+robotLength :: Int -> String -> Int
+robotLength = memo2 \n str ->
   if n == 0 then length str else
   minimum
-    [ sum (map (robotCostN (n-1)) keys)
+    [ sum (map (robotLength (n-1)) keys)
     | let deltas = padDeltas robotPad str
     , keys <- traverse deltaToKeys deltas
     , validate robotPad (concat keys)
