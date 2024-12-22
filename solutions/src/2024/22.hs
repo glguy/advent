@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost #-}
+{-# Language QuasiQuotes, ImportQualifiedPost, BangPatterns #-}
 {-|
 Module      : Main
 Description : Day 22 solution
@@ -23,10 +23,8 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format, times)
+import Data.Array.Unboxed (UArray, accumArray, assocs, elems)
 import Data.Bits (xor)
-import Data.List (tails)
-import Data.Map (Map)
-import Data.Map.Strict qualified as Map
 
 -- | >>> :main
 -- 19241711734
@@ -35,7 +33,10 @@ main :: IO ()
 main =
  do input <- [format|2024 22 (%u%n)*|]
     print (sum (map (times 2000 next) input))
-    print (maximum (Map.unionsWith (+) (map characterize input)))
+    let a = accumArray (+) 0 ((-9,-9,-9,-9),(9,9,9,9))
+              [(k,v) | i <- input, (k,v) <- assocs (char i), v > 0]
+              :: UArray (Int,Int,Int,Int) Int
+    print (maximum (elems a))
 
 -- | Generate the next secret number
 --
@@ -49,16 +50,20 @@ next x = c
     b = prune (a `xor` (a `div` 32))
     c = prune (b `xor` (b * 2048))
 
--- | >>> differences [1,3,4,10]
--- [2,1,6]
-differences :: [Int] -> [Int]
-differences xs = zipWith subtract xs (drop 1 xs)
-
-characterize :: Int -> Map [Int] Int
-characterize x = foldl add Map.empty candidates
+char :: Int -> UArray (Int,Int,Int,Int) Int
+char x = accumArray upd (-1) ((-9,-9,-9,-9),(9,9,9,9))
+          (gen 4 (delta x x1) (delta x1 x2) (delta x2 x3) (delta x3 x4) x4)
   where
-    xs = take 2001 (map (`mod` 10) (iterate next x))
-    candidates = zip (map (take 4) (tails (differences xs))) (drop 4 xs)
-    add m (k,v)
-      | Map.member k m = m
-      | otherwise      = Map.insert k v m
+    upd x y = if x == -1 then y else x
+
+    x1 = next  x
+    x2 = next x1
+    x3 = next x2
+    x4 = next x3
+
+    delta x y = y`mod`10 - x`mod`10
+
+    gen !i !a !b !c !d !x
+      | i <= 2000 = ((a,b,c,d), x`mod`10) : gen (i+1) b c d (delta x x') x'
+      | otherwise = []
+      where x' = next x
