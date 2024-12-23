@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, ImportQualifiedPost, BangPatterns #-}
+{-# Language QuasiQuotes, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 23 solution
@@ -11,14 +11,12 @@ Maintainer  : emertens@gmail.com
 -}
 module Main (main) where
 
-import Advent (format, ordNub)
+import Advent (format)
 import Advent.MaxClique (maxCliques)
 import Data.Foldable (maximumBy)
-import Data.List (intercalate, sort, tails)
-import Data.Map (Map)
+import Data.List (intercalate)
 import Data.Map qualified as Map
 import Data.Ord (comparing)
-import Data.Set (Set)
 import Data.Set qualified as Set
 
 -- | >>> :main
@@ -27,17 +25,16 @@ import Data.Set qualified as Set
 main :: IO ()
 main =
  do input <- [format|2024 23 (%s-%s%n)*|]
-    let nodes = ordNub [n | (a,b) <- input, n <- [a,b]]
-    let edges = Map.fromListWith Set.union [(min a b, Set.singleton (max a b)) | (a,b) <- input]
-    let hasEdge a b = Set.member (max a b) (Map.findWithDefault Set.empty (min a b) edges)
+    let ns = Set.elems (Set.fromList [x | (a, b) <- input, x <- [a, b]])
+        g = Map.fromListWith (<>) [(min a b, Set.singleton (max a b)) | (a, b) <- input]
+        hasEdge a b = maybe False (Set.member (max a b)) (Map.lookup (min a b) g)
     print $ length
       [ ()
-      | (a, bs) <- Map.assocs edges
-      , b:cs <- tails (Set.elems bs)
-      , c    <- cs
-      , hasEdge b c
-      , any (\n -> head n == 't') [a,b,c]  
+      | (a, aEdges) <- Map.assocs g
+      , (b, bEdges) <- Map.assocs (Map.restrictKeys g aEdges)
+      , c <- Set.elems (Set.intersection aEdges bEdges)
+      , any (\n -> head n == 't') [a, b, c]
       ]
-    putStrLn $ intercalate "," $ sort
+    putStrLn $ intercalate ","
              $ maximumBy (comparing length)
-             $ maxCliques hasEdge nodes
+             $ maxCliques hasEdge ns
