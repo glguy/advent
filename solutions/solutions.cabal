@@ -1223,3 +1223,13 @@ executable sln_2024_23
   import:              day
   main-is:             2024/23.hs
   build-depends:       containers
+
+executable sln_2024_24
+  import:              day
+  main-is:             2024/24.hs
+  build-depends:       containers, sbv
+
+executable sln_2024_25
+  import:              day
+  main-is:             2024/25.hs
+  build-depends:       containers
