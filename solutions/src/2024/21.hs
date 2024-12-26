@@ -36,12 +36,9 @@ import Data.Set qualified as Set
 main :: IO ()
 main =
  do codes <- getInputLines 2024 21
-    let score n x = (read (init x) * answer n x)
+    let score n x = (read (init x) * doorInputs n x)
     print (sum (map (score  2) codes))
     print (sum (map (score 25) codes))
-
-answer :: Int -> String -> Int
-answer n str = minimum (map (robotLength n) (doorInputs str))
 
 data Pad = Pad (Set Coord) (Map Char Coord)
 
@@ -74,12 +71,13 @@ doorPad = padFromList
   , (C 0 0      , 'A')
   ]
 
-doorInputs :: String -> [String]
-doorInputs str =
-   [ keys
+doorInputs :: Int -> String -> Int
+doorInputs n str =
+  minimum
+   [ sum (map (robotLength n) keys)
    | let deltas = padDeltas doorPad str
-   , keys <- concat <$> traverse deltaToKeys deltas
-   , validate doorPad keys
+   , keys <- traverse deltaToKeys deltas
+   , validate doorPad (concat keys)
    ]
 
 robotLength :: Int -> String -> Int
@@ -112,9 +110,9 @@ deltaToKeys :: Coord -> [String]
 deltaToKeys (C y x) =
   [ keys ++ "A"
   | let rawKeys =
-          (if y < 0 then (replicate (-y) '^' ++) else id) $
-          (if x > 0 then (replicate x '>' ++) else id) $
-          (if y > 0 then (replicate y 'v' ++) else id) $
-          (if x < 0 then replicate (-x) '<' else "")
+          replicate (-y) '^' ++
+          replicate    x '>' ++
+          replicate    y 'v' ++
+          replicate (-x) '<'
   , keys <- rawKeys : [reverse rawKeys | y /= 0, x /= 0]
   ]
