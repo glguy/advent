@@ -80,7 +80,7 @@ shortestDoorCodeLength n str =
 -- robot directional code via a given number of robot layers.
 shortestRobotCodeLength ::
   Int    {- ^ robot layers                -} ->
-  String {- ^ door code                   -} ->
+  String {- ^ robot arrows code           -} ->
   Int    {- ^ shortest button press count -}
 shortestRobotCodeLength = memo2 \n str ->
   if n == 0 then length str else
