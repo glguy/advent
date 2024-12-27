@@ -71,10 +71,10 @@ shortestDoorCodeLength ::
   String {- ^ door code                   -} ->
   Int    {- ^ shortest button press count -}
 shortestDoorCodeLength n str =
-  minimum
-   [ sum (map (shortestRobotCodeLength n) keys)
-   | keys <- sequence (route doorPad str)
-   ]
+  sum
+    [ minimum (map (shortestRobotCodeLength n) keys)
+    | keys <- route doorPad str
+    ]
 
 -- | The length of the shortest input sequence that enters the given
 -- robot directional code via a given number of robot layers.
@@ -84,9 +84,9 @@ shortestRobotCodeLength ::
   Int    {- ^ shortest button press count -}
 shortestRobotCodeLength = memo2 \n str ->
   if n == 0 then length str else
-  minimum
-    [ sum (map (shortestRobotCodeLength (n-1)) keys)
-    | keys <- sequence (route robotPad str)
+  sum
+    [ minimum (map (shortestRobotCodeLength (n - 1)) keys)
+    | keys <- route robotPad str
     ]
 
 -- | Find a list of steps needed to input a code on a pad. The inner
