@@ -25,10 +25,8 @@ module Main (main) where
 import Advent (getInputLines)
 import Advent.Coord (Coord(..), coordLines)
 import Advent.Memo (memo2)
-import Data.Map (Map)
+import Data.Map (Map, (!))
 import Data.Map qualified as Map
-import Data.Set (Set)
-import Data.Set qualified as Set
 
 -- | >>> :main
 -- 177814
@@ -40,21 +38,11 @@ main =
     print (sum (map (score  2) codes))
     print (sum (map (score 25) codes))
 
-data Pad = Pad (Set Coord) (Map Char Coord)
+type Pad = Map Char Coord
 
 -- | Turn a list of lines into a 'Pad'. Spaces are removed.
 padFromList :: [String] -> Pad
-padFromList strs = Pad (Set.fromList (Map.elems buttons)) buttons
-  where
-    buttons = Map.fromList [(c, p) | (p, c) <- coordLines strs, c /= ' ']
-
--- | Find the coordinate of a button.
-padCoord :: Pad -> Char -> Coord
-padCoord (Pad _ m) c = m Map.! c
-
--- | Test if a coordinate is contained within the pad.
-inPad :: Pad -> Coord -> Bool
-inPad (Pad s _) x = Set.member x s
+padFromList strs = Map.fromList [(c, p) | (p, c) <- coordLines strs]
 
 -- | The 4-direction pad used to control a robot
 robotPad :: Pad
@@ -72,7 +60,6 @@ shortDoorCode ::
   Int    {- ^ shortest button press count -}
 shortDoorCode n =
   sum . map (minimum . map (shortRobotCode n)) . route doorPad
-
 
 -- | The length of the shortest input sequence that enters the given
 -- robot directional code via a given number of robot layers.
@@ -93,9 +80,9 @@ shortRobotCode = memo2 \case
 -- >>> route doorPad "029A"
 -- [["<A"],["^A"],["^^>A",">^^A"],["vvvA"]]
 route :: Pad -> String -> [[String]]
-route pad str = zipWith (walk pad) (padCoord pad 'A' : absolutes) absolutes
+route pad str = zipWith (walk pad) (pad ! 'A' : absolutes) absolutes
   where
-    absolutes = map (padCoord pad) str
+    absolutes = map (pad !) str
 
 -- | Find the unique, shortest paths to move from one location to
 -- another on a pad.
@@ -107,6 +94,6 @@ walk pad (C y1 x1) (C y2 x2) =
           replicate (y2 - y1) 'v' ++
           replicate (x2 - x1) '>' ++
           replicate (x1 - x2) '<'
-  , keys <- [        rawKeys | inPad pad (C y2 x1) ]
-         ++ [reverse rawKeys | y1 /= y2, x1 /= x2, inPad pad (C y1 x2)]
+  , keys <- [        rawKeys |                     pad ! ' ' /= C y2 x1]
+         ++ [reverse rawKeys | y1 /= y2, x1 /= x2, pad ! ' ' /= C y1 x2]
   ]
