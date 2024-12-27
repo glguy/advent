@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ImportQualifiedPost #-}
+{-# Language BlockArguments, LambdaCase, ImportQualifiedPost #-}
 {-|
 Module      : Main
 Description : Day 21 solution
@@ -80,9 +80,9 @@ shortRobotCode ::
   Int    {- ^ robot layers                -} ->
   String {- ^ robot arrows code           -} ->
   Int    {- ^ shortest button press count -}
-shortRobotCode = memo2 \n ->
-  if n == 0 then length else
-  sum . map (minimum . map (shortRobotCode (n - 1))) . route robotPad
+shortRobotCode = memo2 \case
+  0 -> length
+  n -> sum . map (minimum . map (shortRobotCode (n - 1))) . route robotPad
 
 -- | Find a list of steps needed to input a code on a pad. The inner
 -- lists allow for there to be multiple, valid subsequences that exist
