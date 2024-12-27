@@ -12,18 +12,15 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format)
-import Advent.Coord (coordLines)
 import Data.List (tails)
-import Data.Set qualified as Set
 
 -- | >>> :main
 -- 2618
 main :: IO ()
 main =
  do input <- [format|2024 25 (%s%n)*&%n|]
-    let grids = [Set.fromList [c | (c, '#') <- coordLines xs] | xs <- input]
-    print (length [()
-       | x : xs <- tails grids
-       , y <- xs
-       , Set.null (Set.intersection x y)
-       ])
+    print (length [() | x : ys <- tails (map concat input), y <- ys, and (zipWith ok x y)])
+
+ok :: Char -> Char -> Bool
+ok '#' '#' = False
+ok _   _   = True
