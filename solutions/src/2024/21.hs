@@ -36,7 +36,7 @@ import Data.Set qualified as Set
 main :: IO ()
 main =
  do codes <- getInputLines 2024 21
-    let score n x = (read (init x) * shortestDoorCodeLength n x)
+    let score n x = (read (init x) * shortDoorCode n x)
     print (sum (map (score  2) codes))
     print (sum (map (score 25) codes))
 
@@ -66,28 +66,23 @@ doorPad = padFromList ["789","456","123"," 0A"]
 
 -- | The length of the shortest input sequence that enters the given
 -- door code via a given number of robot layers.
-shortestDoorCodeLength ::
+shortDoorCode ::
   Int    {- ^ robot layers                -} ->
   String {- ^ door code                   -} ->
   Int    {- ^ shortest button press count -}
-shortestDoorCodeLength n str =
-  sum
-    [ minimum (map (shortestRobotCodeLength n) keys)
-    | keys <- route doorPad str
-    ]
+shortDoorCode n =
+  sum . map (minimum . map (shortRobotCode n)) . route doorPad
+
 
 -- | The length of the shortest input sequence that enters the given
 -- robot directional code via a given number of robot layers.
-shortestRobotCodeLength ::
+shortRobotCode ::
   Int    {- ^ robot layers                -} ->
   String {- ^ robot arrows code           -} ->
   Int    {- ^ shortest button press count -}
-shortestRobotCodeLength = memo2 \n str ->
-  if n == 0 then length str else
-  sum
-    [ minimum (map (shortestRobotCodeLength (n - 1)) keys)
-    | keys <- route robotPad str
-    ]
+shortRobotCode = memo2 \n ->
+  if n == 0 then length else
+  sum . map (minimum . map (shortRobotCode (n - 1))) . route robotPad
 
 -- | Find a list of steps needed to input a code on a pad. The inner
 -- lists allow for there to be multiple, valid subsequences that exist
