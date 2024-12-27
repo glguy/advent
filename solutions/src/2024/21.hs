@@ -23,7 +23,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (getInputLines)
-import Advent.Coord (above, below, left, origin, right, Coord(..))
+import Advent.Coord (Coord(..), coordLines)
 import Advent.Memo (memo2)
 import Data.Map (Map)
 import Data.Map qualified as Map
@@ -36,83 +36,82 @@ import Data.Set qualified as Set
 main :: IO ()
 main =
  do codes <- getInputLines 2024 21
-    let score n x = (read (init x) * doorInputs n x)
+    let score n x = (read (init x) * shortestDoorCodeLength n x)
     print (sum (map (score  2) codes))
     print (sum (map (score 25) codes))
 
 data Pad = Pad (Set Coord) (Map Char Coord)
 
-padFromList :: [(Coord, Char)] -> Pad
-padFromList xs = Pad (Set.fromList [p | (p, _) <- xs]) (Map.fromList [(c,p) | (p,c) <- xs])
+-- | Turn a list of lines into a 'Pad'. Spaces are removed.
+padFromList :: [String] -> Pad
+padFromList strs = Pad (Set.fromList (Map.elems buttons)) buttons
+  where
+    buttons = Map.fromList [(c, p) | (p, c) <- coordLines strs, c /= ' ']
 
+-- | Find the coordinate of a button.
 padCoord :: Pad -> Char -> Coord
 padCoord (Pad _ m) c = m Map.! c
 
+-- | Test if a coordinate is contained within the pad.
 inPad :: Pad -> Coord -> Bool
 inPad (Pad s _) x = Set.member x s
 
--- | The 4-direction pad centered on the @A@ button.
+-- | The 4-direction pad used to control a robot
 robotPad :: Pad
-robotPad = padFromList [(C 0 (-1), '^'), (C 0 0, 'A'), (C 1 (-2), '<'), (C 1 (-1), 'v'), (C 1 0, '>')]
+robotPad = padFromList [" ^A", "<v>"]
 
--- | The 10-digit pad centered on the @A@ button.
+-- | The 10-digit pad used to control the door
 doorPad :: Pad
-doorPad = padFromList
-  [ (C (-3) (-2), '7')
-  , (C (-3) (-1), '8')
-  , (C (-3) 0   , '9')
-  , (C (-2) (-2), '4')
-  , (C (-2) (-1), '5')
-  , (C (-2) 0   , '6')
-  , (C (-1) (-2), '1')
-  , (C (-1) (-1), '2')
-  , (C (-1) (0) , '3')
-  , (C 0 (-1)   , '0')
-  , (C 0 0      , 'A')
-  ]
+doorPad = padFromList ["789","456","123"," 0A"]
 
-doorInputs :: Int -> String -> Int
-doorInputs n str =
+-- | The length of the shortest input sequence that enters the given
+-- door code via a given number of robot layers.
+shortestDoorCodeLength ::
+  Int    {- ^ robot layers                -} ->
+  String {- ^ door code                   -} ->
+  Int    {- ^ shortest button press count -}
+shortestDoorCodeLength n str =
   minimum
-   [ sum (map (robotLength n) keys)
-   | let deltas = padDeltas doorPad str
-   , keys <- traverse deltaToKeys deltas
-   , validate doorPad (concat keys)
+   [ sum (map (shortestRobotCodeLength n) keys)
+   | keys <- sequence (route doorPad str)
    ]
 
-robotLength :: Int -> String -> Int
-robotLength = memo2 \n str ->
+-- | The length of the shortest input sequence that enters the given
+-- robot directional code via a given number of robot layers.
+shortestRobotCodeLength ::
+  Int    {- ^ robot layers                -} ->
+  String {- ^ door code                   -} ->
+  Int    {- ^ shortest button press count -}
+shortestRobotCodeLength = memo2 \n str ->
   if n == 0 then length str else
   minimum
-    [ sum (map (robotLength (n-1)) keys)
-    | let deltas = padDeltas robotPad str
-    , keys <- traverse deltaToKeys deltas
-    , validate robotPad (concat keys)
+    [ sum (map (shortestRobotCodeLength (n-1)) keys)
+    | keys <- sequence (route robotPad str)
     ]
 
-validate :: Pad -> [Char] -> Bool
-validate pad str = all (inPad pad) posns
-  where
-    posns = scanl move origin str
-    move here 'A' = here
-    move here '>' = right here
-    move here '<' = left here
-    move here '^' = above here
-    move here 'v' = below here
-    move _ _ = undefined
-
-padDeltas :: Pad -> String -> [Coord]
-padDeltas pad str = zipWith (-) (absolutes) (origin:absolutes)
+-- | Find a list of steps needed to input a code on a pad. The inner
+-- lists allow for there to be multiple, valid subsequences that exist
+-- for some keys. Only the most direct routes are considered. This
+-- takes advantage of our input pads only missing corners. Sequences
+-- always start from @A@.
+--
+-- >>> route doorPad "029A"
+-- [["<A"],["^A"],["^^>A",">^^A"],["vvvA"]]
+route :: Pad -> String -> [[String]]
+route pad str = zipWith (walk pad) (padCoord pad 'A' : absolutes) absolutes
   where
     absolutes = map (padCoord pad) str
 
-deltaToKeys :: Coord -> [String]
-deltaToKeys (C y x) =
+-- | Find the unique, shortest paths to move from one location to
+-- another on a pad.
+walk :: Pad -> Coord -> Coord -> [String]
+walk pad (C y1 x1) (C y2 x2) =
   [ keys ++ "A"
   | let rawKeys =
-          replicate (-y) '^' ++
-          replicate    x '>' ++
-          replicate    y 'v' ++
-          replicate (-x) '<'
-  , keys <- rawKeys : [reverse rawKeys | y /= 0, x /= 0]
+          replicate (y1 - y2) '^' ++
+          replicate (y2 - y1) 'v' ++
+          replicate (x2 - x1) '>' ++
+          replicate (x1 - x2) '<'
+  , keys <- [        rawKeys | inPad pad (C y2 x1) ]
+         ++ [reverse rawKeys | y1 /= y2, x1 /= x2, inPad pad (C y1 x2)]
   ]
