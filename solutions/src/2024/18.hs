@@ -8,9 +8,6 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2024/day/18>
 
-Uses a binary search to reduce the number of reachable searchs
-that need to be done.
-
 -}
 module Main where
 
