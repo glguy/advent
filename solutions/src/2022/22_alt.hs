@@ -1,4 +1,4 @@
-{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost, LambdaCase, BangPatterns, DataKinds #-}
+{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost, LambdaCase, ImplicitParams, BangPatterns, DataKinds #-}
 {-|
 Module      : Main
 Description : Day 22 solution
@@ -8,10 +8,29 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/22>
 
+>>> :{
+:main + "        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
+\&
+10R5L5R10L4R5L5
+"
+:}
+5031
+
 -}
 module Main where
 
-import Advent (stageTH, format)
+import Advent (stageTH, format, countBy)
 import Advent.Coord (Coord(..), coordLines, above, below, left, origin, right)
 import Advent.Permutation (Permutation, mkPermutation, invert)
 import Advent.Search ( dfsOn )
@@ -26,17 +45,14 @@ data D = DL | DR
 
 stageTH
 
--- | Largest coordinate on a cube face named to make it easier to check
--- examples.
-highVal :: Int
-highVal = 49
-
 -- |
 -- >>> :main
 -- 55267
 main :: IO ()
 main =
  do (rawmap, path) <- [format|2022 22 (( |.|#)*!%n)*%n(%u|@D)*%n|]
+    let elts = countBy (`elem` ".#") (concat rawmap)
+    let ?highVal = until (\x -> 6*x*x >= elts) (1 +) 1 - 1
     let maze = explore (Set.fromList [c | (c, '.') <- coordLines rawmap])
         (endLoc, endFacing) = foldl (applyCommand maze) (originLoc, 0) path
         Just (C y x) = onMaze maze endLoc
@@ -45,7 +61,7 @@ main =
 
 -- | Given the set of flat path coordinates compute the cube-coordinate
 -- to flat coordinate map.
-explore :: Set Coord -> Map Loc Coord
+explore :: (?highVal :: Int) => Set Coord -> Map Loc Coord
 explore input = Map.fromList (dfsOn snd step (originLoc, Set.findMin input))
   where
     step (l, c) =
@@ -54,19 +70,19 @@ explore input = Map.fromList (dfsOn snd step (originLoc, Set.findMin input))
       [(locUp    l, above c) | above c `Set.member` input] ++
       [(locDown  l, below c) | below c `Set.member` input]
 
-applyCommand :: Map Loc Coord -> (Loc, Facing) -> Either Int D -> (Loc, Facing)
+applyCommand :: (?highVal :: Int) => Map Loc Coord -> (Loc, Facing) -> Either Int D -> (Loc, Facing)
 applyCommand maze (!here, !dir) = \case
   Left  n -> (walkN maze n dir here, dir)
   Right t -> (here, turn t dir)
 
 -- | Walk a number of steps in the given direction
-walkN :: Map Loc Coord -> Int -> Facing -> Loc -> Loc
+walkN :: (?highVal :: Int) => Map Loc Coord -> Int -> Facing -> Loc -> Loc
 walkN maze n dir here = last (takeWhile valid (take (n + 1) (iterate (move dir) here)))
   where valid = isJust . onMaze maze
 
 -- | Find the location in the input file corresponding to this
 -- cube location if one exists.
-onMaze :: Map Loc Coord -> Loc -> Maybe Coord
+onMaze :: (?highVal :: Int) => Map Loc Coord -> Loc -> Maybe Coord
 onMaze maze loc = msum (map (`Map.lookup` maze) (take 4 (iterate locRotate loc)))
 
 -- | Symmetric group S4 corresponds to the symmetries of a cube.
@@ -84,32 +100,28 @@ data Loc = Loc { locFace :: S4, locCoord :: Coord }
 originLoc :: Loc
 originLoc = Loc mempty origin
 
-locRight :: Loc -> Loc
+locRight, locLeft, locUp, locDown, locRotate :: (?highVal :: Int) => Loc -> Loc
 locRight (Loc p (C y x))
-  | x < highVal = Loc p (C y (x + 1))
+  | x < ?highVal = Loc p (C y (x + 1))
   | otherwise = Loc (p <> invert rotY) (C y 0)
 
-locLeft :: Loc -> Loc
 locLeft (Loc p (C y x))
   | 0 < x = Loc p (C y (x - 1))
-  | otherwise = Loc (p <> rotY) (C y highVal)
+  | otherwise = Loc (p <> rotY) (C y ?highVal)
 
-locDown :: Loc -> Loc
 locDown (Loc p (C y x))
-  | y < highVal = Loc p (C (y + 1) x)
+  | y < ?highVal = Loc p (C (y + 1) x)
   | otherwise = Loc (p <> rotX) (C 0 x)
 
-locUp :: Loc -> Loc
 locUp (Loc p (C y x))
   | 0 < y = Loc p (C (y - 1) x)
-  | otherwise = Loc (p <> invert rotX) (C highVal x)
+  | otherwise = Loc (p <> invert rotX) (C ?highVal x)
 
-locRotate :: Loc -> Loc
-locRotate (Loc p (C y x)) = Loc (p <> rotZ) (C x (highVal - y))
+locRotate (Loc p (C y x)) = Loc (p <> rotZ) (C x (?highVal - y))
 
 -- | Rotate the facing until we're on the cube face as it
 -- is oriented on the input text.
-fixFacing :: Map Loc Coord -> Loc -> Facing -> Facing
+fixFacing :: (?highVal :: Int) => Map Loc Coord -> Loc -> Facing -> Facing
 fixFacing maze loc n
   | Map.member loc maze = n
   | otherwise = fixFacing maze (locRotate loc) (turn DR n)
@@ -120,7 +132,7 @@ turn :: D -> Facing -> Facing
 turn DL x = (x - 1) `mod` 4
 turn DR x = (x + 1) `mod` 4
 
-move :: Facing -> Loc -> Loc
+move :: (?highVal :: Int) => Facing -> Loc -> Loc
 move 0 = locRight
 move 1 = locDown
 move 2 = locLeft
