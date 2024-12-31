@@ -33,13 +33,13 @@ module Main where
 import Advent (stageTH, format, countBy)
 import Advent.Coord (Coord(..), coordLines, above, below, left, origin, right)
 import Advent.Permutation (Permutation, mkPermutation, invert)
-import Advent.Search ( dfsOn )
+import Advent.Search (dfsOn)
+import Control.Monad (msum)
 import Data.Map (Map)
 import Data.Map qualified as Map
+import Data.Maybe (isJust)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import Control.Monad (msum)
-import Data.Maybe (isJust)
 
 data D = DL | DR
 
