@@ -23,6 +23,7 @@ module Advent.Permutation
   , backwards
   , cycles
   , order
+  , index
   ) where
 
 import Advent.Group (Group(..))

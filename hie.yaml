@@ -410,6 +410,8 @@ cradle:
       component: "sln_2022_21"
     - path: "./solutions/src/2022/22.hs"
       component: "sln_2022_22"
+    - path: "./solutions/src/2022/22_alt.hs"
+      component: "sln_2022_22_alt"
     - path: "./solutions/src/2022/23.hs"
       component: "sln_2022_23"
     - path: "./solutions/src/2022/24.hs"
