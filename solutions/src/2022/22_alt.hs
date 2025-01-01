@@ -45,10 +45,12 @@ import Data.Maybe (isJust)
 import Data.Set (Set)
 import Data.Set qualified as Set
 
+-- | Left and right turns
 data D = DL | DR
 
 stageTH
 
+-- | Constraint for upper bound of cube coordinates
 type HiVal = ?hiVal :: Int
 
 -- |
@@ -67,7 +69,7 @@ main =
     let maze = explore (Set.fromList [c | (c, '.') <- coordLines rawmap])
 
     -- figure out the cube coordinate that our path ends on
-    let (C y x, facing) = findFacing maze (foldl (flip (applyCommand maze)) locOrigin path)
+    let (C y x, facing) = locToFlat maze (foldl (flip (applyCommand maze)) locOrigin path)
 
     -- compute the "password" from the end location
     print (1000 * (y + 1) + 4 * (x + 1) + facing)
@@ -100,6 +102,17 @@ walkN maze n = last . takeWhile (isJust . onMaze maze) . take (n + 1) . iterate 
 onMaze :: HiVal => Map Loc Coord -> Loc -> Maybe Coord
 onMaze maze = msum . map (`Map.lookup` maze) . take 4 . iterate locRotateR
 
+-- | Find the input file coordinate corresponding to a cube coordinate.
+-- The number of clockwise rotations needed to match the orientation
+-- from the input file is also returned for using in the password.
+locToFlat :: HiVal => Map Loc Coord -> Loc -> (Coord, Int)
+locToFlat maze = go 0
+  where
+    go n loc =
+      case Map.lookup loc maze of
+        Just c -> (c, n)
+        Nothing -> go (n + 1) (locRotateR loc)
+
 -- | Symmetric group S4 corresponds to the symmetries of a cube.
 type S4 = Permutation 4
 
@@ -108,11 +121,11 @@ rotX = mkPermutation ([3,0,1,2]!!)
 rotY = mkPermutation ([2,0,3,1]!!)
 rotZ = mkPermutation ([2,3,1,0]!!)
 
--- | A location is a cube-face and rotation paired with a location on that face
-data Loc = Loc { locFace :: S4, locCoord :: Coord }
+-- | A pair a rotation of a cube face and a position on that face.
+data Loc = Loc S4 Coord
   deriving (Show, Ord, Eq)
 
--- | Initial location on the top-left or a face.
+-- | Initial location on the top-left of a face.
 locOrigin :: Loc
 locOrigin = Loc mempty origin
 
@@ -136,13 +149,3 @@ locUp (Loc p (C y x))
 locRotateR (Loc p (C y x)) = Loc (p <> rotZ) (C x (?hiVal - y))
 
 locRotateL (Loc p (C y x)) = Loc (p <> invert rotZ) (C (?hiVal - x) y)
-
--- | Rotate the facing until we're on the cube face as it
--- is oriented on the input text.
-findFacing :: HiVal => Map Loc Coord -> Loc -> (Coord, Int)
-findFacing maze = go 0
-  where
-    go n loc =
-      case Map.lookup loc maze of
-        Just c -> (c, n)
-        Nothing -> go (n + 1) (locRotateR loc)
