@@ -67,8 +67,7 @@ main =
     let maze = explore (Set.fromList [c | (c, '.') <- coordLines rawmap])
 
     -- figure out the cube coordinate that our path ends on
-    let endLoc = foldl (flip (applyCommand maze)) locOrigin path
-        (C y x, facing) = findFacing maze endLoc
+    let (C y x, facing) = findFacing maze (foldl (flip (applyCommand maze)) locOrigin path)
 
     -- compute the "password" from the end location
     print (1000 * (y + 1) + 4 * (x + 1) + facing)
