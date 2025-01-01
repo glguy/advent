@@ -89,13 +89,9 @@ explore input = Map.fromList (dfsOn snd step (locOrigin, Set.findMin input))
 -- Each move is either forward a certain number or a turn.
 applyCommand :: HiVal => Map Loc Coord -> Either Int D -> Loc -> Loc
 applyCommand maze = \case
-  Left  n  -> walkN maze n
+  Left  n  -> last . takeWhile (isJust . onMaze maze) . take (n + 1) . iterate locRight
   Right DL -> locRotateR
   Right DR -> locRotateL
-
--- | Walk a number of steps in the given direction
-walkN :: HiVal => Map Loc Coord -> Int -> Loc -> Loc
-walkN maze n = last . takeWhile (isJust . onMaze maze) . take (n + 1) . iterate locRight
 
 -- | Find the location in the input file corresponding to this
 -- cube location if one exists.
