@@ -69,15 +69,17 @@ main =
     let maze = explore (Set.fromList [c | (c, '.') <- coordLines rawmap])
 
     -- figure out the cube coordinate that our path ends on
-    let (C y x, facing) = locToFlat maze (foldl (flip (applyCommand maze)) locOrigin path)
+    let (C y x, facing) = maze Map.! foldl (flip (applyCommand maze)) locOrigin path
 
     -- compute the "password" from the end location
     print (1000 * (y + 1) + 4 * (x + 1) + facing)
 
 -- | Given the set of flat path coordinates compute the cube-coordinate
--- to flat coordinate map.
-explore :: HiVal => Set Coord -> Map Loc Coord
-explore input = Map.fromList (dfsOn snd step (locOrigin, Set.findMin input))
+-- to flat coordinate and facing map.
+explore :: HiVal => Set Coord -> Map Loc (Coord, Int)
+explore input = Map.fromList
+  [(li, (c, i)) | (l, c) <- dfsOn snd step (locOrigin, Set.findMin input)
+                , (li, i) <- zip (iterate locRotateL l) [0..3]]
   where
     step (l, c) =
       [(locRight l, right c) | right c `Set.member` input] ++
@@ -87,27 +89,11 @@ explore input = Map.fromList (dfsOn snd step (locOrigin, Set.findMin input))
 
 -- | Apply a command to the state of the walker on the cube.
 -- Each move is either forward a certain number or a turn.
-applyCommand :: HiVal => Map Loc Coord -> Either Int D -> Loc -> Loc
+applyCommand :: HiVal => Map Loc a -> Either Int D -> Loc -> Loc
 applyCommand maze = \case
-  Left  n  -> last . takeWhile (isJust . onMaze maze) . take (n + 1) . iterate locRight
+  Left  n  -> last . takeWhile (`Map.member` maze) . take (n + 1) . iterate locRight
   Right DL -> locRotateR
   Right DR -> locRotateL
-
--- | Find the location in the input file corresponding to this
--- cube location if one exists.
-onMaze :: HiVal => Map Loc Coord -> Loc -> Maybe Coord
-onMaze maze = msum . map (`Map.lookup` maze) . take 4 . iterate locRotateR
-
--- | Find the input file coordinate corresponding to a cube coordinate.
--- The number of clockwise rotations needed to match the orientation
--- from the input file is also returned for using in the password.
-locToFlat :: HiVal => Map Loc Coord -> Loc -> (Coord, Int)
-locToFlat maze = go 0
-  where
-    go n loc =
-      case Map.lookup loc maze of
-        Just c -> (c, n)
-        Nothing -> go (n + 1) (locRotateR loc)
 
 -- | Symmetric group S4 corresponds to the symmetries of a cube.
 type S4 = Permutation 4
