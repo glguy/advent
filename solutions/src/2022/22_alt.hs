@@ -2,7 +2,7 @@
 {-|
 Module      : Main
 Description : Day 22 solution
-Copyright   : (c) Eric Mertens, 2022
+Copyright   : (c) Eric Mertens, 2024
 License     : ISC
 Maintainer  : emertens@gmail.com
 
