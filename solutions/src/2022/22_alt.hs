@@ -44,7 +44,6 @@ import Data.Map qualified as Map
 import Data.Maybe (isJust)
 import Data.Set (Set)
 import Data.Set qualified as Set
-import qualified Advent.AsmProg as cube
 
 data D = DL | DR
 
