@@ -94,12 +94,24 @@ applyCommand maze = \case
   Right DR -> locRotateL
 
 -- | Symmetric group S4 corresponds to the symmetries of a cube.
+--
+-- This cube's diagonals are labeled and the face is read off the
+-- top clockwise. Rotations about an axis use left-hand rule.
+--
+-- @
+--   0--1   z
+--  /| /|   |
+-- 3--2 |   o-x
+-- | 2|-3  /
+-- |/ |/  y
+-- 1--0
+-- @
 type S4 = Permutation 4
 
 rotX, rotY, rotZ :: S4
-rotX = mkPermutation ([3,0,1,2]!!)
+rotX = mkPermutation ([3,2,0,1]!!)
 rotY = mkPermutation ([2,0,3,1]!!)
-rotZ = mkPermutation ([2,3,1,0]!!)
+rotZ = mkPermutation ([3,0,1,2]!!)
 
 -- | A pair a rotation of a cube face and a position on that face.
 data Loc = Loc S4 Coord
