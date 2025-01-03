@@ -1,26 +1,58 @@
-{-# Language QuasiQuotes, TemplateHaskell, ImportQualifiedPost, LambdaCase, BangPatterns #-}
+{-# Language QuasiQuotes, BangPatterns, ConstraintKinds, TemplateHaskell, ImportQualifiedPost, LambdaCase, ImplicitParams, DataKinds #-}
 {-|
 Module      : Main
 Description : Day 22 solution
-Copyright   : (c) Eric Mertens, 2022
+Copyright   : (c) Eric Mertens, 2024
 License     : ISC
 Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/22>
 
--}
-module Main where
+This solution works by first exploring the input file and assigning a cube
+location to each flattened location. The path is explored in terms of the cube
+coordinates and then is converted back into input file coordinates at the end.
 
+>>> :{
+:main + "        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
+\&
+10R5L5R10L4R5L5
+"
+:}
+6032
+5031
+
+-}
+module Main (main) where
+
+import Advent (stageTH, format, countBy)
+import Advent.Coord (Coord(..), coordLines, above, below, left, origin, right, east, turnLeft, turnRight)
+import Advent.Permutation (Permutation, mkPermutation, invert)
+import Advent.Search (dfsOn)
 import Data.Map (Map)
 import Data.Map qualified as Map
-import Data.List (foldl')
+import Data.Set (Set)
+import Data.Set qualified as Set
 
-import Advent (format, stageTH)
-import Advent.Coord
-
+-- | Left and right turns
 data D = DL | DR
 
+data C = C_HASH | C_DOT deriving (Eq)
+
 stageTH
+
+-- | Constraint for upper bound of cube coordinates
+type HiVal = ?hiVal :: Int
 
 -- |
 -- >>> :main
@@ -28,90 +60,122 @@ stageTH
 -- 55267
 main :: IO ()
 main =
- do (rawmap, path) <- [format|2022 22 (( |.|#)*!%n)*%n(%u|@D)*%n|]
-    let board = Map.filter (' ' /=) (Map.fromList (coordLines rawmap))
-    let start = minimum (Map.keys board)
-    print (score (go1 path start board))
-    print (score (go2 path start board))
+ do (rawMaze, cmds) <- [format|2022 22 (( |@C)*%n)*%n(%u|@D)*%n|]
+    let maze = parseMaze rawMaze
+    print (part1 maze cmds)
+    print (part2 maze cmds)
 
-score :: (Coord, Coord) -> Int
-score (C y x, dir) = 1000 * (y+1) + 4 * (x+1) + faceval
+-- | Build a coordinate map of the maze
+parseMaze :: [[Maybe C]] -> Map Coord C
+parseMaze cs = Map.fromList [(c, x) | (c, Just x) <- coordLines cs]
+
+-- | The password is determined from the ending coordinate and direction.
+password :: Coord -> Int -> Int
+password (C y x) z = 1000 * (y + 1) + 4 * (x + 1) + z
+
+-- | Follow the command sequence while using a simple wrap-around
+-- logic to compute the password.
+part1 :: Map Coord C -> [Either Int D] -> Int
+part1 maze cmds = password end (d `mod` 4)
   where
-    faceval
-      | dir == east  = 0
-      | dir == south = 1
-      | dir == west  = 2
-      | dir == north = 3
-      | otherwise = error "faceval: bad direction"
+    (start, _) = Map.findMin maze
+    (end, _, d) = foldl (applyCommand1 maze) (start, east, 0) cmds
 
-go1 :: [Either Int D] -> Coord -> Map Coord Char -> (Coord, Coord)
-go1 commands start board = foldl' f (start, east) commands
+applyCommand1 :: Map Coord C -> (Coord, Coord, Int) -> Either Int D -> (Coord, Coord, Int)
+applyCommand1 board (!here, !dir, !facing) = \case
+  Right DL -> (here, turnLeft  dir, facing - 1)
+  Right DR -> (here, turnRight dir, facing + 1)
+  Left  n  -> (here', dir, facing)
+    where
+      here' = last (takeWhile isOpen (take (n + 1) (iterate step here)))
+      isOpen x = board Map.! x == C_DOT
+      step x
+        | let x' = x + dir, Map.member x' board = x'
+        | otherwise = last (takeWhile (`Map.member` board) (iterate (subtract dir) x))
+
+-- | Follow the command sequence while treating the maze as a cube net
+-- to compute the resulting password.
+part2 :: Map Coord C -> [Either Int D] -> Int
+part2 maze cmds =
+ do -- figure out the side-length of the cube we're working with
+    -- so that we can handle both examples and regular inputs
+    let ?hiVal = until (\x -> 6 * x * x >= length maze) (1 +) 1 - 1
+
+    -- associate cube coordinates with all of the input file coordinates
+    let cube = buildCube (Map.keysSet (Map.filter (C_DOT ==) maze))
+
+    -- figure out the cube coordinate that our path ends on
+    let (end, facing) = cube Map.! foldl (flip (applyCommand2 cube)) locOrigin cmds
+
+    -- compute the "password" from the end location
+    password end facing
+
+-- | Given the set of flat path coordinates compute the cube-coordinate
+-- to flat coordinate and facing map.
+buildCube :: HiVal => Set Coord -> Map Loc (Coord, Int)
+buildCube input = Map.fromList
+  [(li, (c, i)) | (l, c) <- dfsOn snd step (locOrigin, Set.findMin input)
+                , (li, i) <- zip (iterate locRotateL l) [0..3]]
   where
-    f (!here, !dir) = \case
-      Left  n  -> (walk1 n dir here board, dir)
-      Right DL -> (here, turnLeft dir)
-      Right DR -> (here, turnRight dir)
+    step (l, c) =
+      [(locRight l, right c) | right c `Set.member` input] ++
+      [(locLeft  l, left  c) | left  c `Set.member` input] ++
+      [(locUp    l, above c) | above c `Set.member` input] ++
+      [(locDown  l, below c) | below c `Set.member` input]
 
-walk1 :: Int -> Coord -> Coord -> Map Coord Char -> Coord
-walk1 0 _ here _ = here
-walk1 n dir here board
-  | board Map.! here' == '#' = here
-  | otherwise = walk1 (n-1) dir here' board
-  where
-    here'
-      | Map.member (here+dir) board = here+dir
-      | otherwise = last (takeWhile (`Map.member` board) (iterate (subtract dir) here))
+-- | Apply a command to the state of the walker on the cube.
+-- Each move is either forward a certain number or a turn.
+applyCommand2 :: HiVal => Map Loc a -> Either Int D -> Loc -> Loc
+applyCommand2 maze = \case
+  Left  n  -> last . takeWhile (`Map.member` maze) . take (n + 1) . iterate locRight
+  Right DL -> locRotateR
+  Right DR -> locRotateL
 
-go2 :: [Either Int D] -> Coord -> Map Coord Char -> (Coord, Coord)
-go2 commands start board = foldl' f (start, east) commands
-  where
-    f (!here, !dir) = \case
-      Left n   -> walk2 n dir here board
-      Right DL -> (here, turnLeft dir)
-      Right DR -> (here, turnRight dir)
+-- | Symmetric group S4 corresponds to the symmetries of a cube.
+--
+-- This cube's diagonals are labeled and the face is read off the
+-- top clockwise. Rotations about an axis use left-hand rule.
+--
+-- @
+--   0--1   z
+--  /| /|   |
+-- 3--2 |   o-x
+-- | 2|-3  /
+-- |/ |/  y
+-- 1--0
+-- @
+type S4 = Permutation 4
 
-walk2 :: Int -> Coord -> Coord -> Map Coord Char -> (Coord, Coord)
-walk2 0 dir here _ = (here,dir)
-walk2 n dir here board
-  | board Map.! here' == '#' = (here,dir)
-  | otherwise = walk2 (n-1) dir' here' board
-  where
-   (here', dir') =
-      let fr = coordRow here `mod` 50
-          fc = coordCol here `mod` 50
-          fr' = 49 - fr in
-      case (cubeface here, cubeface (here+dir)) of
-         (_,y) | -1 /= y -> (here+dir, dir)
+rotX, rotY, rotZ :: S4
+rotX = mkPermutation ([3,2,0,1] !!)
+rotY = mkPermutation ([2,0,3,1] !!)
+rotZ = mkPermutation ([3,0,1,2] !!)
 
-         (1,_) | dir == north -> (C (150 + fc ) 0,east)
-         (1,_) | dir == west  -> (C (100 + fr') 0, east)
+-- | A pair a rotation of a cube face and a position on that face.
+data Loc = Loc S4 Coord
+  deriving (Show, Ord, Eq)
 
-         (2,_) | dir == north -> (C 199         fc, north)
-         (2,_) | dir == east  -> (C (100 + fr') 99, west)
-         (2,_) | dir == south -> (C ( 50 + fc ) 99, west)
+-- | Initial location on the top-left of a face.
+locOrigin :: Loc
+locOrigin = Loc mempty origin
 
-         (3,_) | dir == east -> (C  49 (100 + fr), north)
-         (3,_) | dir == west -> (C 100 fr        , south)
+locRight, locLeft, locUp, locDown, locRotateL, locRotateR :: HiVal => Loc -> Loc
+locRight (Loc p (C y x))
+  | x < ?hiVal = Loc p (C y (x + 1))
+  | otherwise = Loc (p <> invert rotY) (C y 0)
 
-         (4,_) | dir == east  -> (C fr'        149, west)
-         (4,_) | dir == south -> (C (150 + fc)  49, west)
+locLeft (Loc p (C y x))
+  | 0 < x = Loc p (C y (x - 1))
+  | otherwise = Loc (p <> rotY) (C y ?hiVal)
 
-         (5,_) | dir == north -> (C (50 + fc) 50, east)
-         (5,_) | dir == west  -> (C fr'       50, east)
+locDown (Loc p (C y x))
+  | y < ?hiVal = Loc p (C (y + 1) x)
+  | otherwise = Loc (p <> rotX) (C 0 x)
 
-         (6,_) | dir == east  -> (C 149 ( 50 + fr), north)
-         (6,_) | dir == south -> (C   0 (100 + fc), south)
-         (6,_) | dir == west  -> (C   0 ( 50 + fr), south)
+locUp (Loc p (C y x))
+  | 0 < y = Loc p (C (y - 1) x)
+  | otherwise = Loc (p <> invert rotX) (C ?hiVal x)
 
-         (a,b) -> error (show (a,b, dir))
+locRotateR (Loc p (C y x)) = Loc (p <> rotZ) (C x (?hiVal - y))
 
-cubeface :: Coord -> Int
-cubeface (C y x) =
-   case (div y 50, div x 50) of
-      (0,1) -> 1
-      (0,2) -> 2
-      (1,1) -> 3
-      (2,0) -> 5
-      (2,1) -> 4
-      (3,0) -> 6
-      _     -> -1
+locRotateL (Loc p (C y x)) = Loc (p <> invert rotZ) (C (?hiVal - x) y)

@@ -69,4 +69,5 @@ symbolNames =
   , ("COMMA", ',')
   , ("PLUS", '+')
   , ("TILDE", '~')
+  , ("SPACE", ' ')
   ]

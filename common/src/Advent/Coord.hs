@@ -166,7 +166,7 @@ drawCoords coords = drawPicture (Map.fromList [(c,'█') | c <- toList coords])
 
 -- | Given a list of lines pair up each character with
 -- its position.
-coordLines :: [String] -> [(Coord, Char)]
+coordLines :: [[a]] -> [(Coord, a)]
 coordLines rows = [(C y x, z) | (y,row) <- zip [0..] rows, (x,z) <- zip [0..] row]
 
 -- | Apply a function to the y and x coordinate
