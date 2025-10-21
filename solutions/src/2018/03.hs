@@ -10,6 +10,15 @@ Maintainer  : emertens@gmail.com
 
 Given a bunch of 2D regions find regions that do and do not overlap.
 
+>>> :{
+:main +
+    "#1 @ 1,3: 4x4\n\
+    \#2 @ 3,1: 4x4\n\
+    \#3 @ 5,5: 2x2\n"
+:}
+4
+3
+
 -}
 module Main (main) where
 

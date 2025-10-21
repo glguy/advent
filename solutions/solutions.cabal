@@ -23,7 +23,7 @@ common day
   hs-source-dirs:      src
   build-depends:
     advent,
-    base ^>= {4.18, 4.19, 4.20},
+    base ^>= {4.18, 4.19, 4.20, 4.21},
   other-modules:       Dummy
   default-language:    Haskell2010
   if impl(ghc >= 9.8)
