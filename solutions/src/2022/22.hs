@@ -8,9 +8,25 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2022/day/22>
 
-This solution works by first exploring the input file and assigning a cube
-location to each flattened location. The path is explored in terms of the cube
-coordinates and then is converted back into input file coordinates at the end.
+= Part 1
+
+In part 1 we can work directly in terms of the flat-coordinates as found in the
+input text file. The wrap-around logic will be implemented by walking backward
+when a move falls off the edge of the input maze.
+
+= Part 2
+
+In part 2 of the task we need to treat the input maze as a
+[net](https://en.wikipedia.org/wiki/Net_(polyhedron)). To achieve this we'll
+first compute the correspondence between flat-coordinates and cube-coordinates
+with a graph traversal that advances flat-coordinates in lock step with
+cube-coordinates as it explores the whole maze.  Next we do the walk in terms
+of cube-surface coordinates. Last we'll convert back to a flat-coordinate to
+compute the output.
+
+Cube-coordinates will be represented as a rotation of the cube to put the
+current face pointing up and a 2D coordinate on that face. To track the cube
+rotations track permutations of the diagonals of the cube.
 
 >>> :{
 :main + "        ...#
@@ -44,15 +60,15 @@ import Data.Map qualified as Map
 import Data.Set (Set)
 import Data.Set qualified as Set
 
--- | Turn commands.
+-- | Direction commands for movement.
 data D
   = DL -- ^ Left turn
   | DR -- ^ Right turn
 
--- | Tile in the maze.
+-- | Tile types in the maze.
 data T
-  = T_HASH -- ^ A wall
-  | T_DOT  -- ^ A path
+  = T_HASH -- ^ Represents a wall tile.
+  | T_DOT  -- ^ Represents an open path tile.
   deriving (Eq, Ord, Show)
 
 stageTH
@@ -147,8 +163,11 @@ buildCube start input = (start', cube)
       [(locUp    l, above c) | above c `Set.member` input] ++
       [(locDown  l, below c) | below c `Set.member` input]
 
--- | Apply a command to the state of the walker on the cube.
--- Each move is either forward a certain number or a turn.
+-- | Applies a movement or rotation command to the position.
+--
+-- * @`Left` n@ advances right @n@ steps on the cube stopping early for a wall. 
+-- * @`Right` d@ counter-rotates the cube itself, rather than changing directions
+--   such that continuing to walk right is correct.
 applyCommand2 :: Hi => Map Loc a -> Either Int D -> Loc -> Loc
 applyCommand2 maze = \case
   Left  n  -> last . takeWhile (`Map.member` maze) . take (n + 1) . iterate locRight
@@ -161,12 +180,12 @@ applyCommand2 maze = \case
 -- top face clockwise. Rotations about an axis use left-hand rule.
 --
 -- @
---   0--1   z
---  /| /|   |
--- 3--2 |   o-x
--- | 2|-3  /
--- |/ |/  y
--- 1--0
+--   0──1   z
+--  ╱│ ╱│   │
+-- 3──2 │   o─x
+-- │ 2│─3  ╱
+-- │╱ │╱  y
+-- 1──0
 -- @
 type S4 = Permutation 4
 
@@ -175,7 +194,10 @@ rotX = mkPermutation ([3,2,0,1] !!)
 rotY = mkPermutation ([2,0,3,1] !!)
 rotZ = mkPermutation ([3,0,1,2] !!)
 
--- | A pair of a cube orientation and a position on the top face.
+-- | Represents a position on the cube, including:
+-- 
+-- * The cube's current orientation (`S4` symmetry group).
+-- * A 2D coordinate on the top face of the cube.
 data Loc = Loc S4 Coord
   deriving (Show, Ord, Eq)
 

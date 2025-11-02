@@ -27,15 +27,13 @@ module Main (main) where
 import Advent (getInputArray, countBy)
 import Advent.Coord (above, below, cardinal, left, right, Coord)
 import Advent.Search (astar, astarOn, bfsOn, AStep(..))
-import Data.Array.Unboxed ( UArray, (!), (//), assocs, elems )
+import Advent.SmallSet (SmallSet)
+import Advent.SmallSet qualified as SmallSet
+import Data.Array.Unboxed ( UArray, (!), (//), assocs, elems, range )
 import Data.Char (ord, isLower, isUpper)
-import Data.IntSet (IntSet)
-import Data.IntSet qualified as IntSet
-import Data.List ( foldl' )
 import Data.Map (Map)
 import Data.Map qualified as Map
-import Data.Map.Strict qualified as MapStrict
-import Data.Maybe (isJust)
+import Data.Maybe (isNothing)
 import Data.Set (Set)
 import Data.Set qualified as Set
 
@@ -45,17 +43,18 @@ import Data.Set qualified as Set
 main :: IO ()
 main =
   do world1 <- getInputArray 2019 18
-     let start = head [k | (k,'@') <- assocs world1]
 
      -- part 1
-     print (allKeys world1 [start])
+     print (allKeys world1)
 
      -- part 2
-     let fixups = [(c,'#') | c <- start : cardinal start]
-               ++ [(f (g start),'@') | f <- [above, below], g <- [left , right]]
+     let [start] = findStarts world1
+         fixups = zip (range (above (left start), below (right start))) "@#@\ \###\ \@#@"
          world2 = world1 // fixups
-         start2 = [k | (k,'@') <- assocs world2]
-     print (allKeys world2 start2)
+     print (allKeys world2)
+
+findStarts :: UArray Coord Char -> [Coord]
+findStarts world = [k | (k, '@') <- assocs world]
 
 ------------------------------------------------------------------------
 -- Search that finds shortest distances to the remaining keys
@@ -79,7 +78,7 @@ extractGraph :: UArray Coord Char -> Map Coord [(Coord, Cell, Int)]
 extractGraph world =
   Map.fromList
   [ (pos, startSearch world pos cell)
-     | (pos, char) <- assocs (world :: UArray Coord Char)
+     | (pos, char) <- assocs world
      , Just cell   <- [charToCell char]
      ]
 
@@ -89,42 +88,40 @@ startSearch world start startCell =
   | (here, Just cell, n) <- bfsOn (\(p,_,_)->p) step (start, Just startCell, 0)
   ]
   where
-    step (here, hereCell, n)
-      | here /= start && isJust hereCell = []
-      | otherwise =
-         [ (there, thereCell, n+1)
-         | there <- cardinal here
-         , let char = world ! there
-         , let thereCell = charToCell char
-         , char /= '#'
-         ]
+    step (here, hereCell, n) =
+      [ (there, charToCell char, n+1)
+      | isNothing hereCell || here == start
+      , there <- cardinal here
+      , let char = world ! there
+      , char /= '#'
+      ]
 
 ------------------------------------------------------------------------
 -- Multiple robot search to gather all keys
 ------------------------------------------------------------------------
 
 data AllKeys = AllKeys
-  { akKeys      :: !IntSet      -- ^ keys found
+  { akKeys      :: !SmallSet      -- ^ keys found
   , akLocations :: !(Set Coord) -- ^ robot locations
   }
   deriving (Ord, Eq, Show)
 
 allKeys ::
   UArray Coord Char {- ^ world map               -} ->
-  [Coord]           {- ^ robot locations         -} ->
   Int               {- ^ search states and costs -}
-allKeys world start =
-  select $ astar stepAK $ AllKeys IntSet.empty $ Set.fromList start
+allKeys world = head [cost | (s, cost) <- astar stepAK startState, done s]
   where
-    keyN   = countBy isLower (elems world)
-    done s = IntSet.size (akKeys (fst s)) == keyN
-    select = snd . head . filter done
+    starts = findStarts world
+    startState = AllKeys SmallSet.empty (Set.fromList starts)
+    keyN = countBy isLower (elems world)
+    done s = SmallSet.size (akKeys s) == keyN
 
-    paths  = extractGraph world
+    -- cache all the paths between interesting nodes
+    paths = extractGraph world
 
     stepAK AllKeys{..} =
       [ AStep {
-        astepNext = AllKeys (IntSet.insert k akKeys)
+        astepNext = AllKeys (SmallSet.insert k akKeys)
                             (Set.insert loc (Set.delete who akLocations)),
         astepCost = cost,
         astepHeuristic = 0 }
@@ -141,50 +138,20 @@ nextKey ::
   Map Coord [(Coord, Cell, Int)] ->
   Coord ->
   Cell ->
-  IntSet ->
+  SmallSet ->
   [(Coord, Int, Int)]
 nextKey paths start startCell keys =
   [ (here, k, cost)
-    | ((here, Key k), cost) <- astarOn fst step (start,startCell) ]
+    | ((here, Key k), cost) <- astarOn fst step (start, startCell)
+    , not (SmallSet.member k keys) ]
   where
     step (here, hereCell) =
       [ AStep (loc, cell) cost 0
         | case hereCell of
-            Key k -> IntSet.member k keys
+            Key k -> SmallSet.member k keys -- stop when we reach a new key
             _     -> True
         , (loc, cell, cost) <- paths Map.! here
         , case cell of
-            Gate i -> IntSet.member i keys
+            Gate i -> SmallSet.member i keys
             _      -> True
-        ]
-
-keysSSP ::
-  UArray Coord Char ->
-  Map Coord [(Coord, x, Int)] ->
-  Map (Coord, Coord) Int
-keysSSP world direct = Map.filterWithKey scrub (foldl' addGen gen0 ks)
-  where
-    scrub (c1,c2) _
-      | Just Key{} <- charToCell (world ! c1)
-      , Just Key{} <- charToCell (world ! c2) = True
-      | otherwise = False
-
-    ks = Map.keys direct
-    gen0 = Map.fromList [ ((src,dst), cost)
-                           | (src,dsts) <- Map.toList direct
-                           , (dst,_,cost) <- dsts
-                           ]
-
-    mkCost Nothing   (Just ik) (Just kj) = [ik+kj]
-    mkCost (Just ij) (Just ik) (Just kj) = [min ij (ik+kj)]
-    mkCost (Just ij) _ _ = [ij]
-    mkCost Nothing _ _ = []
-
-    addGen acc k = MapStrict.fromList
-      [ ((i,j), cost)
-        | i <- ks
-        , j <- ks
-        , cost <- mkCost (Map.lookup (i,j) acc)
-                         (Map.lookup (i,k) acc)
-                         (Map.lookup (k,j) acc)
         ]
