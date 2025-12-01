@@ -8,6 +8,10 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2025/day/1>
 
+>>> :main + "L68\nL30\nR48\nL5\nR60\nL55\nL1\nL99\nR14\nL82\n"
+3
+6
+
 -}
 module Main (main) where
 
@@ -18,6 +22,9 @@ data D = DL | DR deriving Show
 
 stageTH
 
+-- | >>> :main
+-- 992
+-- 6133
 main :: IO ()
 main =
  do input <- [format|2025 1 (@D%d%n)*|]
