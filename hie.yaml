@@ -2,8 +2,7 @@ cradle:
   cabal:
     - path: "./common/src"
       component: "advent:lib:advent"
-    - path: "./asmprog/AsmProg.hs"
-      component: "asmprog"
+
     - path: "./intcode/"
       component: "intcode"
 

@@ -1238,4 +1238,8 @@ executable sln_2024_25
 executable sln_2025_01
   import:              day
   main-is:             2025/01.hs
+
+executable sln_2025_02
+  import:              day
+  main-is:             2025/02.hs
   build-depends:       containers, array
