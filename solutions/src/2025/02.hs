@@ -24,16 +24,21 @@ main :: IO ()
 main =
     do
     input <- [format|2025 02 (%u-%u)&,%n|]
-    let numbers = uncurry enumFromTo =<< input
+    let numbers = do (lo, hi) <- input; [lo .. hi]
     print (sum (filter part1 numbers))
     print (sum (filter part2 numbers))
 
+-- | Predicate for numbers that are made of the same
+-- sequence of digits repeated twice.
 part1 :: Int -> Bool
-part1 x = same (chunks (n `quot` 2) str)
+part1 x = a == b
   where
     str    = show x
     n      = length str
+    (a, b) = splitAt (n `quot` 2) str
 
+-- | Predicate for numbers that are made of the same
+-- sequence of digits repeated at least twice.
 part2 :: Int -> Bool
 part2 x = or [same (chunks i str) | i <- [1 .. length str `quot` 2]]
   where
