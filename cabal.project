@@ -8,4 +8,4 @@ packages:
 source-repository-package
   type: git
   location: https://github.com/glguy/intcode
-  tag: ba1799a40b6f9efbf4d53bfe871802cee0000bce
+  tag: ff45a572f9a097d2572a5363869ab528eabffd30
