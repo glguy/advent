@@ -31,7 +31,7 @@ main =
 -- | Predicate for numbers that are made of the same
 -- sequence of digits repeated twice.
 part1 :: Int -> Bool
-part1 x = a == b
+part1 x = even n && a == b
   where
     str    = show x
     n      = length str
@@ -40,7 +40,7 @@ part1 x = a == b
 -- | Predicate for numbers that are made of the same
 -- sequence of digits repeated at least twice.
 part2 :: Int -> Bool
-part2 x = or [same (chunks i str) | i <- [1 .. length str `quot` 2]]
+part2 x = or [same (chunks i str) | i <- [1 .. n `quot` 2], n `mod` i == 0]
   where
     str = show x
     n   = length str
