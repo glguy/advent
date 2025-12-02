@@ -28,7 +28,7 @@ main =
  do input <- runP (many pInstr) <$> getRawInput 2024 3
     print (part1 input)
     print (part2 input)
- 
+
 part1 :: [Instr] -> Int
 part1 xs = sum [x * y | Mul x y <- xs]
 

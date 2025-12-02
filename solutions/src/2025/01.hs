@@ -21,15 +21,23 @@ import Data.List (mapAccumL)
 -- | Direction of the turn: left (negative) or right (positive)
 data D = DL | DR deriving Show
 
-stageTH
+stageTH -- makes D visible in the format parser as @D
+
+-- | Count of labels on the dial: 0 to 99
+locations :: Int
+locations = 100
+
+-- | The arrow starts pointing at location 50
+start :: Int
+start = 50
 
 -- | >>> :main
 -- 992
 -- 6133
 main :: IO ()
 main =
- do input <- [format|2025 1 (@D%d%n)*|]
-    let (stops, zeros) = unzip (sim 50 input)
+ do input <- [format|2025 1 (@D%u%n)*|]
+    let (stops, zeros) = unzip (sim start input)
     print (count 0 stops)
     print (sum zeros)
 
@@ -41,12 +49,12 @@ sim ::
   [(D, Int)]   {- ^ list of turns -} ->
   [(Int, Int)] {- ^ trace of stop locations and zero passes -}
 sim _   []             = []
-sim loc ((DR, n) : xs) = (loc', zeros) : sim loc' xs where (zeros,        loc') = (    loc + n) `divMod` 100
-sim loc ((DL, n) : xs) = (loc', zeros) : sim loc' xs where (zeros, neg -> loc') = (neg loc + n) `divMod` 100
+sim loc ((DR, n) : xs) = (loc', zeros) : sim loc' xs where (zeros,        loc') = (    loc + n) `divMod` locations
+sim loc ((DL, n) : xs) = (loc', zeros) : sim loc' xs where (zeros, neg -> loc') = (neg loc + n) `divMod` locations
 
 -- | Negated dial location used to be able to treat left turns a positive turns on a negated dial.
 -- 
 -- >>> map neg [0,1,2,98,99]
 -- [0,99,98,2,1]
 neg :: Int -> Int
-neg x = (-x) `mod` 100
+neg x = (-x) `mod` locations
