@@ -1,4 +1,4 @@
-{-# Language BlockArguments #-}
+{-# Language BlockArguments, ParallelListComp #-}
 {-|
 Module      : Main
 Description : Day 3 solution
@@ -23,7 +23,6 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent ( getInputLines )
-import Advent.Memo ( memo )
 import Data.Char ( digitToInt )
 
 -- | >>> :main
@@ -38,8 +37,9 @@ main =
     print (sum [p 12 | p <- parts])
 
 solveLine :: String -> Int -> Int
-solveLine = foldl step (const 0)
+solveLine str n = head (foldl step (replicate n 0) str)
   where
-    step prev d = memo \n ->
-      if n == 0 then 0
-      else max (prev (n-1) * 10 + digitToInt d) (prev n)
+    step prev d =
+      [ max a (b * 10 + digitToInt d)
+        | a <- prev
+        | b <- tail prev ++ [0] ]
