@@ -1,4 +1,4 @@
-{-# Language BlockArguments, ParallelListComp #-}
+{-# Language ParallelListComp #-}
 {-|
 Module      : Main
 Description : Day 3 solution
@@ -43,7 +43,7 @@ solveLine ::
 solveLine = foldl addDigit (repeat 0)
 
 -- | Given a list of best values so far when taking
--- [1, 2 .. n] digits produce a new best list
+-- 1, 2 ... digits produce a new best list
 -- considering this new digit.
 addDigit :: [Int] -> Int -> [Int]
 addDigit prev d =
