@@ -32,16 +32,15 @@ main :: IO ()
 main =
  do input <- getInputLines 2025 3
     let parts = map (solveLine . map digitToInt) input
-    print (sum [p  2 | p <- parts])
-    print (sum [p 12 | p <- parts])
+    print (sum [p !!  1 | p <- parts])
+    print (sum [p !! 11 | p <- parts])
 
 -- | Find the largest value that can be created by selecting
--- up to a given number of digits from the list.
+-- each number of digits from the list starting at 1.
 solveLine ::
-  [Int] {- ^ row of digits -} ->
-  Int   {- ^ number of digits that can be selected -} ->
-  Int   {- ^ largest value that can be selected -}
-solveLine str n = last (foldl addDigit (replicate n 0) str)
+  [Int]   {- ^ row of digits -} ->
+  [Int]   {- ^ largest value that can be selected for each size -}
+solveLine = foldl addDigit (repeat 0)
 
 -- | Given a list of best values so far when taking
 -- [1, 2 .. n] digits produce a new best list
