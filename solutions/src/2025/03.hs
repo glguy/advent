@@ -8,6 +8,17 @@ Maintainer  : emertens@gmail.com
 
 <https://adventofcode.com/2025/day/3>
 
+>>> :{
+:main +
+"987654321111111
+811111111111119
+234234234234278
+818181911112111
+"
+:}
+357
+3121910778619
+
 -}
 module Main (main) where
 
