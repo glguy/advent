@@ -32,8 +32,8 @@ import Data.Char ( digitToInt )
 main :: IO ()
 main =
     do
-    input <- map (map digitToInt) <$> getInputLines 2025 3
-    let parts = map solveLine input
+    input <- getInputLines 2025 3
+    let parts = map (solveLine . map digitToInt) input
     print (sum [p  2 | p <- parts])
     print (sum [p 12 | p <- parts])
 
