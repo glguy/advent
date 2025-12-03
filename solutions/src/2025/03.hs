@@ -33,13 +33,13 @@ main :: IO ()
 main =
     do
     input <- getInputLines 2025 3
-    let parts = map (solveLine . map digitToInt) input
+    let parts = map solveLine input
     print (sum [p  2 | p <- parts])
     print (sum [p 12 | p <- parts])
 
-solveLine :: [Int] -> Int -> Int
+solveLine :: String -> Int -> Int
 solveLine = foldl step (const 0)
   where
     step prev d = memo \n ->
       if n == 0 then 0
-      else max (prev (n-1) * 10 + d) (prev n)
+      else max (prev (n-1) * 10 + digitToInt d) (prev n)
