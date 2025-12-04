@@ -1246,3 +1246,8 @@ executable sln_2025_02
 executable sln_2025_03
   import:              day
   main-is:             2025/03.hs
+
+executable sln_2025_04
+  import:              day
+  main-is:             2025/04.hs
+  build-depends:       containers
