@@ -1093,7 +1093,7 @@ executable sln_2023_21
 executable sln_2023_22
   import:              day
   main-is:             2023/22.hs
-  build-depends:       containers, parallel, fgl
+  build-depends:       parallel
   ghc-options:         -threaded
 
 executable sln_2023_23
