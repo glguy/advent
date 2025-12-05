@@ -23,7 +23,7 @@ common day
   hs-source-dirs:      src
   build-depends:
     advent,
-    base ^>= {4.18, 4.19, 4.20, 4.21},
+    base ^>= {4.19, 4.20, 4.21},
   other-modules:       Dummy
   default-language:    Haskell2010
   if impl(ghc >= 9.8)
@@ -46,7 +46,6 @@ executable sln_2015_02
 executable sln_2015_03
   import:              day
   main-is:             2015/03.hs
-  build-depends:       containers
 
 executable sln_2015_04
   import:              day
@@ -202,7 +201,7 @@ executable sln_2016_11
 executable sln_2016_12
   import:              day
   main-is:             2016/12.hs
-  build-depends:       containers, vector, lens
+  build-depends:       vector, lens
 
 executable sln_2016_13
   import:              day
@@ -257,7 +256,7 @@ executable sln_2016_23
 executable sln_2016_24
   import:              day
   main-is:             2016/24.hs
-  build-depends:       array, containers
+  build-depends:       array
 
 executable sln_2016_25
   import:              day
@@ -311,7 +310,7 @@ executable sln_2017_09
 executable sln_2017_10
   import:              day
   main-is:             2017/10.hs
-  build-depends:       vector, split
+  build-depends:       split
 
 executable sln_2017_11
   import:              day
@@ -399,7 +398,6 @@ executable sln_2018_02
 executable sln_2018_03
   import:              day
   main-is:             2018/03.hs
-  build-depends:       containers
 
 executable sln_2018_04
   import:              day
@@ -485,14 +483,18 @@ executable sln_2018_20
   build-depends:       containers
 
 executable sln_2018_21
-  import:              day
+  -- I inlined 'day' because this module doesn't use the advent library
   main-is:             2018/21.hs
-  build-depends:       containers, vector, inline-c
+  build-depends:       inline-c
+  hs-source-dirs:      src
+  build-depends:       base ^>= {4.19, 4.20, 4.21},
+  other-modules:       Dummy
+  default-language:    Haskell2010
 
 executable sln_2018_22
   import:              day
   main-is:             2018/22.hs
-  build-depends:       array, containers
+  build-depends:       array
 
 executable sln_2018_23
   import:              day
@@ -530,7 +532,6 @@ executable sln_2019_04
 executable sln_2019_05
   import:              intcode
   main-is:             2019/05.hs
-  build-depends:       containers
 
 executable sln_2019_06
   import:              day
@@ -540,17 +541,14 @@ executable sln_2019_06
 executable sln_2019_07
   import:              intcode
   main-is:             2019/07.hs
-  build-depends:       containers
 
 executable sln_2019_08
   import:              day
   main-is:             2019/08.hs
-  build-depends:       containers
 
 executable sln_2019_09
   import:              intcode
   main-is:             2019/09.hs
-  build-depends:       containers
 
 executable sln_2019_10
   import:              day
