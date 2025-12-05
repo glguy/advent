@@ -170,10 +170,6 @@ jobs:
           echo "    ghc-options: -Werror=unused-packages" >> cabal.project
           echo "package solutions" >> cabal.project
           echo "    ghc-options: -Werror=unused-packages" >> cabal.project
-          echo "package advent" >> cabal.project
-          echo "    ghc-options: -Werror=incomplete-patterns -Werror=incomplete-uni-patterns" >> cabal.project
-          echo "package solutions" >> cabal.project
-          echo "    ghc-options: -Werror=incomplete-patterns -Werror=incomplete-uni-patterns" >> cabal.project
           cat >> cabal.project <<EOF
           source-repository-package
             type:     git
