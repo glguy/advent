@@ -13,7 +13,7 @@ copyright:           2015-2024 Eric Mertens
 homepage:            https://github.com/glguy/advent
 bug-reports:         https://github.com/glguy/advent/issues
 build-type:          Simple
-Tested-With:         GHC =={9.6.6, 9.8.2, 9.10.1}
+Tested-With:         GHC == {9.8.4, 9.10.3, 9.12.2}
 
 source-repository head
   type: git
@@ -860,7 +860,7 @@ executable sln_2021_24
 executable sln_2021_24_sbv
   import:              day
   main-is:             2021/24_sbv.hs
-  build-depends:       sbv, containers
+  build-depends:       sbv ^>= 13.3, containers
 
 executable sln_2021_25
   import:              day
