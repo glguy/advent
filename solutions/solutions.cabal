@@ -1253,3 +1253,8 @@ executable sln_2025_04
 executable sln_2025_05
   import:              day
   main-is:             2025/05.hs
+
+executable sln_2025_06
+  import:              day
+  main-is:             2025/06.hs
+  build-depends:       split
