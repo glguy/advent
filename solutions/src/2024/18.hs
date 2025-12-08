@@ -19,6 +19,7 @@ import Control.Monad (when)
 import Data.Array.IO (IOUArray, Ix(range, inRange), readArray, writeArray, newArray)
 import Data.Array.Unboxed (UArray, accumArray)
 import Data.Foldable (for_, traverse_)
+import Data.Functor (void)
 import Data.Maybe (listToMaybe)
 
 -- | >>> :main
@@ -56,7 +57,7 @@ part2 cs =
     let link x y =
          when (inRange b y)
           do o <- readArray open y
-             when o (unifySets ds x y)
+             when o (void (unifySets ds x y))
 
     -- Connect all the adjacent, initially open spaces
     for_ (range b) \c ->

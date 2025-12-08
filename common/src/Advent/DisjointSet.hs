@@ -52,15 +52,20 @@ setSize ds x =
  do (size, _) <- findRoot ds x
     pure size
 
-unifySets :: Ix a => DisjointSet a -> a -> a -> IO ()
+-- | Unify two sets into one. Returns True when the unification
+-- successfully unified two sets. Returns False when the sets
+-- were already unified.
+unifySets :: Ix a => DisjointSet a -> a -> a -> IO Bool
 unifySets (DS arr) x y =
  do (sizeX, x') <- findRoot (DS arr) x
     (sizeY, y') <- findRoot (DS arr) y
-
-    when (x' /= y')
-     if sizeX < sizeY
-      then writeArray arr x' (0,y') >> writeArray arr y' (sizeX + sizeY, y')
-      else writeArray arr y' (0,x') >> writeArray arr x' (sizeX + sizeY, x')
+    let success = x' /= y'
+    success <$ when success
+        if sizeX < sizeY
+          then do writeArray arr x' (0, y')
+                  writeArray arr y' (sizeX + sizeY, y')
+          else do writeArray arr y' (0, x')
+                  writeArray arr x' (sizeX + sizeY, x')
 
 inSameSet :: Ix a => DisjointSet a -> a -> a -> IO Bool
 inSameSet ds x y =
