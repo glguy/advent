@@ -1263,3 +1263,7 @@ executable sln_2025_07
   import:              day
   main-is:             2025/07.hs
   build-depends:       array
+
+executable sln_2025_08
+  import:              day
+  main-is:             2025/08.hs
