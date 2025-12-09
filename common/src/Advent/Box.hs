@@ -16,6 +16,7 @@ import Control.Monad (foldM)
 import Data.Functor.Compose (Compose(Compose, getCompose))
 import Data.Kind (Type)
 import Data.List (foldl1')
+import Data.Maybe (isJust)
 import GHC.Stack (HasCallStack)
 
 import Advent.Nat (Nat(S,Z), FromNatural, UnfoldNat(unfoldNat))
@@ -102,6 +103,10 @@ subtractBox' (Dim a b xs) (Dim c d ys) =
   [Dim a b zs | zs <- subtractBox' xs ys] ++
   [Dim b d ys | b < d]
 
+-- | Subtract all of the first argument boxes from the second argument.
+subtractBoxes :: [Box n] -> [Box n] -> [Box n]
+subtractBoxes xs ys = foldl (\acc x -> concatMap (subtractBox x) acc) ys xs
+
 -- | Compute the box that encompasses both arguments. This might cover
 -- extra elements as no such box might exist that is the perfect union
 -- of the two boxes.
@@ -149,3 +154,13 @@ instance UnfoldNat n => Read (Box n) where
       dim :: Compose P Box m -> Compose P Box ('S m)
       dim (Compose more) = Compose (preadParen (p >= 11)
         (Dim <$ tok "Dim" <*> pread <*> pread <*> more))
+
+-- | Predicate for determining if two disjoint boxes are adjacent.
+adjacent :: Box n -> Box n -> Bool
+adjacent Pt Pt = True
+adjacent (Dim xlo xhi x) (Dim ylo yhi y) =
+  touching && isJust (intersectBox x y) ||
+  overlapping && adjacent x y
+  where
+    touching    = xhi == ylo || yhi == xlo
+    overlapping = max xlo ylo < min xhi yhi

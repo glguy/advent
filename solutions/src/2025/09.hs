@@ -27,7 +27,7 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent ( format )
-import Advent.Box ( coverBoxes, intersectBox, size, subtractBox, unionBoxes, Box(Pt, Dim), Box' )
+import Advent.Box ( adjacent, coverBoxes, intersectBox, size, subtractBoxes, unionBoxes, Box(Pt, Dim), Box' )
 import Advent.Coord ( Coord(..) )
 import Data.List ( delete, partition, minimumBy, sortBy, tails )
 import Data.Maybe ( isNothing )
@@ -54,7 +54,7 @@ main =
     let outer = grow (coverBoxes strips)
 
     -- The outer rectangle with the input region subtracted
-    let shadow = foldl (\acc x -> concatMap (subtractBox x) acc) [outer] strips
+    let shadow = subtractBoxes strips [outer]
 
     -- A box that is definitely outside the diagram (top-left corner)
     let start = minimum shadow
@@ -83,9 +83,3 @@ fill [] _ = []
 fill (x:xs) available = x : fill (touched ++ xs) available'
   where
     (touched, available') = partition (adjacent x) available
-
--- | Predicate for disjoint, touching boxes.
-adjacent :: Box' 2 -> Box' 2 -> Bool
-adjacent (Dim xlo1 xhi1 (Dim ylo1 yhi1 Pt)) (Dim xlo2 xhi2 (Dim ylo2 yhi2 Pt)) =
-  (xhi1 == xlo2 || xhi2 == xlo1) && max ylo1 ylo2 < min yhi1 yhi2 ||
-  (yhi1 == ylo2 || yhi2 == ylo1) && max xlo1 xlo2 < min xhi1 xhi2

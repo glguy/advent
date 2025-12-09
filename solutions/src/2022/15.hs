@@ -33,7 +33,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (format)
-import Advent.Box (Box', Box(Dim,Pt), subtractBox, size, unionBoxes)
+import Advent.Box (Box', Box(Dim,Pt), subtractBoxes, size, unionBoxes)
 import Advent.Coord (manhattan, Coord(C))
 import Advent.Nat (Nat(S))
 
@@ -71,7 +71,7 @@ part1 ::
   Int      {- ^ locations in row that can't contain a sensor -}
 part1 row diamonds beacons =
   sum $ map size $
-  subtractAllOf [cover x 0 Pt | C y x <- beacons, y == row] $
+  subtractBoxes [cover x 0 Pt | C y x <- beacons, y == row] $
   unionBoxes $
   concatMap (rowSlice row) diamonds
 
@@ -98,7 +98,7 @@ part2 search diamonds = head
     | let center = C (search`div`2) (search`div`2)
     , C y x <-
         map boxCorner $
-        subtractAllOf (map diamondBox diamonds)
+        subtractBoxes (map diamondBox diamonds)
         [diamondBox (Sensor center search)]
     , 0 <= y, y <= search
     , 0 <= x, x <= search]
@@ -112,15 +112,6 @@ diamondBox :: Sensor -> Box' 2
 diamondBox (Sensor (C y x) r) = cover (x+y) r (cover (x-y) r Pt)
 
 -- Box utilities
-
--- | Remove the first list of regions from the second.
-subtractAllOf ::
-  [Box n] {- ^ remove this -} ->
-  [Box n] {- ^ from this -} ->
-  [Box n] {- ^ remaining region -}
-subtractAllOf xs ys = foldl remove1 ys xs
-  where
-    remove1 acc x = concatMap (subtractBox x) acc
 
 -- | Extend a box to cover a new dimension centered on x with radius r.
 cover :: Int {- ^ position -} -> Int {- ^ radius -} -> Box n -> Box ('S n)
