@@ -29,8 +29,7 @@ module Main (main) where
 import Advent ( format )
 import Advent.Box ( coverBoxes, intersectBox, size, subtractBox, unionBoxes, Box(Pt, Dim), Box' )
 import Advent.Coord ( Coord(..) )
-import Advent.Search ( dfs )
-import Data.List ( minimumBy, sortBy, tails )
+import Data.List ( delete, partition, minimumBy, sortBy, tails )
 import Data.Maybe ( isNothing )
 import Data.Ord ( comparing )
 
@@ -40,16 +39,16 @@ import Data.Ord ( comparing )
 main :: IO ()
 main =
  do input <- [format|2025 9 (%u,%u%n)*|]
+    let coords = [C y x | (x, y) <- input]
 
     -- Candidate rectangles sorted by size
-    let rectangles = sortBy (flip (comparing size))
-                     [asRect x1 y1 x2 y2 | (x1, y1):xs <- tails input, (x2,y2) <- xs]
+    let rectangles = sortBy (flip (comparing size)) [asRect x y | x:ys <- tails coords, y <- ys]
 
     -- Part 1 just wants the largest rectangle
     print (size (head rectangles))
 
     -- The region given in the input file
-    let strips = unionBoxes [asRect x1 y1 x2 y2 | (x1, y1):(x2,y2):_ <- tails (input ++ [head input]) ]
+    let strips = unionBoxes [asRect x y | x:y:_ <- tails (coords ++ [head coords])]
 
     -- A rectangle that's a little bigger than the whole region in the input file
     let outer = grow (coverBoxes strips)
@@ -57,31 +56,33 @@ main =
     -- The outer rectangle with the input region subtracted
     let shadow = foldl (\acc x -> concatMap (subtractBox x) acc) [outer] strips
 
-    -- A box that is definitely outside the diagram
-    let start = minimumBy (comparing topLeft) shadow
+    -- A box that is definitely outside the diagram (top-left corner)
+    let start = minimum shadow
 
     -- The region that our target rectangle must not touch
-    let outOfBounds = dfs (touching shadow) start
+    let outOfBounds = fill [start] (delete start shadow)
+
+    -- A valid rectangle for part 2 is not touching any of the out of bounds region
+    let valid x = all (isNothing . intersectBox x) outOfBounds
 
     -- Part 2 is the largest rectangle not touching the out of bound region
-    print (size (head
-      (filter (\x -> all (isNothing . intersectBox x) outOfBounds) rectangles)))
+    print (size (head (filter valid rectangles)))
 
 -- | Construct the box given the coordinates of two opposite corners
-asRect :: Int -> Int -> Int -> Int -> Box' 2
-asRect x1 y1 x2 y2 = Dim (min x1 x2) (max x1 x2 + 1) (Dim (min y1 y2) (max y1 y2 + 1) Pt)
+asRect :: Coord -> Coord -> Box' 2
+asRect (C y1 x1) (C y2 x2) = Dim (min x1 x2) (max x1 x2 + 1) (Dim (min y1 y2) (max y1 y2 + 1) Pt)
 
 -- | Expand a box by one in all directions
 grow :: Box' 2 -> Box' 2
-grow (Dim x1 x2 (Dim y1 y2 Pt)) = Dim (x1-1) (x2+1) (Dim (y1-1) (y2+1) Pt)
+grow (Dim x1 x2 (Dim y1 y2 Pt)) = Dim (x1 - 1) (x2 + 1) (Dim (y1 - 1) (y2 + 1) Pt)
 
--- | Returns the top-left corner coordinate of a box
-topLeft :: Box' 2 -> Coord
-topLeft (Dim x _ (Dim y _ Pt)) = C y x
-
--- | Returns all the elements of the first set that are touching the second argument.
-touching :: [Box' 2] -> Box' 2 -> [Box' 2]
-touching shadow x = filter (adjacent x) shadow
+-- | Given a list of selected boxes and a list of available boxes, returns the list of
+-- contiguous boxes.
+fill :: [Box' 2] -> [Box' 2] -> [Box' 2]
+fill [] _ = []
+fill (x:xs) available = x : fill (touched ++ xs) available'
+  where
+    (touched, available') = partition (adjacent x) available
 
 -- | Predicate for disjoint, touching boxes.
 adjacent :: Box' 2 -> Box' 2 -> Bool
