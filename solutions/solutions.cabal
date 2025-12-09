@@ -1267,3 +1267,7 @@ executable sln_2025_07
 executable sln_2025_08
   import:              day
   main-is:             2025/08.hs
+
+executable sln_2025_09
+  import:              day
+  main-is:             2025/09.hs
