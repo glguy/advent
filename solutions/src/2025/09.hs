@@ -86,9 +86,6 @@ fill (x:xs) available = x : fill (touched ++ xs) available'
 
 -- | Predicate for disjoint, touching boxes.
 adjacent :: Box' 2 -> Box' 2 -> Bool
-adjacent (Dim xlo1 xhi1 (Dim ylo1 yhi1 Pt)) (Dim xlo2 xhi2 (Dim ylo2 yhi2 Pt))
-  | xhi1 == xlo2 = max ylo1 ylo2 < min yhi1 yhi2
-  | xhi2 == xlo1 = max ylo1 ylo2 < min yhi1 yhi2
-  | yhi1 == ylo2 = max xlo1 xlo2 < min xhi1 xhi2
-  | yhi2 == ylo1 = max xlo1 xlo2 < min xhi1 xhi2
-  | otherwise = False
+adjacent (Dim xlo1 xhi1 (Dim ylo1 yhi1 Pt)) (Dim xlo2 xhi2 (Dim ylo2 yhi2 Pt)) =
+  (xhi1 == xlo2 || xhi2 == xlo1) && max ylo1 ylo2 < min yhi1 yhi2 ||
+  (yhi1 == ylo2 || yhi2 == ylo1) && max xlo1 xlo2 < min xhi1 xhi2
