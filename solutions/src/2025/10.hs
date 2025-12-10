@@ -25,7 +25,7 @@ import Advent (format)
 import Data.Bits (xor, bit)
 import Data.Foldable (for_)
 import Data.List (elemIndices)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromJust)
 import Data.SBV (SInteger, optLexicographic, free, minimize, (.==), (.>=), constrain, getModelValue)
 import Data.Traversable (for)
 
@@ -40,12 +40,30 @@ main =
     print (sum xs)
 
 part1 :: ([Char], [[Int]], [Int]) -> Int
-part1 (goal, btns, _) =
-  minimum [length xs | xs <- cases, xorBits (concat xs) == target]  
+part1 (goal, btns, _) = fromJust (cost assertion)
   where
-    pickOrNot x = [Nothing, Just x]
-    cases = catMaybes <$> traverse pickOrNot btns
-    target = xorBits (elemIndices '#' goal)
+    assertion =
+      foldl conj R1
+        [ foldl xorRME
+            (if c == '#' then R0 else R1)
+            [ Node b R0 R1
+            | (b,btn) <- zip [0..] btns
+            , i `elem` btn
+            ]
+        | (i, c) <- zip [0..] goal
+        ]
+
+-- | Fewest number of true assignments to satisfy boolean assertion
+cost :: RME -> Maybe Int
+cost R0 = Nothing
+cost R1 = Just 0
+cost (Node _ a b) =
+  case cost a of
+    Nothing -> (1+) <$> cost b
+    Just a' -> Just $!
+      case cost (xorRME a b) of
+        Nothing -> a'
+        Just b' -> min a' (1 + b')
 
 -- | Construct the integers by xoring together the bit given by index.
 xorBits :: [Int] -> Integer
@@ -73,3 +91,47 @@ part2 (_, btns, jolt) =
     case getModelValue "smallest sum" res of
       Just x -> pure x
       Nothing -> fail "no solution"
+
+-- Local implementation of https://hackage-content.haskell.org/package/rme
+
+-- | Boolean formulas in Algebraic Normal Form, using a representation
+-- based on the Reed-Muller expansion.
+data RME = Node !Int !RME !RME | R0 | R1
+  deriving (Eq, Ord, Show)
+-- Invariants: The last argument to a `Node` constructor should never
+-- be `R0`. Also the `Int` arguments should strictly increase as you
+-- go deeper in the tree.
+
+-- | Normalizing constructor.
+node :: Int -> RME -> RME -> RME
+node _ a R0 = a
+node n a b = Node n a b
+
+-- | Logical complement.
+compl :: RME -> RME
+compl R0 = R1
+compl R1 = R0
+compl (Node n a b) = Node n (compl a) b
+
+-- | Xor
+xorRME :: RME -> RME -> RME
+xorRME R0 y = y
+xorRME R1 y = compl y
+xorRME x R0 = x
+xorRME x R1 = compl x
+xorRME x@(Node i a b) y@(Node j c d)
+  | i < j = Node i (xorRME a y) b
+  | j < i = Node j (xorRME x c) d
+  | otherwise = node i (xorRME a c) (xorRME b d)
+
+-- | Conjunction
+conj :: RME -> RME -> RME
+conj R0 _ = R0
+conj R1 y = y
+conj _ R0 = R0
+conj x R1 = x
+conj x@(Node i a b) y@(Node j c d)
+  | i < j = node i (conj a y) (conj b y)
+  | j < i = node j (conj x c) (conj x d)
+  | otherwise = node i ac (xorRME ac (conj (xorRME a b) (xorRME c d)))
+  where ac = conj a c
