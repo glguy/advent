@@ -22,10 +22,9 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format)
-import Data.Foldable (for_)
+import Control.Monad (replicateM)
 import Data.Maybe (fromJust)
-import Data.SBV (SInteger, optLexicographic, free, minimize, (.==), (.>=), constrain, getModelValue)
-import Data.Traversable (for)
+import Data.SBV (SInteger, optLexicographic, sAll, sAnd, sInteger_, minimize, (.==), (.>=), constrain, getModelValue)
 
 -- | >>> :main
 -- 409
@@ -44,10 +43,7 @@ part1 (goal, btns, _) = fromJust (cost assertion)
       foldl conj R1
         [ foldl xorRME
             (if c == '#' then R0 else R1)
-            [ Node b R0 R1
-            | (b,btn) <- zip [0..] btns
-            , i `elem` btn
-            ]
+            [Node b R0 R1 | (b,btn) <- zip [0..] btns, i `elem` btn]
         | (i, c) <- zip [0..] goal
         ]
 
@@ -68,16 +64,17 @@ part2 (_, btns, jolt) =
   do
     res <- optLexicographic
       do -- allocate one, non-zero coefficient per button to press
-        cs <- for [0 .. length btns - 1] \i ->
-          do
-            c <- free ("x" ++ show i)
-            constrain (c .>= 0)
-            pure (c :: SInteger)
+        cs <- replicateM (length btns) sInteger_
 
-        -- add a constraint for each element of the joltage
-        for_ (zip [0 .. ] jolt) \(i, j) ->
-          let j' = sum [c | (c, btn) <- zip cs btns, i `elem` btn]
-          in constrain (j' .== fromIntegral j)
+        -- All press counts are non-negative
+        constrain (sAll (.>= 0) cs)
+
+        -- All presses generate the correct amount of jolt
+        constrain (sAnd
+          [ fromIntegral j .==
+            sum [c | (c, btn) <- zip cs btns , i `elem` btn]
+          | (i, j) <- zip [0..] jolt
+          ])
 
         -- optimize the problem for the smallest number of button presses
         minimize "smallest sum" (sum cs)
