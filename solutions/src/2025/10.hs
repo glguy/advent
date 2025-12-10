@@ -22,10 +22,8 @@ Maintainer  : emertens@gmail.com
 module Main (main) where
 
 import Advent (format)
-import Data.Bits (xor, bit)
 import Data.Foldable (for_)
-import Data.List (elemIndices)
-import Data.Maybe (catMaybes, fromJust)
+import Data.Maybe (fromJust)
 import Data.SBV (SInteger, optLexicographic, free, minimize, (.==), (.>=), constrain, getModelValue)
 import Data.Traversable (for)
 
@@ -64,10 +62,6 @@ cost (Node _ a b) =
       case cost (xorRME a b) of
         Nothing -> a'
         Just b' -> min a' (1 + b')
-
--- | Construct the integers by xoring together the bit given by index.
-xorBits :: [Int] -> Integer
-xorBits = foldl (\acc i -> acc `xor` bit i) 0
 
 part2 :: ([Char], [[Int]], [Int]) -> IO Integer
 part2 (_, btns, jolt) =
