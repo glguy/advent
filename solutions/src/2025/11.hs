@@ -13,6 +13,7 @@ module Main where
 
 import Advent (format)
 import Advent.Memo (memo2)
+import Data.List (permutations)
 import Data.Map qualified as Map
 
 -- | >>> :main
@@ -24,9 +25,13 @@ main =
     let tab = Map.fromList input
 
     let ways = memo2 \src dst ->
-          if src == dst then 1
+          if src == dst then (1 :: Int)
           else sum [ways nxt dst | nxt <- Map.findWithDefault [] src tab]
 
-    print (ways "you" "out")
-    print (ways "svr" "fft" * ways "fft" "dac" * ways "dac" "out" +
-           ways "svr" "dac" * ways "dac" "fft" * ways "fft" "out")
+    let route x []    = ways x "out"
+        route x (y:z) = ways x y * route y z
+
+    let solve src mids = sum (map (route src) (permutations mids))
+
+    print (solve "you" [])
+    print (solve "svr" ["fft", "dac"])
