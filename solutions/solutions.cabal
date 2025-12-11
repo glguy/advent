@@ -1276,3 +1276,13 @@ executable sln_2025_10
   import:              day
   main-is:             2025/10.hs
   build-depends:       sbv
+
+executable sln_2025_11
+  import:              day
+  main-is:             2025/11.hs
+  build-depends:       containers, array
+
+executable sln_2025_12
+  import:              day
+  main-is:             2025/12.hs
+  build-depends:       containers
