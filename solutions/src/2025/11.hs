@@ -12,7 +12,7 @@ Maintainer  : emertens@gmail.com
 module Main where
 
 import Advent (format)
-import Advent.Memo (memo, memo3)
+import Advent.Memo (memo2)
 import Data.Map qualified as Map
 
 -- | >>> :main
@@ -23,17 +23,10 @@ main =
  do input <- [format|2025 11 (%s:( %s)*%n)*|]
     let tab = Map.fromList input
 
-    let part1 = memo \loc ->
-          if loc == "out" then 1
-          else sum [part1 dst | dst <- Map.findWithDefault [] loc tab] 
-    print (part1 "you")
+    let ways = memo2 \src dst ->
+          if src == dst then 1
+          else sum [ways nxt dst | nxt <- Map.findWithDefault [] src tab]
 
-    let part2 = memo3 \loc dac fft ->
-          if loc == "out" then
-            if dac && fft then 1 else 0
-          else sum [part2 dst dac' fft'
-                    | let dac' = dac || loc == "dac"
-                    , let fft' = fft || loc == "fft"
-                    , dst <- Map.findWithDefault [] loc tab
-                    ]
-    print (part2 "svr" False False)
+    print (ways "you" "out")
+    print (ways "svr" "fft" * ways "fft" "dac" * ways "dac" "out" +
+           ways "svr" "dac" * ways "dac" "fft" * ways "fft" "out")
